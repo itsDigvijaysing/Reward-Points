@@ -11,9 +11,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
 
     int counter;
+    //boolean todayfeedback;
 
     TextView RewardCount;
 
@@ -24,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Calendar calendar = Calendar.getInstance();
+        int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        Button btntodayP;
         Button btnmovie;
         Button btngame;
         Button btntravel;
@@ -34,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         btngame = findViewById(R.id.btngamelinear);
         btntravel = findViewById(R.id.btntravellinear);
         congratsText = findViewById(R.id.txtCongrats);
+        btntodayP = findViewById(R.id.btndayinfo);
 
         myDialog = new Dialog(this);
 
@@ -43,6 +51,40 @@ public class MainActivity extends AppCompatActivity {
         // Using SharedPreferences to Store Counter value in android so even if app closed it will store its value
         SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
         SharedPreferences.Editor editor = getShared.edit();
+
+        int lastDay = getShared.getInt("day",0);
+        boolean tfeedbacksp = getShared.getBoolean("todayf",false);
+
+        if(lastDay != currentDay){
+            btntodayP.setVisibility(View.VISIBLE);
+            btntodayP.setClickable(true);
+
+            if(tfeedbacksp==true) {
+                editor.putInt("day", currentDay);
+                editor.apply();
+
+                //Toast.makeText(MainActivity.this,"Today day set confirm",Toast.LENGTH_SHORT).show();
+
+                // It Refresh the App
+                //this.recreate();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
+
+            }
+            if(tfeedbacksp==false){
+                Toast.makeText(MainActivity.this,"Give Feedback of Today",Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            btntodayP.setVisibility(View.GONE);
+            btntodayP.setClickable(false);
+
+            editor.putBoolean("todayf",false);
+            editor.apply();
+
+            Toast.makeText(MainActivity.this,"Feedback is received for Today",Toast.LENGTH_LONG).show();
+        }
 
         btnmovie.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,8 +177,15 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+                editor.putBoolean("todayf",true);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Congratulations 120 Points Added...",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -150,8 +199,15 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+                editor.putBoolean("todayf",true);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Congrats 60 Points Added",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -165,8 +221,15 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+                editor.putBoolean("todayf",true);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Nice 20 Points Added",Toast.LENGTH_SHORT).show();
                 myDialog.dismiss();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -180,8 +243,15 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+                editor.putBoolean("todayf",true);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"It's Okay Yaar.. 10 Points Added",Toast.LENGTH_SHORT).show();
                 myDialog.dismiss();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -195,8 +265,16 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+                editor.putBoolean("todayf",true);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Stay +ve Better days ahead...",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
+
             }
         });
 
