@@ -24,7 +24,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button btnmovie;
+        Button btngame;
+        Button btntravel;
+        TextView congratsText;
+
         RewardCount = findViewById(R.id.RewardCounter);
+        btnmovie = findViewById(R.id.btnmovielinear);
+        btngame = findViewById(R.id.btngamelinear);
+        btntravel = findViewById(R.id.btntravellinear);
+        congratsText = findViewById(R.id.txtCongrats);
 
         myDialog = new Dialog(this);
 
@@ -33,9 +42,61 @@ public class MainActivity extends AppCompatActivity {
 
         // Using SharedPreferences to Store Counter value in android so even if app closed it will store its value
         SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
-        //SharedPreferences.Editor editor = getShared.edit();
-        //editor.putInt("count",counter);
-        //editor.apply();
+        SharedPreferences.Editor editor = getShared.edit();
+
+        btnmovie.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(counter >= 200) {
+                    counter = counter - 200;
+                    editor.putInt("count",counter);
+                    editor.apply();
+
+                    RewardCount.setText(""+counter);
+                    Toast.makeText(MainActivity.this,"1 Full Movie Reward Claimed...",Toast.LENGTH_SHORT).show();
+                    congratsText.setVisibility(View.VISIBLE);
+                }
+                else {
+                    Toast.makeText(MainActivity.this,"You Do Not have Sufficient Points",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btngame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(counter >= 300) {
+                    counter = counter - 300;
+                    editor.putInt("count",counter);
+                    editor.apply();
+
+                    RewardCount.setText(""+counter);
+                    Toast.makeText(MainActivity.this,"2Hr Game Reward Claimed...",Toast.LENGTH_SHORT).show();
+                    congratsText.setVisibility(View.VISIBLE);
+                }
+                else {
+                    Toast.makeText(MainActivity.this,"You Do Not have Sufficient Points",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btntravel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(counter >= 200) {
+                    counter = counter - 200;
+                    editor.putInt("count",counter);
+                    editor.apply();
+
+                    RewardCount.setText(""+counter);
+                    Toast.makeText(MainActivity.this,"1Hr Travel Reward Claimed...",Toast.LENGTH_SHORT).show();
+                    congratsText.setVisibility(View.VISIBLE);
+                }
+                else {
+                    Toast.makeText(MainActivity.this,"You Do Not have Sufficient Points",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         // Code to Get the value from SharedPreferences count key
         counter = getShared.getInt("count",0);    // 0 is Default value if app not found and value then set it 0
@@ -74,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"Congratulations 120 Points Added...",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Congratulations 120 Points Added...",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });
@@ -89,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"Congrats 60 Points Added",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Congrats 60 Points Added",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });
@@ -134,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"Stay +ve Better days ahead...",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Stay +ve Better days ahead...",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });
@@ -172,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"Congrats Yaar.. Kadak.... +200 Points",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Congrats Yaar.. Kadak.... +200 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });
@@ -187,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"You are doing great +120 Points",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"You are doing great +120 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });
@@ -202,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
-                Toast.makeText(MainActivity.this,"Nice... Keep it up +60 Points",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,"Nice... Keep it up +60 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
         });

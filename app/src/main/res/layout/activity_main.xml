@@ -73,4 +73,63 @@
         app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
         app:srcCompat="@drawable/winnertrophy" />
 
+    <LinearLayout
+        android:id="@+id/linearrewardarea"
+        android:layout_width="340dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/shape"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtnachievement"
+        app:layout_constraintVertical_bias="1.0">
+
+        <TextView
+            android:id="@+id/txtrewardsinlinear"
+            android:layout_width="200dp"
+            android:layout_height="46dp"
+            android:text="Rewards"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="32dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtCongrats"
+            android:layout_width="260dp"
+            android:layout_height="38dp"
+            android:text="Enjoy your Reward"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/btnmovielinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 Movie -200P" />
+
+        <Button
+            android:id="@+id/btngamelinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2Hr Game -300P" />
+
+        <Button
+            android:id="@+id/btntravellinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1Hr Travel -200P" />
+
+    </LinearLayout>
+
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
