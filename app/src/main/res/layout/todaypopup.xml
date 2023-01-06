@@ -12,14 +12,15 @@
     <TextView
         android:id="@+id/textView"
         android:layout_width="250dp"
-        android:layout_height="46dp"
+        android:layout_height="42dp"
         android:layout_marginTop="5dp"
-        android:text="How are you ?"
+        android:gravity="center"
+        android:text="How are you feeling now?"
         android:textColor="#3F51B5"
-        android:textSize="24sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintHorizontal_bias="0.14"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -33,14 +34,15 @@
         android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.65"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imggreat"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:scaleType="centerCrop"
+        android:background="@null"
         android:layout_marginTop="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.32"
@@ -48,10 +50,12 @@
         app:layout_constraintTop_toBottomOf="@+id/textView"
         app:srcCompat="@drawable/great" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imggood"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:scaleType="centerCrop"
+        android:background="@null"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.32"
@@ -59,10 +63,12 @@
         app:layout_constraintTop_toBottomOf="@+id/imggreat"
         app:srcCompat="@drawable/good" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imgneutral"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:scaleType="centerCrop"
+        android:background="@null"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.32"
@@ -70,10 +76,12 @@
         app:layout_constraintTop_toBottomOf="@+id/imggood"
         app:srcCompat="@drawable/neutral" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imgsad"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:scaleType="centerCrop"
+        android:background="@null"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.32"
@@ -81,10 +89,12 @@
         app:layout_constraintTop_toBottomOf="@+id/imgneutral"
         app:srcCompat="@drawable/sad" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imgverysad"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:scaleType="centerCrop"
+        android:background="@null"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.32"

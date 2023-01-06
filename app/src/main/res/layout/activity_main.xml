@@ -10,16 +10,16 @@
     <TextView
         android:id="@+id/textView2"
         android:layout_width="240dp"
-        android:layout_height="36dp"
+        android:layout_height="40dp"
         android:text="Total Reward Points"
         android:textAlignment="center"
-        android:textSize="24sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/RewardCounter"
-        app:layout_constraintVertical_bias="0.069" />
+        app:layout_constraintVertical_bias="0.060000002" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -34,10 +34,11 @@
 
     <Button
         android:id="@+id/btndayinfo"
-        android:layout_width="240dp"
+        android:layout_width="220dp"
         android:layout_height="56dp"
-        android:layout_marginTop="30dp"
-        android:text="How was your Day"
+        android:layout_marginTop="20dp"
+        android:onClick="ShowTodayPopup"
+        android:text="How was your Day ?"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,7 +46,7 @@
 
     <TextView
         android:id="@+id/RewardCounter"
-        android:layout_width="150dp"
+        android:layout_width="180dp"
         android:layout_height="100dp"
         android:layout_marginTop="64dp"
         android:text="0"
@@ -58,15 +59,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btnfortrial"
-        android:onClick="ShowTodayPopup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="82dp"
-        android:text="Trial"
+    <ImageButton
+        android:id="@+id/imgbtnachievement"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:background="@null"
+        android:contentDescription="achievements"
+        android:scaleType="centerCrop"
+        android:onClick="Showachievementpopup"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btndayinfo" />
+        app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
+        app:srcCompat="@drawable/winnertrophy" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
