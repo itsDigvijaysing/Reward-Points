@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="340dp"
+    android:layout_height="580dp"
+    android:layout_gravity="center"
+    android:background="@color/faintwhite"
+    android:padding="5dp">
+
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="250dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="5dp"
+        android:text="How are you ?"
+        android:textColor="#3F51B5"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnclose"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="5dp"
+        android:backgroundTint="#00000000"
+        android:text="X"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.65"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imggreat"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:srcCompat="@drawable/great" />
+
+    <ImageView
+        android:id="@+id/imggood"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imggreat"
+        app:srcCompat="@drawable/good" />
+
+    <ImageView
+        android:id="@+id/imgneutral"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imggood"
+        app:srcCompat="@drawable/neutral" />
+
+    <ImageView
+        android:id="@+id/imgsad"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgneutral"
+        app:srcCompat="@drawable/sad" />
+
+    <ImageView
+        android:id="@+id/imgverysad"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgsad"
+        app:srcCompat="@drawable/verysad" />
+
+    <TextView
+        android:id="@+id/textveryhappy"
+        android:layout_width="96dp"
+        android:layout_height="28dp"
+        android:text="Very Happy"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imggreat"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintStart_toEndOf="@+id/imggreat"
+        app:layout_constraintTop_toTopOf="@+id/imggreat" />
+
+    <TextView
+        android:id="@+id/texthappy"
+        android:layout_width="96dp"
+        android:layout_height="28dp"
+        android:text="Happy"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imggood"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintStart_toEndOf="@+id/imggood"
+        app:layout_constraintTop_toTopOf="@+id/imggood" />
+
+    <TextView
+        android:id="@+id/textneutral"
+        android:layout_width="96dp"
+        android:layout_height="28dp"
+        android:text="Okay"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imgneutral"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintStart_toEndOf="@+id/imgneutral"
+        app:layout_constraintTop_toTopOf="@+id/imgneutral" />
+
+    <TextView
+        android:id="@+id/textsad"
+        android:layout_width="96dp"
+        android:layout_height="28dp"
+        android:text="Sad"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imgsad"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintStart_toEndOf="@+id/imgsad"
+        app:layout_constraintTop_toTopOf="@+id/imgsad" />
+
+    <TextView
+        android:id="@+id/textverysad"
+        android:layout_width="96dp"
+        android:layout_height="28dp"
+        android:text="Very Sad"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imgverysad"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintStart_toEndOf="@+id/imgverysad"
+        app:layout_constraintTop_toTopOf="@+id/imgverysad" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
