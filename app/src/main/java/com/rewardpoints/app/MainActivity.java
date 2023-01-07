@@ -3,6 +3,7 @@ package com.rewardpoints.app;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -11,14 +12,17 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     int counter;
-    //boolean todayfeedback;
 
     TextView RewardCount;
+    //TextView txttotalhistory;
 
     Dialog myDialog;
 
@@ -29,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
 
         Calendar calendar = Calendar.getInstance();
         int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+
+        //Toast.makeText(MainActivity.this," Today "+currentfullDate,Toast.LENGTH_SHORT).show();
+
 
         Button btntodayP;
         Button btnmovie;
@@ -86,6 +95,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this,"Feedback is received for Today",Toast.LENGTH_LONG).show();
         }
 
+        // Textview is not in activity main so facing error to access it.
+        //txttotalhistory = findViewById(R.id.txtforhistory);
+
+
         btnmovie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -95,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     RewardCount.setText(""+counter);
+
+                    String historyfromsp = getShared.getString("fulldate","No Previous History");
+                    editor.putString("fulldate",currentfullDate+" : 1 Full Movie Reward Claimed -200P"+"\n"+historyfromsp);
+                    editor.apply();
+
                     Toast.makeText(MainActivity.this,"1 Full Movie Reward Claimed...",Toast.LENGTH_SHORT).show();
                     congratsText.setVisibility(View.VISIBLE);
                 }
@@ -113,6 +131,11 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     RewardCount.setText(""+counter);
+
+                    String historyfromsp = getShared.getString("fulldate","No Previous History");
+                    editor.putString("fulldate",currentfullDate+" : 2Hr Game Reward Claimed -300P"+"\n"+historyfromsp);
+                    editor.apply();
+
                     Toast.makeText(MainActivity.this,"2Hr Game Reward Claimed...",Toast.LENGTH_SHORT).show();
                     congratsText.setVisibility(View.VISIBLE);
                 }
@@ -131,6 +154,11 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     RewardCount.setText(""+counter);
+
+                    String historyfromsp = getShared.getString("fulldate","No Previous History");
+                    editor.putString("fulldate",currentfullDate+" : 1Hr Travel Reward Claimed -200P"+"\n"+historyfromsp);
+                    editor.apply();
+
                     Toast.makeText(MainActivity.this,"1Hr Travel Reward Claimed...",Toast.LENGTH_SHORT).show();
                     congratsText.setVisibility(View.VISIBLE);
                 }
@@ -143,6 +171,17 @@ public class MainActivity extends AppCompatActivity {
         // Code to Get the value from SharedPreferences count key
         counter = getShared.getInt("count",0);    // 0 is Default value if app not found and value then set it 0
         RewardCount.setText(""+counter);
+
+
+
+        ImageButton tosharthistory = findViewById(R.id.imgbuttonhistory);
+        tosharthistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,pointshistory.class);
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -157,6 +196,10 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnneutral;
         ImageButton btnsad;
         ImageButton btnvsad;
+
+        //txttotalhistory = findViewById(R.id.txtviewofhistory);
+
+        String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
 
         myDialog.setContentView(R.layout.todaypopup);
         btnclose = (Button) myDialog.findViewById(R.id.btnclose);
@@ -178,6 +221,10 @@ public class MainActivity extends AppCompatActivity {
 
                 RewardCount.setText(""+counter);
                 editor.putBoolean("todayf",true);
+                editor.apply();
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Very Happy Day +120P"+"\n"+historyfromsp);
                 editor.apply();
 
                 Toast.makeText(MainActivity.this,"Congratulations 120 Points Added...",Toast.LENGTH_LONG).show();
@@ -202,6 +249,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.putBoolean("todayf",true);
                 editor.apply();
 
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Happy Day +60P"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Congrats 60 Points Added",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
                 finish();
@@ -222,6 +273,10 @@ public class MainActivity extends AppCompatActivity {
 
                 RewardCount.setText(""+counter);
                 editor.putBoolean("todayf",true);
+                editor.apply();
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Okay Day +20P"+"\n"+historyfromsp);
                 editor.apply();
 
                 Toast.makeText(MainActivity.this,"Nice 20 Points Added",Toast.LENGTH_SHORT).show();
@@ -246,6 +301,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.putBoolean("todayf",true);
                 editor.apply();
 
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Sad Day +10P"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"It's Okay Yaar.. 10 Points Added",Toast.LENGTH_SHORT).show();
                 myDialog.dismiss();
                 finish();
@@ -268,6 +327,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.putBoolean("todayf",true);
                 editor.apply();
 
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Very Sad Day +0"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Stay +ve Better days ahead...",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
                 finish();
@@ -286,6 +349,8 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
         SharedPreferences.Editor editor = getShared.edit();
+
+        String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
 
         Button btncloseachievement;
         ImageButton btnvimp;
@@ -311,6 +376,11 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Very IMP Achievement +200"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Congrats Yaar.. Kadak.... +200 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
@@ -326,6 +396,11 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Important Achievement +120P"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"You are doing great +120 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
@@ -341,6 +416,11 @@ public class MainActivity extends AppCompatActivity {
                 editor.apply();
 
                 RewardCount.setText(""+counter);
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Good Achievement +60P"+"\n"+historyfromsp);
+                editor.apply();
+
                 Toast.makeText(MainActivity.this,"Nice... Keep it up +60 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
@@ -349,4 +429,11 @@ public class MainActivity extends AppCompatActivity {
         //myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         myDialog.show();
     }
+
+    /*
+    public void showPointHistory(View v) {
+        // To go to next activity add in listner for best case
+        Intent intent = new Intent(MainActivity.this,pointshistory.class);
+        startActivity(intent);
+    }*/
 }
