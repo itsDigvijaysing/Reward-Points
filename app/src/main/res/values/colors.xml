@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="faintwhite">#ECECEC</color>
     <color name="rewardarea">#FF9800</color>
+    <color name="goodfortitle">#2979FF</color>
 </resources>
