@@ -43,12 +43,14 @@ public class MainActivity extends AppCompatActivity {
         Button btnmovie;
         Button btngame;
         Button btntravel;
+        Button btnproduct;
         TextView congratsText;
 
         RewardCount = findViewById(R.id.RewardCounter);
         btnmovie = findViewById(R.id.btnmovielinear);
         btngame = findViewById(R.id.btngamelinear);
         btntravel = findViewById(R.id.btntravellinear);
+        btnproduct = findViewById(R.id.btnproductlinear);
         congratsText = findViewById(R.id.txtCongrats);
         btntodayP = findViewById(R.id.btndayinfo);
 
@@ -160,6 +162,29 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
 
                     Toast.makeText(MainActivity.this,"1Hr Travel Reward Claimed...",Toast.LENGTH_SHORT).show();
+                    congratsText.setVisibility(View.VISIBLE);
+                }
+                else {
+                    Toast.makeText(MainActivity.this,"You Do Not have Sufficient Points",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnproduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(counter >= 500) {
+                    counter = counter - 500;
+                    editor.putInt("count",counter);
+                    editor.apply();
+
+                    RewardCount.setText(""+counter);
+
+                    String historyfromsp = getShared.getString("fulldate","No Previous History");
+                    editor.putString("fulldate",currentfullDate+" : Product Purchase (500rs) -500P"+"\n"+historyfromsp);
+                    editor.apply();
+
+                    Toast.makeText(MainActivity.this,"Product Purchase (500rs) Claimed...",Toast.LENGTH_SHORT).show();
                     congratsText.setVisibility(View.VISIBLE);
                 }
                 else {
@@ -424,6 +449,112 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,"Nice... Keep it up +60 Points",Toast.LENGTH_LONG).show();
                 myDialog.dismiss();
             }
+        });
+
+        //myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+    }
+
+    public void ShowmissionPopup(View v) {
+
+        SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
+        SharedPreferences.Editor editor = getShared.edit();
+
+        Button btnclose;
+        ImageButton btnhealth;
+        ImageButton btncwork;
+        ImageButton btnselfdevelopment;
+
+        //txttotalhistory = findViewById(R.id.txtviewofhistory);
+
+        String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+
+        myDialog.setContentView(R.layout.missionpopup);
+        btnclose = (Button) myDialog.findViewById(R.id.btnclosemission);
+        btnclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myDialog.dismiss();
+            }
+        });
+
+        btnhealth = (ImageButton) myDialog.findViewById(R.id.imghealthmission);
+        btnhealth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                counter = counter + 25;
+
+                editor.putInt("count",counter);
+                editor.apply();
+
+                RewardCount.setText(""+counter);
+                //editor.putBoolean("todayf",true);
+                //editor.apply();
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Health Mission Complete +25P"+"\n"+historyfromsp);
+                editor.apply();
+
+                Toast.makeText(MainActivity.this,"Congratulations 25 Points Added...",Toast.LENGTH_LONG).show();
+                myDialog.dismiss();
+//                finish();
+//                overridePendingTransition(0, 0);
+//                startActivity(getIntent());
+//                overridePendingTransition(0, 0);
+            }
+        });
+
+        btncwork = (ImageButton) myDialog.findViewById(R.id.imgcworkmission);
+        btncwork.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                counter = counter + 25;
+
+                editor.putInt("count",counter);
+                editor.apply();
+
+                RewardCount.setText(""+counter);
+                //editor.putBoolean("todayf",true);
+                //editor.apply();
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Completed Computer Dev Mission +25P"+"\n"+historyfromsp);
+                editor.apply();
+
+                Toast.makeText(MainActivity.this,"Congrats 25 Points Added",Toast.LENGTH_LONG).show();
+                myDialog.dismiss();
+//                finish();
+//                overridePendingTransition(0, 0);
+//                startActivity(getIntent());
+//                overridePendingTransition(0, 0);
+            }
+        });
+
+        btnselfdevelopment = (ImageButton) myDialog.findViewById(R.id.imgsdmission);
+        btnselfdevelopment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                counter = counter + 25;
+
+                editor.putInt("count",counter);
+                editor.apply();
+
+                RewardCount.setText(""+counter);
+                //editor.putBoolean("todayf",true);
+                //editor.apply();
+
+                String historyfromsp = getShared.getString("fulldate","No Previous History");
+                editor.putString("fulldate",currentfullDate+" : Completed Self Development Mission +25P"+"\n"+historyfromsp);
+                editor.apply();
+
+                Toast.makeText(MainActivity.this,"Nice 25 Points Added",Toast.LENGTH_SHORT).show();
+                myDialog.dismiss();
+//                finish();
+//                overridePendingTransition(0, 0);
+//                startActivity(getIntent());
+//                overridePendingTransition(0, 0);
+            }
+
         });
 
         //myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

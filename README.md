@@ -14,3 +14,6 @@
 
 - [ ] After activating your reward it will notify you if reward time completed.
 - [ ] High Cache Management & optimization.
+- [ ] Add more features like, Add Points If you do Specific Task, e.g. Worked on your Project, Helped your Health, etc.
+- [ ] Update the Reward Benefits, e.g. Traveling Time, Gaming Time, Movie Time, etc.
+- [ ] Optimize the App & Update the UI/UX.

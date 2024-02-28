@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="340dp"
+    android:layout_height="580dp"
+    android:layout_gravity="center"
+    android:padding="5dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<!--    Creating complete Code like achievementpopup.xml with different id and image resource with mission name with 3 differnt buttons-->
+    <TextView
+        android:id="@+id/txtformission"
+        android:layout_width="260dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="Completed Daily Missions"
+        android:textColor="@color/goodfortitle"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnclosemission"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:backgroundTint="#00000000"
+        android:text="X"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/txtformission"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txtformission"
+        app:layout_constraintTop_toTopOf="@+id/txtformission" />
+
+    <ImageButton
+        android:id="@+id/imghealthmission"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="26dp"
+        android:background="@null"
+        android:contentDescription="MissionHealth"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtformission"
+        app:srcCompat="@drawable/health" />
+
+    <TextView
+        android:id="@+id/texthealth"
+        android:layout_width="128dp"
+        android:layout_height="30dp"
+        android:text="Health"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imghealthmission"
+        app:layout_constraintStart_toStartOf="@+id/imghealthmission"
+        app:layout_constraintTop_toBottomOf="@+id/imghealthmission" />
+
+    <ImageButton
+        android:id="@+id/imgcworkmission"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="26dp"
+        android:background="@null"
+        android:contentDescription="MissionHealth"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/texthealth"
+        app:srcCompat="@drawable/computer_work" />
+
+    <TextView
+        android:id="@+id/textcword"
+        android:layout_width="128dp"
+        android:layout_height="30dp"
+        android:text="Health"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imgcworkmission"
+        app:layout_constraintStart_toStartOf="@+id/imgcworkmission"
+        app:layout_constraintTop_toBottomOf="@+id/imgcworkmission" />
+
+    <ImageButton
+        android:id="@+id/imgsdmission"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="26dp"
+        android:background="@null"
+        android:contentDescription="MissionHealth"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textcword"
+        app:srcCompat="@drawable/new_study" />
+
+    <TextView
+        android:id="@+id/textsd"
+        android:layout_width="128dp"
+        android:layout_height="30dp"
+        android:text="Health"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imgsdmission"
+        app:layout_constraintStart_toStartOf="@+id/imgsdmission"
+        app:layout_constraintTop_toBottomOf="@+id/imgsdmission" />
+</androidx.constraintlayout.widget.ConstraintLayout>

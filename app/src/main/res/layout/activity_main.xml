@@ -11,6 +11,7 @@
         android:id="@+id/textView2"
         android:layout_width="240dp"
         android:layout_height="40dp"
+        android:layout_marginTop="8dp"
         android:text="Total Reward Points"
         android:textAlignment="center"
         android:textSize="26sp"
@@ -19,15 +20,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/RewardCounter"
-        app:layout_constraintVertical_bias="0.060000002" />
+        app:layout_constraintVertical_bias="0" />
 
     <ImageButton
         android:id="@+id/imgbuttonhistory"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginTop="64dp"
-        android:scaleType="centerCrop"
+        android:layout_marginTop="54dp"
         android:background="@null"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toStartOf="@+id/RewardCounter"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +39,7 @@
         android:id="@+id/btndayinfo"
         android:layout_width="220dp"
         android:layout_height="56dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="42dp"
         android:onClick="ShowTodayPopup"
         android:text="How was your Day ?"
         android:textSize="14sp"
@@ -50,7 +51,7 @@
         android:id="@+id/RewardCounter"
         android:layout_width="180dp"
         android:layout_height="100dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="54dp"
         android:text="0"
         android:textAlignment="center"
         android:textColor="#FFC107"
@@ -65,21 +66,61 @@
         android:id="@+id/imgbtnachievement"
         android:layout_width="86dp"
         android:layout_height="86dp"
+        android:layout_marginTop="26dp"
         android:background="@null"
         android:contentDescription="achievements"
-        android:scaleType="centerCrop"
         android:onClick="Showachievementpopup"
-        android:layout_marginTop="10dp"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imgbtnmission"
         app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
         app:srcCompat="@drawable/winnertrophy" />
+
+    <!--    Text Message-->
+    <TextView
+        android:id="@+id/txtmessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Achievements"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imgbtnachievement"
+        app:layout_constraintStart_toStartOf="@+id/imgbtnachievement"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtnachievement" />
+
+
+    <ImageButton
+        android:id="@+id/imgbtnmission"
+        android:layout_width="86dp"
+        android:layout_height="86dp"
+        android:layout_marginTop="26dp"
+        android:background="#FFFFFF"
+        android:contentDescription="missions"
+        android:onClick="ShowmissionPopup"
+        app:layout_constraintEnd_toStartOf="@+id/imgbtnachievement"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
+        app:srcCompat="@drawable/mission" />
+
+    <!-- Create Text View same for missions-->
+    <TextView
+        android:id="@+id/txtmission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daily Missions"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/imgbtnmission"
+        app:layout_constraintStart_toStartOf="@+id/imgbtnmission"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtnmission" />
 
     <LinearLayout
         android:id="@+id/linearrewardarea"
         android:layout_width="340dp"
         android:layout_height="0dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="74dp"
         android:background="@drawable/shape"
         android:gravity="center"
         android:orientation="vertical"
@@ -129,9 +170,13 @@
             android:layout_height="wrap_content"
             android:text="1Hr Travel -200P" />
 
+        <Button
+            android:id="@+id/btnproductlinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Product Purchase -500" />
+
     </LinearLayout>
-
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
