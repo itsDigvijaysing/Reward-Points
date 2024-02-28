@@ -1,6 +1,17 @@
-# Achievement Reward Points
+# Reward Points App
 
-## Earn Reward points by your daily Achievements
+## Earn Reward points by your Achievements
+
+Reward Points App is your personal mood tracker and productivity companion. Start complete your day by logging your mood, and earn points based on how you feel. 
+Feeling great? Get bonus points! Feeling down? MoodPoints will cheer you up with encouraging messages and tips.
+
+Earn points not just for your mood, but also for completing daily missions and achieving milestones. Whether it's finishing a project, hitting the gym, or learning something new, every accomplishment counts.
+
+Use your accumulated points to treat yourself. Redeem them to watch a movie, play a game, travel to a new place, or even purchase items because you deserve it.
+
+Stay motivated, track your progress, and reward yourself with Reward Points!
+
+This app could help users stay mindful of their emotions, stay motivated to complete tasks, and enjoy rewards for their efforts.
 
 ## Reward Points version 1.0 Todo : (Completed) (Testing...)
 
