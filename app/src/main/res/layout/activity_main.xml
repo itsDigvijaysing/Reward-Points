@@ -95,13 +95,15 @@
         android:layout_width="86dp"
         android:layout_height="86dp"
         android:layout_marginTop="26dp"
-        android:background="#FFFFFF"
+        android:background="#00FFFFFF"
         android:contentDescription="missions"
         android:onClick="ShowmissionPopup"
         app:layout_constraintEnd_toStartOf="@+id/imgbtnachievement"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
-        app:srcCompat="@drawable/mission" />
+        app:srcCompat="@drawable/target"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"/>
 
     <!-- Create Text View same for missions-->
     <TextView

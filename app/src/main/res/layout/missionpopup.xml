@@ -15,7 +15,7 @@
         android:layout_marginTop="5dp"
         android:gravity="center"
         android:text="Completed Daily Missions"
-        android:textColor="@color/goodfortitle"
+        android:textColor="@color/Palette_Blue"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,18 +23,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageButton
         android:id="@+id/btnclosemission"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:backgroundTint="#00000000"
-        android:text="X"
-        android:textColor="@color/black"
-        android:textStyle="bold"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:adjustViewBounds="true"
+        android:backgroundTint="#00FFFFFF"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="@+id/txtformission"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtformission"
-        app:layout_constraintTop_toTopOf="@+id/txtformission" />
+        app:layout_constraintTop_toTopOf="@+id/txtformission"
+        app:srcCompat="@drawable/close" />
 
     <ImageButton
         android:id="@+id/imghealthmission"
@@ -51,7 +51,7 @@
 
     <TextView
         android:id="@+id/texthealth"
-        android:layout_width="128dp"
+        android:layout_width="180dp"
         android:layout_height="30dp"
         android:text="Health"
         android:textAlignment="center"
@@ -76,9 +76,9 @@
 
     <TextView
         android:id="@+id/textcword"
-        android:layout_width="128dp"
+        android:layout_width="180dp"
         android:layout_height="30dp"
-        android:text="Health"
+        android:text="Software Dev"
         android:textAlignment="center"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -102,9 +102,9 @@
 
     <TextView
         android:id="@+id/textsd"
-        android:layout_width="128dp"
+        android:layout_width="180dp"
         android:layout_height="30dp"
-        android:text="Health"
+        android:text="Self Dev"
         android:textAlignment="center"
         android:textSize="22sp"
         android:textStyle="bold"
