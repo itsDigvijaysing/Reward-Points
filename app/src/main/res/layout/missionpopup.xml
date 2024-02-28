@@ -27,14 +27,14 @@
         android:id="@+id/btnclosemission"
         android:layout_width="58dp"
         android:layout_height="58dp"
-        android:adjustViewBounds="true"
         android:backgroundTint="#00FFFFFF"
-        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="@+id/txtformission"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/txtformission"
         app:layout_constraintTop_toTopOf="@+id/txtformission"
-        app:srcCompat="@drawable/close" />
+        app:srcCompat="@drawable/close"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"/>
 
     <ImageButton
         android:id="@+id/imghealthmission"

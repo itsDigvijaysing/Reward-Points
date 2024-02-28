@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
         SharedPreferences.Editor editor = getShared.edit();
 
-        Button btnclose;
+        ImageButton btnclose;
         ImageButton btnvhappy;
         ImageButton btnhappy;
         ImageButton btnneutral;
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
 
         myDialog.setContentView(R.layout.todaypopup);
-        btnclose = (Button) myDialog.findViewById(R.id.btnclose);
+        btnclose = (ImageButton) myDialog.findViewById(R.id.btnclose);
         btnclose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -377,13 +377,13 @@ public class MainActivity extends AppCompatActivity {
 
         String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
 
-        Button btncloseachievement;
+        ImageButton btncloseachievement;
         ImageButton btnvimp;
         ImageButton btnimp;
         ImageButton btnhelpful;
 
         myDialog.setContentView(R.layout.achievementpopup);
-        btncloseachievement = (Button) myDialog.findViewById(R.id.btncloseachievement);
+        btncloseachievement = (ImageButton) myDialog.findViewById(R.id.btncloseachievement);
         btncloseachievement.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
         SharedPreferences.Editor editor = getShared.edit();
 
-        Button btnclose;
+        ImageButton btnclose;
         ImageButton btnhealth;
         ImageButton btncwork;
         ImageButton btnselfdevelopment;
@@ -470,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
         String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
 
         myDialog.setContentView(R.layout.missionpopup);
-        btnclose = (Button) myDialog.findViewById(R.id.btnclosemission);
+        btnclose = (ImageButton) myDialog.findViewById(R.id.btnclosemission);
         btnclose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
