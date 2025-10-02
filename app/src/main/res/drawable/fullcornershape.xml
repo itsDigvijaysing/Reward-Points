@@ -4,12 +4,12 @@
     android:shape="rectangle"   >
 
     <solid
-        android:color="@color/rewardarea" >
+        android:color="@color/Palette_Orange" >
     </solid>
 
     <stroke
         android:width="2dp"
-        android:color="#FFAA2D" >
+        android:color="#FF7C3E" >
     </stroke>
 
     <padding

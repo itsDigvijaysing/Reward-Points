@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Reward Points</string>
+    <string name="app_description">A personal reward tracking application to motivate daily activities and achievements</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="data_usage_notice">This app stores data locally on your device and does not share information with third parties</string>
+    <string name="points_earned">Points Earned: %d</string>
+    <string name="points_spent">Points Spent: %d</string>
+    <string name="insufficient_points">Insufficient points for this reward</string>
+    <string name="history_cleared">History cleared successfully</string>
+    <string name="no_history_available">No history available</string>
+    <string name="content_description_close_button">Close dialog</string>
+    <string name="content_description_mood_button">Select mood feedback</string>
+    <string name="content_description_achievement_button">Record achievement</string>
+    <string name="content_description_mission_button">Complete mission</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_data_load">Unable to load data</string>
+    <string name="developer_name">Reward Points Developer</string>
+    <string name="support_email">support@rewardpoints.app</string>
 </resources>

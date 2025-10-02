@@ -4,47 +4,51 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+public class PointsHistoryActivity extends AppCompatActivity {
 
-public class pointshistory extends AppCompatActivity {
+    private static final String PREFS_NAME = "reward_points_prefs";
+    private static final String KEY_HISTORY = "fulldate";
 
-    TextView txtthistory;
-    ImageButton toclearhistory;
+    private TextView historyTextView;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pointshistory);
 
-        txtthistory = findViewById(R.id.txtviewofhistory);
+        initializeComponents();
+        loadHistory();
+        setupClickListeners();
+    }
 
-        String currentfullDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+    private void initializeComponents() {
+        historyTextView = findViewById(R.id.txtviewofhistory);
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    }
 
-        // Using SharedPreferences to Store Counter value in android so even if app closed it will store its value
-        SharedPreferences getShared = getSharedPreferences("demo", MODE_PRIVATE);
-        SharedPreferences.Editor editor = getShared.edit();
-        String historyfromsp = getShared.getString("fulldate","No History");
+    private void loadHistory() {
+        String history = sharedPreferences.getString(KEY_HISTORY, "No History Available");
+        historyTextView.setText(history);
+    }
 
-        txtthistory.setText(historyfromsp);
+    private void setupClickListeners() {
+        ImageButton clearHistoryButton = findViewById(R.id.imgbtnclearhistory);
+        clearHistoryButton.setOnClickListener(v -> clearHistory());
+    }
 
-        toclearhistory = findViewById(R.id.imgbtnclearhistory);
-        toclearhistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editor.putString("fulldate","");
-                editor.apply();
+    private void clearHistory() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_HISTORY, "");
+        editor.apply();
 
-                Toast.makeText(pointshistory.this,"History will be Cleared on your Next Visit",Toast.LENGTH_SHORT).show();
-            }
-        });
+        Toast.makeText(this, "History cleared successfully!", Toast.LENGTH_SHORT).show();
 
+        // Immediately update the display
+        historyTextView.setText("No History Available");
     }
 }
