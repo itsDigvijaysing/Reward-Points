@@ -1,18 +1,30 @@
 package com.rewardpoints.app;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.widget.ImageButton;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.button.MaterialButton;
+import com.rewardpoints.app.adapters.HistoryAdapter;
 import com.rewardpoints.app.utils.PreferencesManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PointsHistoryActivity extends AppCompatActivity {
 
-    private TextView historyTextView;
     private PreferencesManager preferencesManager;
+    private RecyclerView historyRecyclerView;
+    private LinearLayout emptyStateLayout;
+    private TextView totalEarnedText;
+    private TextView totalSpentText;
+    private HistoryAdapter historyAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +32,7 @@ public class PointsHistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pointshistory);
 
         initializeComponents();
+        setupToolbar();
         loadHistory();
         setupClickListeners();
     }
@@ -27,53 +40,124 @@ public class PointsHistoryActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh history when returning to activity
         loadHistory();
     }
 
     private void initializeComponents() {
         try {
-            historyTextView = findViewById(R.id.txtviewofhistory);
             preferencesManager = new PreferencesManager(this);
+            historyRecyclerView = findViewById(R.id.history_recycler_view);
+            emptyStateLayout = findViewById(R.id.empty_state_layout);
+            totalEarnedText = findViewById(R.id.total_earned_text);
+            totalSpentText = findViewById(R.id.total_spent_text);
+
+            // Setup RecyclerView
+            historyRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            historyAdapter = new HistoryAdapter(this);
+            historyRecyclerView.setAdapter(historyAdapter);
+
         } catch (Exception e) {
-            showToast(getString(R.string.error_generic));
+            showToast("Error initializing components");
             finish();
+        }
+    }
+
+    private void setupToolbar() {
+        try {
+            androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+            toolbar.setNavigationOnClickListener(v -> finish());
+        } catch (Exception e) {
+            // Toolbar setup failed, continue without it
         }
     }
 
     private void loadHistory() {
         try {
-            String history = preferencesManager.getHistory();
-            if (history == null || history.trim().isEmpty() || "No Previous History".equals(history)) {
-                historyTextView.setText(getString(R.string.no_history_available));
+            // Load statistics
+            int totalEarned = preferencesManager.getTotalPointsEarned();
+            int totalSpent = preferencesManager.getTotalPointsSpent();
+
+            if (totalEarnedText != null) {
+                totalEarnedText.setText(String.valueOf(totalEarned));
+            }
+            if (totalSpentText != null) {
+                totalSpentText.setText(String.valueOf(totalSpent));
+            }
+
+            // Load transaction history
+            List<String> historyList = getHistoryFromPreferences();
+
+            if (historyList.isEmpty()) {
+                showEmptyState();
             } else {
-                historyTextView.setText(history);
+                showHistoryData(historyList);
             }
         } catch (Exception e) {
-            showToast(getString(R.string.error_data_load));
-            historyTextView.setText(getString(R.string.no_history_available));
+            showToast("Error loading history");
+            showEmptyState();
+        }
+    }
+
+    private List<String> getHistoryFromPreferences() {
+        List<String> historyList = new ArrayList<>();
+        try {
+            String history = preferencesManager.getHistory();
+            if (history != null && !history.trim().isEmpty() && !"No Previous History".equals(history)) {
+                // Split history into individual transactions
+                String[] transactions = history.split("\n");
+                for (String transaction : transactions) {
+                    if (!transaction.trim().isEmpty()) {
+                        historyList.add(transaction.trim());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Return empty list on error
+        }
+        return historyList;
+    }
+
+    private void showEmptyState() {
+        if (historyRecyclerView != null) {
+            historyRecyclerView.setVisibility(View.GONE);
+        }
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showHistoryData(List<String> historyList) {
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(View.GONE);
+        }
+        if (historyRecyclerView != null) {
+            historyRecyclerView.setVisibility(View.VISIBLE);
+            historyAdapter.updateHistory(historyList);
         }
     }
 
     private void setupClickListeners() {
         try {
-            ImageButton clearHistoryButton = findViewById(R.id.imgbtnclearhistory);
-            clearHistoryButton.setOnClickListener(v -> clearHistory());
-            clearHistoryButton.setContentDescription("Clear history button");
+            MaterialButton clearHistoryBtn = findViewById(R.id.clear_history_btn);
+            if (clearHistoryBtn != null) {
+                clearHistoryBtn.setOnClickListener(v -> clearHistory());
+            }
         } catch (Exception e) {
-            showToast(getString(R.string.error_generic));
+            showToast("Error setting up buttons");
         }
     }
 
     private void clearHistory() {
         try {
             preferencesManager.clearHistory();
-            showToast(getString(R.string.history_cleared));
-
-            // Immediately update the display
-            historyTextView.setText(getString(R.string.no_history_available));
+            showToast("History cleared successfully");
+            loadHistory(); // Refresh the display
         } catch (Exception e) {
-            showToast(getString(R.string.error_generic));
+            showToast("Error clearing history");
         }
     }
 

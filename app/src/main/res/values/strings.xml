@@ -1,19 +1,186 @@
 <resources>
+    <!-- App Basic Info -->
     <string name="app_name">Reward Points</string>
     <string name="app_description">A personal reward tracking application to motivate daily activities and achievements</string>
-    <string name="privacy_policy_title">Privacy Policy</string>
-    <string name="data_usage_notice">This app stores data locally on your device and does not share information with third parties</string>
+
+    <!-- Main Screen -->
+    <string name="total_points">Total Points</string>
+    <string name="available_rewards">Available Rewards</string>
+    <string name="daily_mood">How was your day?</string>
+    <string name="achievements">Achievements</string>
+    <string name="missions">Daily Missions</string>
+    <string name="settings">Settings</string>
+    <string name="history">History</string>
+    <string name="profile">Profile</string>
+
+    <!-- Points and Rewards -->
+    <string name="points">Points</string>
+    <string name="point">Point</string>
+    <string name="reward_claimed">Reward Claimed!</string>
     <string name="points_earned">Points Earned: %d</string>
     <string name="points_spent">Points Spent: %d</string>
     <string name="insufficient_points">Insufficient points for this reward</string>
+    <string name="points_required">%d points required</string>
+    <string name="claim_reward">Claim Reward</string>
+    <string name="customize_rewards">Customize Rewards</string>
+
+    <!-- Reward Categories -->
+    <string name="entertainment">Entertainment</string>
+    <string name="health_fitness">Health &amp; Fitness</string>
+    <string name="shopping">Shopping</string>
+    <string name="travel">Travel</string>
+    <string name="food_dining">Food &amp; Dining</string>
+    <string name="education">Education</string>
+    <string name="custom_category">Custom Category</string>
+
+    <!-- Default Rewards -->
+    <string name="movie_reward">Full Movie Experience</string>
+    <string name="game_reward">2 Hours Gaming</string>
+    <string name="travel_reward">1 Hour Travel Time</string>
+    <string name="shopping_reward">Shopping Spree</string>
+    <string name="food_reward">Favorite Food Treat</string>
+    <string name="book_reward">New Book Purchase</string>
+
+    <!-- Mood Feedback -->
+    <string name="mood_very_happy">Very Happy</string>
+    <string name="mood_happy">Happy</string>
+    <string name="mood_neutral">Neutral</string>
+    <string name="mood_sad">Sad</string>
+    <string name="mood_very_sad">Very Sad</string>
+    <string name="mood_feedback_title">Daily Mood Check-in</string>
+    <string name="mood_feedback_subtitle">How are you feeling today?</string>
+
+    <!-- Achievements -->
+    <string name="achievement_very_important">Major Achievement</string>
+    <string name="achievement_important">Important Achievement</string>
+    <string name="achievement_good">Good Achievement</string>
+    <string name="achievement_unlocked">Achievement Unlocked!</string>
+    <string name="achievement_points_earned">+%d points earned!</string>
+
+    <!-- Missions -->
+    <string name="mission_health">Health Mission</string>
+    <string name="mission_work">Work Mission</string>
+    <string name="mission_development">Self Development</string>
+    <string name="mission_completed">Mission Completed!</string>
+    <string name="daily_missions_title">Complete Daily Missions</string>
+
+    <!-- Settings Categories -->
+    <string name="point_system_settings">Point System Settings</string>
+    <string name="reward_management">Reward Management</string>
+    <string name="app_preferences">App Preferences</string>
+    <string name="data_management">Data Management</string>
+    <string name="about_app">About App</string>
+
+    <!-- Customization -->
+    <string name="add_new_reward">Add New Reward</string>
+    <string name="edit_reward">Edit Reward</string>
+    <string name="delete_reward">Delete Reward</string>
+    <string name="reward_name">Reward Name</string>
+    <string name="reward_description">Description</string>
+    <string name="reward_cost">Point Cost</string>
+    <string name="reward_category">Category</string>
+    <string name="add_custom_points_source">Add Points Source</string>
+    <string name="edit_points_source">Edit Points Source</string>
+    <string name="points_source_name">Points Source Name</string>
+    <string name="points_value">Points Value</string>
+
+    <!-- History and Analytics -->
+    <string name="transaction_history">Transaction History</string>
+    <string name="points_analytics">Points Analytics</string>
+    <string name="monthly_summary">Monthly Summary</string>
+    <string name="clear_history">Clear History</string>
+    <string name="export_history">Export History</string>
     <string name="history_cleared">History cleared successfully</string>
     <string name="no_history_available">No history available</string>
+    <string name="history_empty_message">Start earning and spending points to see your history here</string>
+
+    <!-- Buttons and Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="add">Add</string>
+    <string name="confirm">Confirm</string>
+    <string name="close">Close</string>
+    <string name="done">Done</string>
+    <string name="reset">Reset</string>
+    <string name="restore_defaults">Restore Defaults</string>
+
+    <!-- Dialogs -->
+    <string name="confirmation_title">Confirmation</string>
+    <string name="delete_reward_confirmation">Are you sure you want to delete this reward?</string>
+    <string name="clear_history_confirmation">This will permanently delete all your transaction history. Continue?</string>
+    <string name="reset_settings_confirmation">This will reset all settings to default values. Continue?</string>
+
+    <!-- Success Messages -->
+    <string name="reward_added_successfully">Reward added successfully!</string>
+    <string name="reward_updated_successfully">Reward updated successfully!</string>
+    <string name="reward_deleted_successfully">Reward deleted successfully!</string>
+    <string name="settings_saved_successfully">Settings saved successfully!</string>
+    <string name="points_source_added">Points source added successfully!</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_data_load">Unable to load data</string>
+    <string name="error_save_failed">Failed to save changes</string>
+    <string name="error_invalid_input">Please enter valid information</string>
+    <string name="error_reward_name_required">Reward name is required</string>
+    <string name="error_points_value_required">Points value is required</string>
+    <string name="error_points_must_be_positive">Points must be a positive number</string>
+
+    <!-- Accessibility -->
     <string name="content_description_close_button">Close dialog</string>
     <string name="content_description_mood_button">Select mood feedback</string>
     <string name="content_description_achievement_button">Record achievement</string>
     <string name="content_description_mission_button">Complete mission</string>
-    <string name="error_generic">Something went wrong. Please try again.</string>
-    <string name="error_data_load">Unable to load data</string>
+    <string name="content_description_settings_button">Open settings</string>
+    <string name="content_description_history_button">View history</string>
+    <string name="content_description_add_button">Add new item</string>
+    <string name="content_description_edit_button">Edit item</string>
+    <string name="content_description_delete_button">Delete item</string>
+
+    <!-- Hints and Placeholders -->
+    <string name="hint_reward_name">Enter reward name</string>
+    <string name="hint_reward_description">Enter description (optional)</string>
+    <string name="hint_points_cost">Enter point cost</string>
+    <string name="hint_points_source">Enter points source name</string>
+    <string name="hint_points_value">Enter points value</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_rewards">Rewards</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Privacy and Legal -->
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="data_usage_notice">This app stores data locally on your device and does not share information with third parties</string>
     <string name="developer_name">Reward Points Developer</string>
     <string name="support_email">support@rewardpoints.app</string>
+    <string name="app_version">Version %s</string>
+
+    <!-- Onboarding -->
+    <string name="welcome_title">Welcome to Reward Points!</string>
+    <string name="welcome_subtitle">Track your daily achievements and reward yourself</string>
+    <string name="onboarding_points_title">Earn Points</string>
+    <string name="onboarding_points_desc">Complete daily missions and achievements to earn points</string>
+    <string name="onboarding_rewards_title">Claim Rewards</string>
+    <string name="onboarding_rewards_desc">Use your points to unlock personalized rewards</string>
+    <string name="onboarding_customize_title">Customize Everything</string>
+    <string name="onboarding_customize_desc">Add your own rewards and point sources</string>
+    <string name="get_started">Get Started</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+
+    <!-- Statistics -->
+    <string name="total_points_earned">Total Points Earned</string>
+    <string name="total_points_spent">Total Points Spent</string>
+    <string name="current_balance">Current Balance</string>
+    <string name="rewards_claimed">Rewards Claimed</string>
+    <string name="achievements_unlocked">Achievements Unlocked</string>
+    <string name="missions_completed">Missions Completed</string>
+    <string name="streak_days">Day Streak</string>
+    <string name="this_week">This Week</string>
+    <string name="this_month">This Month</string>
+    <string name="all_time">All Time</string>
 </resources>

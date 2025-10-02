@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.rewardpoints.app">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Remove unnecessary internet permission for better security -->
     <!-- <uses-permission android:name="android.permission.INTERNET" /> -->
@@ -19,22 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RewardPoints"
         android:requestLegacyExternalStorage="false"
-        android:extractNativeLibs="true"
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="31">
 
-        <activity
-            android:name=".PointsHistoryActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
-            android:windowSoftInputMode="adjustResize"
-            android:supportsPictureInPicture="false">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-
+        <!-- Main Activity (Modern) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -48,6 +35,88 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Points History Activity (Modern) -->
+        <activity
+            android:name=".ModernHistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:supportsPictureInPicture="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- Legacy Points History Activity (for backward compatibility) -->
+        <activity
+            android:name=".PointsHistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:supportsPictureInPicture="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- Settings Activity -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- Manage Rewards Activity -->
+        <activity
+            android:name=".ManageRewardsActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SettingsActivity" />
+        </activity>
+
+        <!-- Manage Points Sources Activity -->
+        <activity
+            android:name=".ManagePointsSourcesActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SettingsActivity" />
+        </activity>
+
+        <!-- Create/Edit Reward Activities -->
+        <activity
+            android:name=".CreateRewardActivity"
+            android:exported="false"
+            android:parentActivityName=".ManageRewardsActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".EditRewardActivity"
+            android:exported="false"
+            android:parentActivityName=".ManageRewardsActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Create Points Source Activity -->
+        <activity
+            android:name=".CreatePointsSourceActivity"
+            android:exported="false"
+            android:parentActivityName=".ManagePointsSourcesActivity"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Add backup agent configuration -->
         <meta-data

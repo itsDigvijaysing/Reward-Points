@@ -1,184 +1,428 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/background"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="240dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:text="Total Reward Points"
-        android:textAlignment="center"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/RewardCounter"
-        app:layout_constraintVertical_bias="0" />
+    <!-- App Bar Layout with Collapsing Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:theme="@style/ThemeOverlay.Material3.Dark">
 
-    <ImageButton
-        android:id="@+id/imgbuttonhistory"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="54dp"
-        android:background="@null"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toStartOf="@+id/RewardCounter"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/reward" />
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:contentScrim="@color/primary"
+            app:expandedTitleGravity="center_horizontal|bottom"
+            app:expandedTitleMarginBottom="48dp"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-    <Button
-        android:id="@+id/btndayinfo"
-        android:layout_width="220dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="42dp"
-        android:onClick="ShowTodayPopup"
-        android:text="How was your Day ?"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+            <!-- Header Content -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp"
+                app:layout_collapseMode="parallax">
 
-    <TextView
-        android:id="@+id/RewardCounter"
-        android:layout_width="180dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="54dp"
-        android:text="0"
-        android:textAlignment="center"
-        android:textColor="#FFC107"
-        android:textSize="76sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.69"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+                <!-- Welcome Message -->
+                <TextView
+                    android:id="@+id/welcome_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/welcome_title"
+                    android:textColor="@color/on_primary"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:layout_marginBottom="8dp" />
 
-    <ImageButton
-        android:id="@+id/imgbtnachievement"
-        android:layout_width="86dp"
-        android:layout_height="86dp"
-        android:layout_marginTop="26dp"
-        android:background="@null"
-        android:contentDescription="achievements"
-        android:onClick="Showachievementpopup"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imgbtnmission"
-        app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
-        app:srcCompat="@drawable/winnertrophy" />
+                <!-- Points Counter -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="200dp"
+                    android:layout_height="120dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="@color/surface">
 
-    <!--    Text Message-->
-    <TextView
-        android:id="@+id/txtmessage"
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/RewardCounter"
+                            style="@style/PointsCounterStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/points_gold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/points"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Toolbar -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:title="@string/app_name"
+                app:titleTextColor="@color/on_primary" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content with NestedScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Daily Feedback Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/daily_feedback_card"
+                style="@style/CardStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mood_feedback_title"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/on_surface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/mood_feedback_subtitle"
+                        android:textSize="14sp"
+                        android:textColor="@color/on_surface_variant"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btndayinfo"
+                        style="@style/PrimaryButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/daily_mood"
+                        android:onClick="ShowTodayPopup" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Actions Section -->
+            <TextView
+                style="@style/SectionHeaderStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Actions" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp">
+
+                <!-- Achievements Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:cardUseCompatPadding="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:onClick="Showachievementpopup">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <!-- Fixed ImageView with proper scaling -->
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/circle_background">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/winnertrophy"
+                                android:scaleType="centerInside"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="@string/achievements"
+                                app:tint="@color/primary" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/achievements"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_surface"
+                            android:textAlignment="center"
+                            android:gravity="center"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:layout_marginTop="8dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Missions Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:cardUseCompatPadding="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:onClick="ShowmissionPopup">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <!-- Fixed ImageView with proper scaling -->
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/circle_background">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/target"
+                                android:scaleType="centerInside"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="@string/missions"
+                                app:tint="@color/secondary" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/missions"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_surface"
+                            android:textAlignment="center"
+                            android:gravity="center"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:layout_marginTop="8dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Available Rewards Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    style="@style/SectionHeaderStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/available_rewards"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginBottom="0dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/customize_rewards_btn"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/customize_rewards"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <!-- Rewards RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rewards_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="100dp" />
+
+            <!-- Congratulations Message -->
+            <TextView
+                android:id="@+id/txtCongrats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reward_claimed"
+                android:textAlignment="center"
+                android:textColor="@color/success"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:layout_margin="16dp"
+                android:padding="16dp"
+                android:background="@drawable/success_background" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom App Bar -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:fabCradleMargin="8dp"
+        app:fabCradleRoundedCornerRadius="12dp"
+        app:fabCradleVerticalOffset="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- History Button with proper icon -->
+            <LinearLayout
+                android:id="@+id/history_btn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_history_empty"
+                    android:scaleType="centerInside"
+                    app:tint="?attr/colorOnSurface"
+                    android:contentDescription="@string/content_description_history_button" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- FAB Space -->
+            <View
+                android:layout_width="80dp"
+                android:layout_height="1dp" />
+
+            <!-- Settings Button with proper icon -->
+            <LinearLayout
+                android:id="@+id/settings_btn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_settings"
+                    android:scaleType="centerInside"
+                    app:tint="?attr/colorOnSurface"
+                    android:contentDescription="@string/content_description_settings_button" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add"
+        style="@style/FABStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Achievements"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/imgbtnachievement"
-        app:layout_constraintStart_toStartOf="@+id/imgbtnachievement"
-        app:layout_constraintTop_toBottomOf="@+id/imgbtnachievement" />
+        android:contentDescription="@string/content_description_add_button"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:srcCompat="@drawable/ic_add" />
 
-
-    <ImageButton
-        android:id="@+id/imgbtnmission"
-        android:layout_width="86dp"
-        android:layout_height="86dp"
-        android:layout_marginTop="26dp"
-        android:background="#00FFFFFF"
-        android:contentDescription="missions"
-        android:onClick="ShowmissionPopup"
-        app:layout_constraintEnd_toStartOf="@+id/imgbtnachievement"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btndayinfo"
-        app:srcCompat="@drawable/target"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"/>
-
-    <!-- Create Text View same for missions-->
-    <TextView
-        android:id="@+id/txtmission"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Daily Missions"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/imgbtnmission"
-        app:layout_constraintStart_toStartOf="@+id/imgbtnmission"
-        app:layout_constraintTop_toBottomOf="@+id/imgbtnmission" />
-
-    <LinearLayout
-        android:id="@+id/linearrewardarea"
-        android:layout_width="340dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="74dp"
-        android:background="@drawable/shape"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgbtnachievement"
-        app:layout_constraintVertical_bias="1.0">
-
-        <TextView
-            android:id="@+id/txtrewardsinlinear"
-            android:layout_width="200dp"
-            android:layout_height="46dp"
-            android:text="Rewards"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="32dp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txtCongrats"
-            android:layout_width="260dp"
-            android:layout_height="38dp"
-            android:text="Enjoy your Reward"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:visibility="invisible" />
-
-        <Button
-            android:id="@+id/btnmovielinear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="1 Movie -200P" />
-
-        <Button
-            android:id="@+id/btngamelinear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="2Hr Game -300P" />
-
-        <Button
-            android:id="@+id/btntravellinear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="1Hr Travel -200P" />
-
-        <Button
-            android:id="@+id/btnproductlinear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Product Purchase -500" />
-
-    </LinearLayout>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

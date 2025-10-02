@@ -1,32 +1,55 @@
 package com.rewardpoints.app;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.rewardpoints.app.constants.AppConstants;
-import com.rewardpoints.app.models.RewardTransaction;
+import com.rewardpoints.app.adapters.RewardsAdapter;
+import com.rewardpoints.app.managers.CustomizationManager;
+import com.rewardpoints.app.models.CustomReward;
+import com.rewardpoints.app.models.EnhancedTransaction;
+import com.rewardpoints.app.models.PointsSource;
 import com.rewardpoints.app.utils.PreferencesManager;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.List;
+import java.util.Iterator;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RewardsAdapter.OnRewardClickListener {
 
-    private int counter;
-    private TextView rewardCount;
-    private TextView congratsText;
-    private Dialog myDialog;
+    // UI Components
+    private TextView rewardCounter, welcomeText, congratsText;
+    private MaterialCardView dailyFeedbackCard;
+    private MaterialButton dayInfoBtn, customizeRewardsBtn;
+    private LinearLayout historyBtn, settingsBtn; // Changed from MaterialButton to LinearLayout
+    private FloatingActionButton fabAdd;
+    private RecyclerView rewardsRecyclerView;
+    private CollapsingToolbarLayout collapsingToolbar;
+
+    // Adapters
+    private RewardsAdapter rewardsAdapter;
+
+    // Managers
+    private CustomizationManager customizationManager;
     private PreferencesManager preferencesManager;
+
+    // Data
+    private int currentPoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,310 +57,421 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initializeComponents();
+        checkFirstLaunch();
+        setupToolbar();
+        setupRecyclerView();
+        setupClickListeners();
+
         if (savedInstanceState == null) {
-            // Only handle daily feedback on fresh start, not on configuration changes
             handleDailyFeedback();
         }
-        setupClickListeners();
-        loadCounterFromPreferences();
+
+        loadData();
+    }
+
+    private void initializeComponents() {
+        // Initialize UI components (only the ones that exist in layout)
+        rewardCounter = findViewById(R.id.RewardCounter);
+        welcomeText = findViewById(R.id.welcome_text);
+        congratsText = findViewById(R.id.txtCongrats);
+        dailyFeedbackCard = findViewById(R.id.daily_feedback_card);
+        dayInfoBtn = findViewById(R.id.btndayinfo);
+        customizeRewardsBtn = findViewById(R.id.customize_rewards_btn);
+        historyBtn = findViewById(R.id.history_btn);
+        settingsBtn = findViewById(R.id.settings_btn);
+        fabAdd = findViewById(R.id.fab_add);
+        rewardsRecyclerView = findViewById(R.id.rewards_recycler_view);
+        collapsingToolbar = findViewById(R.id.collapsing_toolbar);
+
+        // Initialize managers
+        customizationManager = new CustomizationManager(this);
+        preferencesManager = new PreferencesManager(this);
+    }
+
+    private void checkFirstLaunch() {
+        if (preferencesManager.isFirstLaunch()) {
+            showWelcomeDialog();
+            preferencesManager.setFirstLaunch(false);
+        }
+    }
+
+    private void setupToolbar() {
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Update welcome message with user name
+        String userName = preferencesManager.getUserName();
+        if (welcomeText != null) {
+            String welcomeMessage = getString(R.string.welcome_title) + ", " + userName + "!";
+            welcomeText.setText(welcomeMessage);
+        }
+    }
+
+    private void setupRecyclerView() {
+        if (rewardsRecyclerView != null) {
+            rewardsAdapter = new RewardsAdapter(this);
+            rewardsAdapter.setOnRewardClickListener(this);
+            rewardsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            rewardsRecyclerView.setAdapter(rewardsAdapter);
+        }
+    }
+
+    private void setupClickListeners() {
+        if (dayInfoBtn != null) {
+            dayInfoBtn.setOnClickListener(v -> showMoodSelectionDialog());
+        }
+        if (customizeRewardsBtn != null) {
+            customizeRewardsBtn.setOnClickListener(v -> openCustomizationActivity());
+        }
+        if (historyBtn != null) {
+            historyBtn.setOnClickListener(v -> openHistoryActivity());
+        }
+        if (settingsBtn != null) {
+            settingsBtn.setOnClickListener(v -> openSettingsActivity());
+        }
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> showAddOptionsDialog());
+        }
+    }
+
+    private void loadData() {
+        try {
+            // Load current points
+            currentPoints = preferencesManager.getCounter();
+            if (rewardCounter != null) {
+                rewardCounter.setText(String.valueOf(currentPoints));
+            }
+
+            // Load and display rewards with API level 21 compatibility
+            List<CustomReward> activeRewards = customizationManager.getCustomRewards();
+            Iterator<CustomReward> iterator = activeRewards.iterator();
+            while (iterator.hasNext()) {
+                if (!iterator.next().isActive()) {
+                    iterator.remove();
+                }
+            }
+
+            if (rewardsAdapter != null) {
+                rewardsAdapter.updateRewards(activeRewards);
+            }
+
+            // Update welcome message based on points
+            updateWelcomeMessage();
+
+        } catch (Exception e) {
+            showError(getString(R.string.error_data_load));
+        }
+    }
+
+    private void updateWelcomeMessage() {
+        if (collapsingToolbar == null) return;
+
+        String message;
+        if (currentPoints >= 1000) {
+            message = "You're a Points Master! 🏆";
+        } else if (currentPoints >= 500) {
+            message = "Great job collecting points! 🌟";
+        } else if (currentPoints >= 100) {
+            message = "Keep up the good work! 💪";
+        } else {
+            message = "Start your journey today! 🚀";
+        }
+        collapsingToolbar.setTitle(message);
+    }
+
+    private void handleDailyFeedback() {
+        Calendar calendar = Calendar.getInstance();
+        int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+        int lastDay = preferencesManager.getLastDay();
+        boolean todayFeedbackGiven = preferencesManager.isTodayFeedbackGiven();
+
+        if (lastDay != currentDay && !todayFeedbackGiven && dailyFeedbackCard != null) {
+            dailyFeedbackCard.setVisibility(View.VISIBLE);
+            animateCardIn(dailyFeedbackCard);
+        } else if (dailyFeedbackCard != null) {
+            dailyFeedbackCard.setVisibility(View.GONE);
+        }
+    }
+
+    private void showWelcomeDialog() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.welcome_title))
+            .setMessage(getString(R.string.welcome_subtitle) + "\n\n" +
+                       "✨ " + getString(R.string.onboarding_points_desc) + "\n" +
+                       "🎁 " + getString(R.string.onboarding_rewards_desc) + "\n" +
+                       "⚙️ " + getString(R.string.onboarding_customize_desc))
+            .setPositiveButton(getString(R.string.get_started), (dialog, which) -> showNameInputDialog())
+            .setCancelable(false)
+            .show();
+    }
+
+    private void showNameInputDialog() {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("Enter your name");
+
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("What should we call you?")
+            .setView(input)
+            .setPositiveButton(getString(R.string.save), (dialog, which) -> {
+                String name = input.getText().toString().trim();
+                if (!name.isEmpty()) {
+                    preferencesManager.setUserName(name);
+                    if (welcomeText != null) {
+                        String welcomeMessage = getString(R.string.welcome_title) + ", " + name + "!";
+                        welcomeText.setText(welcomeMessage);
+                    }
+                }
+            })
+            .setNegativeButton(getString(R.string.skip), null)
+            .show();
+    }
+
+    private void showMoodSelectionDialog() {
+        List<PointsSource> moodSources = customizationManager.getPointsSourcesByCategory("Mood");
+
+        if (moodSources.isEmpty()) {
+            showError("No mood options configured. Please add some in settings.");
+            return;
+        }
+
+        String[] moodNames = new String[moodSources.size()];
+        for (int i = 0; i < moodSources.size(); i++) {
+            moodNames[i] = moodSources.get(i).getName() + " (+" + moodSources.get(i).getPointsValue() + " points)";
+        }
+
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.mood_feedback_title))
+            .setItems(moodNames, (dialog, which) -> {
+                PointsSource selectedMood = moodSources.get(which);
+                addPointsFromSource(selectedMood, "Mood");
+                handleDailyFeedbackComplete();
+            })
+            .show();
+    }
+
+    private void showAddOptionsDialog() {
+        String[] options = {
+            getString(R.string.add_new_reward),
+            getString(R.string.add_custom_points_source),
+            "Add Custom Activity"
+        };
+
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Add New Item")
+            .setItems(options, (dialog, which) -> {
+                switch (which) {
+                    case 0:
+                        openRewardCreator();
+                        break;
+                    case 1:
+                        openPointsSourceCreator();
+                        break;
+                    case 2:
+                        openActivityCreator();
+                        break;
+                }
+            })
+            .show();
+    }
+
+    private void addPointsFromSource(PointsSource source, String mood) {
+        try {
+            currentPoints += source.getPointsValue();
+            preferencesManager.saveCounter(currentPoints);
+            if (rewardCounter != null) {
+                rewardCounter.setText(String.valueOf(currentPoints));
+            }
+
+            // Create enhanced transaction
+            EnhancedTransaction transaction = new EnhancedTransaction(
+                "EARN",
+                source.getName(),
+                source.getDescription(),
+                source.getPointsValue(),
+                source.getCategory()
+            );
+            transaction.setMood(mood);
+            customizationManager.addTransaction(transaction);
+
+            // Update source usage
+            source.incrementUsage();
+            customizationManager.updatePointsSource(source);
+
+            updateWelcomeMessage();
+
+        } catch (Exception e) {
+            showError(getString(R.string.error_generic));
+        }
+    }
+
+    private void handleDailyFeedbackComplete() {
+        preferencesManager.setTodayFeedbackGiven(true);
+        preferencesManager.saveDay(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+
+        if (dailyFeedbackCard != null) {
+            dailyFeedbackCard.setVisibility(View.GONE);
+            animateCardOut(dailyFeedbackCard);
+        }
+
+        showSuccessAnimation("Daily check-in complete! 🎉");
+    }
+
+    // RewardsAdapter.OnRewardClickListener implementation
+    @Override
+    public void onRewardClick(CustomReward reward) {
+        if (currentPoints >= reward.getPointsCost()) {
+            new MaterialAlertDialogBuilder(this)
+                .setTitle("Claim " + reward.getName())
+                .setMessage("This will cost " + reward.getPointsCost() + " points. Continue?")
+                .setPositiveButton(getString(R.string.confirm), (dialog, which) -> claimReward(reward))
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+        } else {
+            int needed = reward.getPointsCost() - currentPoints;
+            showError("You need " + needed + " more points to claim this reward.");
+        }
+    }
+
+    @Override
+    public void onEditReward(CustomReward reward) {
+        Intent intent = new Intent(this, EditRewardActivity.class);
+        intent.putExtra("reward_id", reward.getId());
+        startActivity(intent);
+    }
+
+    private void claimReward(CustomReward reward) {
+        try {
+            currentPoints -= reward.getPointsCost();
+            preferencesManager.saveCounter(currentPoints);
+            if (rewardCounter != null) {
+                rewardCounter.setText(String.valueOf(currentPoints));
+            }
+
+            // Create transaction
+            EnhancedTransaction transaction = new EnhancedTransaction(
+                "SPEND",
+                reward.getName(),
+                reward.getDescription(),
+                reward.getPointsCost(),
+                reward.getCategory()
+            );
+            customizationManager.addTransaction(transaction);
+
+            // Update reward usage
+            reward.incrementUsage();
+            customizationManager.updateCustomReward(reward);
+
+            updateWelcomeMessage();
+            showSuccessAnimation(getString(R.string.reward_claimed) + " 🎉");
+
+        } catch (Exception e) {
+            showError(getString(R.string.error_generic));
+        }
+    }
+
+    // Navigation methods
+    private void openCustomizationActivity() {
+        startActivity(new Intent(this, ManageRewardsActivity.class));
+    }
+
+    private void openHistoryActivity() {
+        startActivity(new Intent(this, ModernHistoryActivity.class));
+    }
+
+    private void openSettingsActivity() {
+        startActivity(new Intent(this, SettingsActivity.class));
+    }
+
+    private void openRewardCreator() {
+        startActivity(new Intent(this, CreateRewardActivity.class));
+    }
+
+    private void openPointsSourceCreator() {
+        startActivity(new Intent(this, CreatePointsSourceActivity.class));
+    }
+
+    private void openActivityCreator() {
+        Toast.makeText(this, "Custom activity creator coming soon!", Toast.LENGTH_SHORT).show();
+    }
+
+    // Animation and UI methods
+    private void animateCardIn(View card) {
+        if (card == null) return;
+        card.setAlpha(0f);
+        card.setTranslationY(-100f);
+        card.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(300)
+            .start();
+    }
+
+    private void animateCardOut(View card) {
+        if (card == null) return;
+        card.animate()
+            .alpha(0f)
+            .translationY(-100f)
+            .setDuration(300)
+            .start();
+    }
+
+    private void showSuccessAnimation(String message) {
+        if (congratsText == null) return;
+        congratsText.setText(message);
+        congratsText.setVisibility(View.VISIBLE);
+        congratsText.setAlpha(0f);
+        congratsText.animate()
+            .alpha(1f)
+            .setDuration(500)
+            .start();
+
+        // Hide after 3 seconds
+        congratsText.postDelayed(() -> {
+            if (congratsText != null) {
+                congratsText.animate()
+                    .alpha(0f)
+                    .setDuration(500)
+                    .withEndAction(() -> {
+                        if (congratsText != null) {
+                            congratsText.setVisibility(View.GONE);
+                        }
+                    })
+                    .start();
+            }
+        }, 3000);
+    }
+
+    private void showError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+
+    // Lifecycle methods
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadData();
+    }
+
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Handle configuration changes gracefully
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Save current state to prevent data loss during configuration changes
-        outState.putInt("counter", counter);
-        outState.putBoolean("congrats_visible", congratsText.getVisibility() == View.VISIBLE);
+        outState.putInt("current_points", currentPoints);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        // Restore state after configuration changes
-        if (savedInstanceState != null) {
-            counter = savedInstanceState.getInt("counter", 0);
-            boolean congratsVisible = savedInstanceState.getBoolean("congrats_visible", false);
-            rewardCount.setText(String.valueOf(counter));
-            congratsText.setVisibility(congratsVisible ? View.VISIBLE : View.GONE);
+        currentPoints = savedInstanceState.getInt("current_points", 0);
+        if (rewardCounter != null) {
+            rewardCounter.setText(String.valueOf(currentPoints));
         }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Handle configuration changes (like split screen, rotation, UI mode changes) gracefully
-        // No need to recreate activity, just update UI if needed
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Refresh counter display when returning to activity
-        loadCounterFromPreferences();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Dismiss any open dialogs to prevent window leaks
-        if (myDialog != null && myDialog.isShowing()) {
-            myDialog.dismiss();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Clean up resources
-        if (myDialog != null) {
-            myDialog.dismiss();
-            myDialog = null;
-        }
-    }
-
-    private void initializeComponents() {
-        rewardCount = findViewById(R.id.RewardCounter);
-        congratsText = findViewById(R.id.txtCongrats);
-        myDialog = new Dialog(this);
-        preferencesManager = new PreferencesManager(this);
-    }
-
-    private void handleDailyFeedback() {
-        try {
-            Calendar calendar = Calendar.getInstance();
-            int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
-
-            Button btntodayP = findViewById(R.id.btndayinfo);
-            int lastDay = preferencesManager.getLastDay();
-            boolean todayFeedbackGiven = preferencesManager.isTodayFeedbackGiven();
-
-            if (lastDay != currentDay) {
-                btntodayP.setVisibility(View.VISIBLE);
-                btntodayP.setClickable(true);
-
-                if (todayFeedbackGiven) {
-                    preferencesManager.saveDay(currentDay);
-                    refreshUI();
-                } else {
-                    showToast(AppConstants.GIVE_FEEDBACK_MSG);
-                }
-            } else {
-                btntodayP.setVisibility(View.GONE);
-                btntodayP.setClickable(false);
-                preferencesManager.setTodayFeedbackGiven(false);
-                showToast(AppConstants.FEEDBACK_RECEIVED_MSG);
-            }
-        } catch (Exception e) {
-            // Handle any calendar-related errors gracefully
-            showToast(getString(R.string.error_generic));
-        }
-    }
-
-    private void setupClickListeners() {
-        // Reward buttons
-        findViewById(R.id.btnmovielinear).setOnClickListener(v ->
-            claimReward(AppConstants.MOVIE_COST, "1 Full Movie Reward Claimed", "1 Full Movie Reward Claimed..."));
-
-        findViewById(R.id.btngamelinear).setOnClickListener(v ->
-            claimReward(AppConstants.GAME_COST, "2Hr Game Reward Claimed", "2Hr Game Reward Claimed..."));
-
-        findViewById(R.id.btntravellinear).setOnClickListener(v ->
-            claimReward(AppConstants.TRAVEL_COST, "1Hr Travel Reward Claimed", "1Hr Travel Reward Claimed..."));
-
-        findViewById(R.id.btnproductlinear).setOnClickListener(v ->
-            claimReward(AppConstants.PRODUCT_COST, "Product Purchase (500rs)", "Product Purchase (500rs) Claimed..."));
-
-        // History button
-        findViewById(R.id.imgbuttonhistory).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, PointsHistoryActivity.class);
-            startActivity(intent);
-        });
-    }
-
-    private void claimReward(int cost, String historyDescription, String toastMessage) {
-        try {
-            if (counter >= cost) {
-                counter -= cost;
-                updateCounter();
-
-                RewardTransaction transaction = new RewardTransaction(
-                    getCurrentDate(), historyDescription, cost, false);
-                preferencesManager.addToHistory(transaction.toString());
-
-                showToast(toastMessage);
-                congratsText.setVisibility(View.VISIBLE);
-            } else {
-                showToast(getString(R.string.insufficient_points));
-            }
-        } catch (Exception e) {
-            showToast(getString(R.string.error_generic));
-        }
-    }
-
-    private void addPoints(int points, String description) {
-        try {
-            counter += points;
-            updateCounter();
-
-            RewardTransaction transaction = new RewardTransaction(
-                getCurrentDate(), description, points, true);
-            preferencesManager.addToHistory(transaction.toString());
-            preferencesManager.setTodayFeedbackGiven(true);
-        } catch (Exception e) {
-            showToast(getString(R.string.error_generic));
-        }
-    }
-
-    private void updateCounter() {
-        rewardCount.setText(String.valueOf(counter));
-        preferencesManager.saveCounter(counter);
-    }
-
-    private void loadCounterFromPreferences() {
-        try {
-            counter = preferencesManager.getCounter();
-            rewardCount.setText(String.valueOf(counter));
-        } catch (Exception e) {
-            showToast(getString(R.string.error_data_load));
-        }
-    }
-
-    private void refreshUI() {
-        // Refresh UI without recreating activity
-        loadCounterFromPreferences();
-        handleDailyFeedback();
-    }
-
-    private String getCurrentDate() {
-        return new SimpleDateFormat(AppConstants.DATE_FORMAT, Locale.getDefault()).format(new Date());
-    }
-
-    private void showToast(String message) {
-        if (message != null && !isFinishing()) {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void ShowTodayPopup(View v) {
-        if (isFinishing() || isDestroyed()) return;
-
-        if (myDialog != null && myDialog.isShowing()) {
-            myDialog.dismiss();
-        }
-
-        myDialog.setContentView(R.layout.todaypopup);
-
-        // Close button with content description for accessibility
-        myDialog.findViewById(R.id.btnclose).setOnClickListener(view -> myDialog.dismiss());
-        myDialog.findViewById(R.id.btnclose).setContentDescription(getString(R.string.content_description_close_button));
-
-        // Mood buttons with lambda expressions
-        myDialog.findViewById(R.id.imggreat).setOnClickListener(view -> {
-            addPoints(AppConstants.VERY_HAPPY_POINTS, "Very Happy Day");
-            showToast("Congratulations 120 Points Added...");
-            myDialog.dismiss();
-            refreshUI();
-        });
-
-        myDialog.findViewById(R.id.imggood).setOnClickListener(view -> {
-            addPoints(AppConstants.HAPPY_POINTS, "Happy Day");
-            showToast("Congrats 60 Points Added");
-            myDialog.dismiss();
-            refreshUI();
-        });
-
-        myDialog.findViewById(R.id.imgneutral).setOnClickListener(view -> {
-            addPoints(AppConstants.NEUTRAL_POINTS, "Okay Day");
-            showToast("Nice 20 Points Added");
-            myDialog.dismiss();
-            refreshUI();
-        });
-
-        myDialog.findViewById(R.id.imgsad).setOnClickListener(view -> {
-            addPoints(AppConstants.SAD_POINTS, "Sad Day");
-            showToast("It's Okay Yaar.. 10 Points Added");
-            myDialog.dismiss();
-            refreshUI();
-        });
-
-        myDialog.findViewById(R.id.imgverysad).setOnClickListener(view -> {
-            addPoints(AppConstants.VERY_SAD_POINTS, "Very Sad Day");
-            showToast("Stay +ve Better days ahead...");
-            myDialog.dismiss();
-            refreshUI();
-        });
-
-        myDialog.show();
-    }
-
-    public void Showachievementpopup(View v) {
-        if (isFinishing() || isDestroyed()) return;
-
-        if (myDialog != null && myDialog.isShowing()) {
-            myDialog.dismiss();
-        }
-
-        myDialog.setContentView(R.layout.achievementpopup);
-
-        // Close button
-        myDialog.findViewById(R.id.btncloseachievement).setOnClickListener(view -> myDialog.dismiss());
-        myDialog.findViewById(R.id.btncloseachievement).setContentDescription(getString(R.string.content_description_close_button));
-
-        // Achievement buttons
-        myDialog.findViewById(R.id.imgvimpachievement).setOnClickListener(view -> {
-            addPoints(AppConstants.VERY_IMP_ACHIEVEMENT_POINTS, "Very IMP Achievement");
-            showToast("Congrats Yaar.. Kadak.... +200 Points");
-            myDialog.dismiss();
-        });
-
-        myDialog.findViewById(R.id.imgimpachievement).setOnClickListener(view -> {
-            addPoints(AppConstants.IMP_ACHIEVEMENT_POINTS, "Important Achievement");
-            showToast("You are doing great +120 Points");
-            myDialog.dismiss();
-        });
-
-        myDialog.findViewById(R.id.imgniceachievement).setOnClickListener(view -> {
-            addPoints(AppConstants.GOOD_ACHIEVEMENT_POINTS, "Good Achievement");
-            showToast("Nice... Keep it up +60 Points");
-            myDialog.dismiss();
-        });
-
-        myDialog.show();
-    }
-
-    public void ShowmissionPopup(View v) {
-        if (isFinishing() || isDestroyed()) return;
-
-        if (myDialog != null && myDialog.isShowing()) {
-            myDialog.dismiss();
-        }
-
-        myDialog.setContentView(R.layout.missionpopup);
-
-        // Close button
-        myDialog.findViewById(R.id.btnclosemission).setOnClickListener(view -> myDialog.dismiss());
-        myDialog.findViewById(R.id.btnclosemission).setContentDescription(getString(R.string.content_description_close_button));
-
-        // Mission buttons
-        myDialog.findViewById(R.id.imghealthmission).setOnClickListener(view -> {
-            addPoints(AppConstants.MISSION_POINTS, "Health Mission Complete");
-            showToast("Congratulations 25 Points Added...");
-            myDialog.dismiss();
-        });
-
-        myDialog.findViewById(R.id.imgcworkmission).setOnClickListener(view -> {
-            addPoints(AppConstants.MISSION_POINTS, "Completed Computer Dev Mission");
-            showToast("Congrats 25 Points Added");
-            myDialog.dismiss();
-        });
-
-        myDialog.findViewById(R.id.imgsdmission).setOnClickListener(view -> {
-            addPoints(AppConstants.MISSION_POINTS, "Completed Self Development Mission");
-            showToast("Nice 25 Points Added");
-            myDialog.dismiss();
-        });
-
-        myDialog.show();
     }
 }
-
