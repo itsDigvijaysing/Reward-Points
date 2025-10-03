@@ -4,8 +4,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKeys;
+import com.rewardpoints.app.models.EnhancedTransaction;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Enhanced utility class for managing SharedPreferences operations with encryption
@@ -24,29 +33,44 @@ public class PreferencesManager {
     public static final String KEY_USER_NAME = "user_name";
     public static final String KEY_THEME_MODE = "theme_mode";
     public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
-    public static final String KEY_DAILY_REMINDER_TIME = "daily_reminder_time";
     public static final String KEY_FIRST_LAUNCH = "first_launch";
-    public static final String KEY_APP_VERSION = "app_version";
 
     // Points tracking keys
     public static final String KEY_TOTAL_POINTS_EARNED = "total_points_earned";
     public static final String KEY_TOTAL_POINTS_SPENT = "total_points_spent";
 
+    // Transaction and feedback keys
+    private static final String KEY_TRANSACTIONS = "transactions";
+    private static final String KEY_DAILY_FEEDBACK_DATE = "daily_feedback_date";
+    private static final String KEY_DAILY_STREAK = "daily_streak";
+    private static final String KEY_LAST_ACTIVITY_DATE = "last_activity_date";
+    private static final String KEY_COMPLETED_MISSIONS_TODAY = "completed_missions_today";
+    private static final String KEY_DAILY_BONUS_DATE = "daily_bonus_date";
+    private static final String KEY_ACHIEVEMENT_NOTIFICATIONS = "achievement_notifications";
+    private static final String KEY_CREATED_REWARD_TODAY = "created_reward_today";
+    private static final String KEY_HAS_CREATED_REWARD = "has_created_reward";
+
     private final SharedPreferences preferences;
     private final SharedPreferences.Editor editor;
+    private final Gson gson;
 
     public PreferencesManager(Context context) {
         SharedPreferences tempPrefs;
         try {
-            // Try to create encrypted shared preferences
-            String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-            tempPrefs = EncryptedSharedPreferences.create(
-                PREFS_NAME,
-                masterKeyAlias,
-                context,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            );
+            // Check if device supports encryption (API 23+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+                tempPrefs = EncryptedSharedPreferences.create(
+                    PREFS_NAME,
+                    masterKeyAlias,
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                );
+            } else {
+                // Fallback to regular SharedPreferences for older devices
+                tempPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            }
         } catch (GeneralSecurityException | IOException e) {
             // Fallback to regular SharedPreferences if encryption fails
             tempPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -54,6 +78,7 @@ public class PreferencesManager {
 
         preferences = tempPrefs;
         editor = preferences.edit();
+        gson = new Gson();
     }
 
     // Original methods (keeping backward compatibility)
@@ -142,92 +167,243 @@ public class PreferencesManager {
 
     // User profile methods
     public String getUserName() {
-        return getString(KEY_USER_NAME, "User");
+        return preferences.getString(KEY_USER_NAME, "User");
     }
 
     public void setUserName(String name) {
-        putString(KEY_USER_NAME, name);
+        editor.putString(KEY_USER_NAME, name);
+        editor.apply();
     }
 
     // App settings methods
     public String getThemeMode() {
-        return getString(KEY_THEME_MODE, "SYSTEM");
+        return preferences.getString(KEY_THEME_MODE, "system");
     }
 
-    public void setThemeMode(String mode) {
-        putString(KEY_THEME_MODE, mode);
+    public void setThemeMode(String themeMode) {
+        editor.putString(KEY_THEME_MODE, themeMode);
+        editor.apply();
     }
 
-    public boolean areNotificationsEnabled() {
-        return getBoolean(KEY_NOTIFICATIONS_ENABLED, true);
+    public boolean isFirstLaunch() {
+        return preferences.getBoolean(KEY_FIRST_LAUNCH, true);
+    }
+
+    public void setFirstLaunch(boolean firstLaunch) {
+        editor.putBoolean(KEY_FIRST_LAUNCH, firstLaunch);
+        editor.apply();
+    }
+
+    public boolean isNotificationsEnabled() {
+        return preferences.getBoolean(KEY_NOTIFICATIONS_ENABLED, true);
     }
 
     public void setNotificationsEnabled(boolean enabled) {
-        putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled);
+        editor.putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled);
+        editor.apply();
     }
 
     // Points tracking methods
     public int getTotalPointsEarned() {
-        return getInt(KEY_TOTAL_POINTS_EARNED, 0);
+        return preferences.getInt(KEY_TOTAL_POINTS_EARNED, 0);
     }
 
     public void setTotalPointsEarned(int points) {
-        putInt(KEY_TOTAL_POINTS_EARNED, points);
-    }
-
-    public void addToTotalPointsEarned(int points) {
-        int current = getTotalPointsEarned();
-        setTotalPointsEarned(current + points);
+        editor.putInt(KEY_TOTAL_POINTS_EARNED, points);
+        editor.apply();
     }
 
     public int getTotalPointsSpent() {
-        return getInt(KEY_TOTAL_POINTS_SPENT, 0);
+        return preferences.getInt(KEY_TOTAL_POINTS_SPENT, 0);
     }
 
     public void setTotalPointsSpent(int points) {
-        putInt(KEY_TOTAL_POINTS_SPENT, points);
+        editor.putInt(KEY_TOTAL_POINTS_SPENT, points);
+        editor.apply();
     }
 
-    public void addToTotalPointsSpent(int points) {
-        int current = getTotalPointsSpent();
-        setTotalPointsSpent(current + points);
+    // Enhanced transaction methods
+    public void addTransaction(EnhancedTransaction transaction) {
+        List<EnhancedTransaction> transactions = getTransactions();
+        transactions.add(0, transaction); // Add to beginning for newest first
+        saveTransactions(transactions);
     }
 
-    // Calculate net points (earned - spent)
-    public int getNetPoints() {
-        return getTotalPointsEarned() - getTotalPointsSpent();
+    public List<EnhancedTransaction> getTransactions() {
+        String transactionsJson = preferences.getString(KEY_TRANSACTIONS, "[]");
+        Type listType = new TypeToken<List<EnhancedTransaction>>(){}.getType();
+        try {
+            List<EnhancedTransaction> transactions = gson.fromJson(transactionsJson, listType);
+            return transactions != null ? transactions : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
-    // First launch detection methods
-    public boolean isFirstLaunch() {
-        return getBoolean(KEY_FIRST_LAUNCH, true);
+    private void saveTransactions(List<EnhancedTransaction> transactions) {
+        String transactionsJson = gson.toJson(transactions);
+        editor.putString(KEY_TRANSACTIONS, transactionsJson);
+        editor.apply();
     }
 
-    public void setFirstLaunch(boolean isFirst) {
-        putBoolean(KEY_FIRST_LAUNCH, isFirst);
+    public void clearTransactions() {
+        editor.putString(KEY_TRANSACTIONS, "[]");
+        editor.apply();
     }
 
-    // App version tracking
-    public String getAppVersion() {
-        return getString(KEY_APP_VERSION, "1.0.0");
+    // NEW: User Achievements (Long-term Goals) methods
+    private static final String KEY_USER_ACHIEVEMENTS = "user_achievements";
+
+    public List<com.rewardpoints.app.models.Achievement> getUserAchievements() {
+        String achievementsJson = preferences.getString(KEY_USER_ACHIEVEMENTS, "[]");
+        Type listType = new TypeToken<List<com.rewardpoints.app.models.Achievement>>(){}.getType();
+        try {
+            List<com.rewardpoints.app.models.Achievement> achievements = gson.fromJson(achievementsJson, listType);
+            return achievements != null ? achievements : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
-    public void setAppVersion(String version) {
-        putString(KEY_APP_VERSION, version);
+    public void saveUserAchievements(List<com.rewardpoints.app.models.Achievement> achievements) {
+        String achievementsJson = gson.toJson(achievements);
+        editor.putString(KEY_USER_ACHIEVEMENTS, achievementsJson);
+        editor.apply();
     }
 
-    // Utility methods
-    public void clearAll() {
+    // NEW: Daily Missions methods
+    private static final String KEY_USER_DAILY_MISSIONS = "user_daily_missions";
+    private static final String KEY_LAST_MISSION_DATE = "last_mission_date";
+    private static final String KEY_LAST_STREAK_DATE = "last_streak_date";
+
+    public List<com.rewardpoints.app.models.DailyMission> getUserDailyMissions() {
+        String missionsJson = preferences.getString(KEY_USER_DAILY_MISSIONS, "[]");
+        Type listType = new TypeToken<List<com.rewardpoints.app.models.DailyMission>>(){}.getType();
+        try {
+            List<com.rewardpoints.app.models.DailyMission> missions = gson.fromJson(missionsJson, listType);
+            return missions != null ? missions : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public void saveUserDailyMissions(List<com.rewardpoints.app.models.DailyMission> missions) {
+        String missionsJson = gson.toJson(missions);
+        editor.putString(KEY_USER_DAILY_MISSIONS, missionsJson);
+        editor.apply();
+    }
+
+    public String getLastMissionDate() {
+        return preferences.getString(KEY_LAST_MISSION_DATE, "");
+    }
+
+    public void setLastMissionDate(String date) {
+        editor.putString(KEY_LAST_MISSION_DATE, date);
+        editor.apply();
+    }
+
+    public String getLastStreakDate() {
+        return preferences.getString(KEY_LAST_STREAK_DATE, "");
+    }
+
+    public void setLastStreakDate(String date) {
+        editor.putString(KEY_LAST_STREAK_DATE, date);
+        editor.apply();
+    }
+
+    // Achievement tracking methods
+    private static final String KEY_AWARDED_ACHIEVEMENTS = "awarded_achievements";
+
+    public boolean isAchievementAwarded(String achievementId) {
+        Set<String> awardedAchievements = preferences.getStringSet(KEY_AWARDED_ACHIEVEMENTS, new HashSet<String>());
+        return awardedAchievements.contains(achievementId);
+    }
+
+    public void setAchievementAwarded(String achievementId, boolean awarded) {
+        Set<String> awardedAchievements = new HashSet<>(preferences.getStringSet(KEY_AWARDED_ACHIEVEMENTS, new HashSet<String>()));
+        if (awarded) {
+            awardedAchievements.add(achievementId);
+        } else {
+            awardedAchievements.remove(achievementId);
+        }
+        editor.putStringSet(KEY_AWARDED_ACHIEVEMENTS, awardedAchievements);
+        editor.apply();
+    }
+
+    // Daily feedback methods
+    public boolean hasFeedbackToday() {
+        String lastFeedbackDate = preferences.getString(KEY_DAILY_FEEDBACK_DATE, "");
+        String today = java.text.DateFormat.getDateInstance().format(new java.util.Date());
+        return today.equals(lastFeedbackDate);
+    }
+
+    public void setFeedbackCompletedToday() {
+        String today = java.text.DateFormat.getDateInstance().format(new java.util.Date());
+        editor.putString(KEY_DAILY_FEEDBACK_DATE, today);
+        editor.apply();
+    }
+
+    // Daily streak methods
+    public int getDailyStreak() {
+        return preferences.getInt(KEY_DAILY_STREAK, 0);
+    }
+
+    public void setDailyStreak(int streak) {
+        editor.putInt(KEY_DAILY_STREAK, streak);
+        editor.apply();
+    }
+
+    // Counter methods (for compatibility)
+    public void setCounter(int counter) {
+        editor.putInt(KEY_COUNTER, counter);
+        editor.apply();
+    }
+
+    // Utility methods for data cleanup
+    public void clearAllData() {
         editor.clear();
         editor.apply();
     }
 
-    public boolean contains(String key) {
-        return preferences.contains(key);
+    // Additional settings methods for SettingsActivity compatibility
+    private static final String KEY_DAILY_LIMIT_ENABLED = "daily_limit_enabled";
+    private static final String KEY_DAILY_POINTS_LIMIT = "daily_points_limit";
+    private static final String KEY_DAILY_REMINDERS_ENABLED = "daily_reminders_enabled";
+    private static final String KEY_ACHIEVEMENT_NOTIFICATIONS_ENABLED = "achievement_notifications_enabled";
+
+    public boolean isDailyLimitEnabled() {
+        return preferences.getBoolean(KEY_DAILY_LIMIT_ENABLED, false);
     }
 
-    public void remove(String key) {
-        editor.remove(key);
+    public void setDailyLimitEnabled(boolean enabled) {
+        editor.putBoolean(KEY_DAILY_LIMIT_ENABLED, enabled);
+        editor.apply();
+    }
+
+    public int getDailyPointsLimit() {
+        return preferences.getInt(KEY_DAILY_POINTS_LIMIT, 100);
+    }
+
+    public void setDailyPointsLimit(int limit) {
+        editor.putInt(KEY_DAILY_POINTS_LIMIT, limit);
+        editor.apply();
+    }
+
+    public boolean isDailyRemindersEnabled() {
+        return preferences.getBoolean(KEY_DAILY_REMINDERS_ENABLED, true);
+    }
+
+    public void setDailyRemindersEnabled(boolean enabled) {
+        editor.putBoolean(KEY_DAILY_REMINDERS_ENABLED, enabled);
+        editor.apply();
+    }
+
+    public boolean isAchievementNotificationsEnabled() {
+        return preferences.getBoolean(KEY_ACHIEVEMENT_NOTIFICATIONS_ENABLED, true);
+    }
+
+    public void setAchievementNotificationsEnabled(boolean enabled) {
+        editor.putBoolean(KEY_ACHIEVEMENT_NOTIFICATIONS_ENABLED, enabled);
         editor.apply();
     }
 }

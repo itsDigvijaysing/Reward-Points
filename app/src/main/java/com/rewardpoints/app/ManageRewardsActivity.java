@@ -3,6 +3,8 @@ package com.rewardpoints.app;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ public class ManageRewardsActivity extends AppCompatActivity implements RewardsA
     private FloatingActionButton fabAdd;
     private RewardsAdapter rewardsAdapter;
     private CustomizationManager customizationManager;
+    private ActivityResultLauncher<Intent> createRewardLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,7 @@ public class ManageRewardsActivity extends AppCompatActivity implements RewardsA
         setupToolbar();
         setupRecyclerView();
         setupClickListeners();
+        setupActivityResultLauncher();
         loadRewards();
     }
 
@@ -39,6 +43,17 @@ public class ManageRewardsActivity extends AppCompatActivity implements RewardsA
         rewardsRecyclerView = findViewById(R.id.rewards_recycler_view);
         fabAdd = findViewById(R.id.fab_add_reward);
         customizationManager = new CustomizationManager(this);
+    }
+
+    private void setupActivityResultLauncher() {
+        createRewardLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    loadRewards(); // Refresh the list
+                }
+            }
+        );
     }
 
     private void setupToolbar() {
@@ -60,7 +75,7 @@ public class ManageRewardsActivity extends AppCompatActivity implements RewardsA
     private void setupClickListeners() {
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(this, CreateRewardActivity.class);
-            startActivityForResult(intent, 100);
+            createRewardLauncher.launch(intent);
         });
     }
 
@@ -80,18 +95,15 @@ public class ManageRewardsActivity extends AppCompatActivity implements RewardsA
     }
 
     @Override
-    public void onEditReward(CustomReward reward) {
-        Intent intent = new Intent(this, EditRewardActivity.class);
-        intent.putExtra("reward_id", reward.getId());
-        startActivityForResult(intent, 101);
-    }
+    public void onDeleteReward(CustomReward reward) {
+        // Delete the reward using CustomizationManager
+        customizationManager.deleteCustomReward(reward.getId());
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            loadRewards(); // Refresh the list
-        }
+        // Refresh the rewards list
+        loadRewards();
+
+        // Show confirmation
+        Toast.makeText(this, "Reward '" + reward.getName() + "' deleted!", Toast.LENGTH_SHORT).show();
     }
 
     @Override

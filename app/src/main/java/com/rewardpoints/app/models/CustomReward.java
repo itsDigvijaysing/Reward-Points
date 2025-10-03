@@ -66,13 +66,56 @@ public class CustomReward {
     public int getTimesUsed() { return timesUsed; }
     public void setTimesUsed(int timesUsed) { this.timesUsed = timesUsed; }
 
+    // Utility methods
     public void incrementUsage() {
         this.timesUsed++;
         this.lastUsedDate = System.currentTimeMillis();
     }
 
+    public boolean canAfford(int currentPoints) {
+        return currentPoints >= pointsCost;
+    }
+
+    public String getFormattedCreatedDate() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(new java.util.Date(createdDate));
+    }
+
+    public String getFormattedLastUsedDate() {
+        if (lastUsedDate == 0) {
+            return "Never used";
+        }
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(new java.util.Date(lastUsedDate));
+    }
+
+    public boolean isPopular() {
+        return timesUsed >= 5;
+    }
+
     @Override
     public String toString() {
-        return name + " (" + pointsCost + " points)";
+        return "CustomReward{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", pointsCost=" + pointsCost +
+                ", category='" + category + '\'' +
+                ", isActive=" + isActive +
+                ", timesUsed=" + timesUsed +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        CustomReward that = (CustomReward) obj;
+        return id != null ? id.equals(that.id) : that.id == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 }

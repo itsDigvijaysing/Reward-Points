@@ -72,17 +72,64 @@ public class EnhancedTransaction {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
+    // Utility methods
+    public boolean isEarningTransaction() {
+        return "EARN".equals(type);
+    }
+
+    public boolean isSpendingTransaction() {
+        return "SPEND".equals(type) || "REDEEM".equals(type);
+    }
+
+    public String getFormattedTimestamp() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(new java.util.Date(timestamp));
+    }
+
+    public String getFormattedPoints() {
+        if (isEarningTransaction()) {
+            return "+" + points;
+        } else {
+            return "-" + points;
+        }
+    }
+
+    // Additional utility methods needed by other classes
     public boolean isEarning() {
         return "EARN".equals(type);
     }
 
-    public boolean isSpending() {
-        return "SPEND".equals(type);
+    public int getAmount() {
+        return Math.abs(points); // Return absolute value for amount
+    }
+
+    public String getTitle() {
+        return source; // Use source as title
     }
 
     @Override
     public String toString() {
-        String sign = isEarning() ? "+" : "-";
-        return description + " " + sign + points + " points";
+        return "EnhancedTransaction{" +
+                "id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", source='" + source + '\'' +
+                ", description='" + description + '\'' +
+                ", points=" + points +
+                ", timestamp=" + timestamp +
+                ", category='" + category + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        EnhancedTransaction that = (EnhancedTransaction) obj;
+        return id != null ? id.equals(that.id) : that.id == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 }

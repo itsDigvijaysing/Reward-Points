@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    tools:context=".SettingsActivity">
+    android:background="@color/background">
 
     <!-- App Bar -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -16,11 +15,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary"
-            app:title="@string/settings"
-            app:titleTextColor="@color/on_primary"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="@color/on_primary" />
+            app:title="Settings"
+            app:titleTextColor="@color/on_primary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -36,11 +32,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Point System Settings -->
+            <!-- User Profile Section -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -51,70 +49,46 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/point_system_settings"
+                        android:text="User Profile"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
-                    <LinearLayout
-                        android:id="@+id/manage_points_sources"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/username_input_layout"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Your Name">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_add"
-                            app:tint="@color/primary" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/username_input"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
+                            android:inputType="textPersonName"
+                            android:maxLines="1" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Manage Points Sources"
-                                android:textSize="16sp"
-                                android:textColor="@color/on_surface" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Add, edit, or remove points sources"
-                                android:textSize="14sp"
-                                android:textColor="@color/on_surface_variant" />
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_arrow_back"
-                            app:tint="@color/on_surface_variant"
-                            android:rotation="180" />
-
-                    </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/save_profile_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Save Profile"
+                        android:layout_gravity="end" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Reward Management -->
+            <!-- Points System Settings -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -125,175 +99,122 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/reward_management"
+                        android:text="Points System"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
-                    <LinearLayout
-                        android:id="@+id/manage_rewards"
-                        android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_settings"
-                            app:tint="@color/secondary" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/customize_rewards"
-                                android:textSize="16sp"
-                                android:textColor="@color/on_surface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Add, edit, or remove rewards"
-                                android:textSize="14sp"
-                                android:textColor="@color/on_surface_variant" />
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_arrow_back"
-                            app:tint="@color/on_surface_variant"
-                            android:rotation="180" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- App Preferences -->
-            <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/app_preferences"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/on_surface"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Theme Selection -->
+                    <!-- Daily Points Limit -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:padding="12dp">
+                        android:layout_marginBottom="12dp">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_settings"
-                            app:tint="@color/tertiary" />
-
-                        <LinearLayout
+                        <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Theme"
-                                android:textSize="16sp"
-                                android:textColor="@color/on_surface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Choose app appearance"
-                                android:textSize="14sp"
-                                android:textColor="@color/on_surface_variant" />
-
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/theme_selector"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="System"
-                            android:textSize="14sp" />
-
-                    </LinearLayout>
-
-                    <!-- Notifications Toggle -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_add"
-                            app:tint="@color/warning" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Daily Reminders"
-                                android:textSize="16sp"
-                                android:textColor="@color/on_surface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Get reminded to check in daily"
-                                android:textSize="14sp"
-                                android:textColor="@color/on_surface_variant" />
-
-                        </LinearLayout>
+                            android:text="Enable daily points limit" />
 
                         <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/notifications_switch"
+                            android:id="@+id/daily_limit_switch"
                             android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/daily_limit_input_layout"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:hint="Daily points limit"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/daily_limit_input"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:checked="true" />
+                            android:inputType="number"
+                            android:maxLines="1" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Reset Points Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/reset_points_btn"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Reset All Points"
+                        android:textColor="@color/error" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Notifications Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Notifications"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Daily reminders" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/daily_reminders_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Achievement notifications" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/achievement_notifications_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
 
@@ -303,9 +224,11 @@
 
             <!-- Data Management -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -316,47 +239,54 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/data_management"
+                        android:text="Data Management"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/backup_data_btn"
-                        style="@style/OutlinedButtonStyle"
+                        android:id="@+id/manage_rewards_btn"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Backup Data"
-                        android:drawableStart="@drawable/ic_add" />
+                        android:layout_marginBottom="8dp"
+                        android:text="Manage Rewards" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/restore_data_btn"
-                        style="@style/OutlinedButtonStyle"
+                        android:id="@+id/manage_points_sources_btn"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Restore Data"
-                        android:drawableStart="@drawable/ic_settings" />
+                        android:layout_marginBottom="8dp"
+                        android:text="Manage Points Sources" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/export_data_btn"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Export All Data" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/reset_app_btn"
-                        style="@style/OutlinedButtonStyle"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/restore_defaults"
-                        android:textColor="@color/error"
-                        android:strokeColor="@color/error"
-                        android:drawableStart="@drawable/ic_remove" />
+                        android:text="Reset App Data"
+                        android:textColor="@color/error" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- About -->
+            <!-- About Section -->
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -367,25 +297,22 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/about_app"
+                        android:text="About"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
                     <TextView
+                        android:id="@+id/app_version_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/app_description"
-                        android:textSize="14sp"
-                        android:textColor="@color/on_surface_variant"
-                        android:layout_marginBottom="12dp" />
+                        android:text="Version 1.0.0"
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
-                        android:id="@+id/version_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/app_version"
+                        android:text="@string/data_usage_notice"
                         android:textSize="12sp"
                         android:textColor="@color/on_surface_variant" />
 

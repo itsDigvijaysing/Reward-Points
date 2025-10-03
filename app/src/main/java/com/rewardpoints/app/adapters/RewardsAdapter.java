@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,13 +17,13 @@ import java.util.List;
 
 public class RewardsAdapter extends RecyclerView.Adapter<RewardsAdapter.RewardViewHolder> {
 
-    private List<CustomReward> rewards;
-    private Context context;
+    private final List<CustomReward> rewards;
+    private final Context context;
     private OnRewardClickListener listener;
 
     public interface OnRewardClickListener {
         void onRewardClick(CustomReward reward);
-        void onEditReward(CustomReward reward);
+        void onDeleteReward(CustomReward reward); // Keep only delete callback
     }
 
     public RewardsAdapter(Context context) {
@@ -61,84 +60,74 @@ public class RewardsAdapter extends RecyclerView.Adapter<RewardsAdapter.RewardVi
         return rewards.size();
     }
 
-    class RewardViewHolder extends RecyclerView.ViewHolder {
-        private MaterialCardView cardView;
-        private TextView nameText, descriptionText, pointsText, categoryText;
-        private MaterialButton claimButton, editButton;
-        private ImageView categoryIcon;
+    public class RewardViewHolder extends RecyclerView.ViewHolder {
+        private final TextView nameText, descriptionText, pointsText, categoryText;
+        private final MaterialButton redeemButton;
+        private final MaterialCardView cardView;
 
         public RewardViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardView = itemView.findViewById(R.id.reward_card);
             nameText = itemView.findViewById(R.id.reward_name);
             descriptionText = itemView.findViewById(R.id.reward_description);
             pointsText = itemView.findViewById(R.id.reward_points);
             categoryText = itemView.findViewById(R.id.reward_category);
-            claimButton = itemView.findViewById(R.id.claim_button);
-            editButton = itemView.findViewById(R.id.edit_button);
-            categoryIcon = itemView.findViewById(R.id.category_icon);
+            redeemButton = itemView.findViewById(R.id.claim_reward_button);
+            cardView = itemView.findViewById(R.id.reward_card);
         }
 
         public void bind(CustomReward reward) {
-            nameText.setText(reward.getName());
-            descriptionText.setText(reward.getDescription());
-            pointsText.setText(String.valueOf(reward.getPointsCost()));
-            categoryText.setText(reward.getCategory());
+            if (reward == null) return;
 
-            // Set category icon and color
-            setCategoryIcon(reward.getCategory());
+            // Set basic information
+            if (nameText != null) {
+                nameText.setText(reward.getName());
+            }
+            if (descriptionText != null) {
+                descriptionText.setText(reward.getDescription());
+            }
+            if (pointsText != null) {
+                pointsText.setText(String.valueOf(reward.getPointsCost()));
+            }
+            if (categoryText != null) {
+                categoryText.setText(reward.getCategory());
+            }
 
-            claimButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onRewardClick(reward);
-                }
-            });
+            // Set up the Claim Reward button
+            if (redeemButton != null) {
+                redeemButton.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onRewardClick(reward);
+                    }
+                });
+            }
 
-            editButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onEditReward(reward);
-                }
-            });
+            // Set up long press for delete (remove the card click for claiming)
+            if (cardView != null) {
+                cardView.setOnLongClickListener(v -> {
+                    if (listener != null) {
+                        showDeleteConfirmation(reward);
+                    }
+                    return true;
+                });
 
-            // Show usage statistics if available
-            if (reward.getTimesUsed() > 0) {
-                descriptionText.append("\n• Used " + reward.getTimesUsed() + " times");
+                // Remove the single click listener that was making the whole card clickable
+                cardView.setOnClickListener(null);
             }
         }
 
-        private void setCategoryIcon(String category) {
-            int iconRes = R.drawable.ic_category_default;
-            int colorRes = R.color.primary;
-
-            switch (category) {
-                case "Entertainment":
-                    iconRes = R.drawable.ic_entertainment;
-                    colorRes = R.color.entertainment;
-                    break;
-                case "Health & Fitness":
-                    iconRes = R.drawable.ic_health;
-                    colorRes = R.color.health;
-                    break;
-                case "Shopping":
-                    iconRes = R.drawable.ic_shopping;
-                    colorRes = R.color.shopping;
-                    break;
-                case "Travel":
-                    iconRes = R.drawable.ic_travel;
-                    colorRes = R.color.travel;
-                    break;
-                case "Food & Dining":
-                    iconRes = R.drawable.ic_food;
-                    colorRes = R.color.food;
-                    break;
-                case "Education":
-                    iconRes = R.drawable.ic_education;
-                    colorRes = R.color.education;
-                    break;
-            }
-
-            categoryIcon.setImageResource(iconRes);
-            categoryIcon.setColorFilter(context.getColor(colorRes));
+        // Remove the showRewardOptionsDialog method since we don't need edit options
+        private void showDeleteConfirmation(CustomReward reward) {
+            new android.app.AlertDialog.Builder(context)
+                .setTitle("Delete Reward")
+                .setMessage("Are you sure you want to delete '" + reward.getName() + "'?\n\nThis action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    if (listener != null) {
+                        listener.onDeleteReward(reward);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
         }
     }
 }

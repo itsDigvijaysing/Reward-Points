@@ -42,14 +42,10 @@ public class CustomizationManager {
     private void createDefaultRewards() {
         List<CustomReward> defaultRewards = new ArrayList<>();
 
-        defaultRewards.add(new CustomReward("Full Movie Experience", "Watch a complete movie", 200, "Entertainment"));
-        defaultRewards.add(new CustomReward("2 Hours Gaming", "Play games for 2 hours", 300, "Entertainment"));
-        defaultRewards.add(new CustomReward("1 Hour Travel Time", "Relax during travel", 200, "Travel"));
-        defaultRewards.add(new CustomReward("Shopping Spree", "Buy something nice (500rs)", 500, "Shopping"));
-        defaultRewards.add(new CustomReward("Favorite Food Treat", "Order your favorite food", 150, "Food & Dining"));
-        defaultRewards.add(new CustomReward("New Book Purchase", "Buy a new book to read", 180, "Education"));
-        defaultRewards.add(new CustomReward("Spa/Massage Session", "Relax with a massage", 400, "Health & Fitness"));
-        defaultRewards.add(new CustomReward("Coffee Shop Visit", "Enjoy coffee at favorite cafe", 80, "Food & Dining"));
+        // Only 3 simple default rewards as requested
+        defaultRewards.add(new CustomReward("Watch Movie", "Enjoy a movie", 150, "Entertainment"));
+        defaultRewards.add(new CustomReward("Buy Treat", "Get something nice", 200, "Shopping"));
+        defaultRewards.add(new CustomReward("Gaming Time", "1 hour of gaming", 250, "Entertainment"));
 
         saveCustomRewards(defaultRewards);
     }
@@ -80,6 +76,22 @@ public class CustomizationManager {
         defaultSources.add(new PointsSource("Skill Practice", "Practice a skill", 50, "Education"));
 
         savePointsSources(defaultSources);
+    }
+
+    // Add missing method for mood sources
+    public void createDefaultMoodSources() {
+        List<PointsSource> moodSources = new ArrayList<>();
+
+        // Use correct constructor: (name, description, pointsValue, category)
+        moodSources.add(new PointsSource("Great Day", "Feeling fantastic today!", 20, "Mood"));
+        moodSources.add(new PointsSource("Good Day", "Having a good day", 15, "Mood"));
+        moodSources.add(new PointsSource("Okay Day", "Day is going fine", 10, "Mood"));
+        moodSources.add(new PointsSource("Challenging Day", "Tough day but staying positive", 25, "Mood"));
+
+        // Merge with existing sources
+        List<PointsSource> existingSources = getPointsSources();
+        existingSources.addAll(moodSources);
+        savePointsSources(existingSources);
     }
 
     // Custom Rewards Management
@@ -187,51 +199,31 @@ public class CustomizationManager {
 
     public void addTransaction(EnhancedTransaction transaction) {
         List<EnhancedTransaction> transactions = getEnhancedTransactions();
-        transactions.add(0, transaction); // Add to beginning for newest first
-
-        // Limit to last 1000 transactions to prevent memory issues
-        if (transactions.size() > 1000) {
-            transactions = transactions.subList(0, 1000);
-        }
-
+        transactions.add(transaction);
         saveEnhancedTransactions(transactions);
     }
 
+    // Add missing methods that are being called
+    public List<PointsSource> getAllPointsSources() {
+        return getPointsSources();
+    }
+
+    public List<EnhancedTransaction> getAllTransactions() {
+        return getEnhancedTransactions();
+    }
+
     public void clearAllTransactions() {
-        preferencesManager.putString(KEY_ENHANCED_TRANSACTIONS, "[]");
+        saveEnhancedTransactions(new ArrayList<>());
     }
 
-    // Analytics Methods
-    public int getTotalPointsEarned() {
-        List<EnhancedTransaction> transactions = getEnhancedTransactions();
-        int total = 0;
-        for (EnhancedTransaction transaction : transactions) {
-            if (transaction.isEarning()) {
-                total += transaction.getPoints();
-            }
-        }
-        return total;
-    }
+    public void resetAllData() {
+        // Clear all custom data
+        saveCustomRewards(new ArrayList<>());
+        savePointsSources(new ArrayList<>());
+        saveEnhancedTransactions(new ArrayList<>());
 
-    public int getTotalPointsSpent() {
-        List<EnhancedTransaction> transactions = getEnhancedTransactions();
-        int total = 0;
-        for (EnhancedTransaction transaction : transactions) {
-            if (transaction.isSpending()) {
-                total += transaction.getPoints();
-            }
-        }
-        return total;
-    }
-
-    public int getTransactionCountByCategory(String category) {
-        List<EnhancedTransaction> transactions = getEnhancedTransactions();
-        int count = 0;
-        for (EnhancedTransaction transaction : transactions) {
-            if (category.equals(transaction.getCategory())) {
-                count++;
-            }
-        }
-        return count;
+        // Recreate defaults
+        createDefaultRewards();
+        createDefaultPointsSources();
     }
 }

@@ -9,17 +9,22 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.rewardpoints.app.adapters.PointsSourcesAdapter;
 import com.rewardpoints.app.managers.CustomizationManager;
 import com.rewardpoints.app.models.PointsSource;
+import com.rewardpoints.app.models.EnhancedTransaction;
+import com.rewardpoints.app.utils.PreferencesManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class ManagePointsSourcesActivity extends AppCompatActivity {
+public class ManagePointsSourcesActivity extends AppCompatActivity implements PointsSourcesAdapter.OnPointsSourceClickListener {
 
     private RecyclerView sourcesRecyclerView;
     private FloatingActionButton fabAdd;
     private CustomizationManager customizationManager;
+    private PointsSourcesAdapter sourcesAdapter;
+    private PreferencesManager preferencesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,7 @@ public class ManagePointsSourcesActivity extends AppCompatActivity {
         initializeComponents();
         setupToolbar();
         setupClickListeners();
+        setupRecyclerView();
         loadPointsSources();
     }
 
@@ -36,6 +42,7 @@ public class ManagePointsSourcesActivity extends AppCompatActivity {
         sourcesRecyclerView = findViewById(R.id.sources_recycler_view);
         fabAdd = findViewById(R.id.fab_add_source);
         customizationManager = new CustomizationManager(this);
+        preferencesManager = new PreferencesManager(this);
     }
 
     private void setupToolbar() {
@@ -48,19 +55,86 @@ public class ManagePointsSourcesActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        fabAdd.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CreatePointsSourceActivity.class);
-            startActivityForResult(intent, 100);
-        });
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(this, CreatePointsSourceActivity.class);
+                    startActivityForResult(intent, 100);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Unable to open create points source activity", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void setupRecyclerView() {
+        if (sourcesRecyclerView != null) {
+            sourcesAdapter = new PointsSourcesAdapter(this);
+            sourcesAdapter.setOnPointsSourceClickListener(this);
+            sourcesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            sourcesRecyclerView.setAdapter(sourcesAdapter);
+        }
     }
 
     private void loadPointsSources() {
         try {
             List<PointsSource> sources = customizationManager.getPointsSources();
-            // TODO: Create adapter for points sources
-            Toast.makeText(this, "Loaded " + sources.size() + " points sources", Toast.LENGTH_SHORT).show();
+
+            if (sourcesAdapter != null) {
+                sourcesAdapter.updatePointsSources(sources);
+            }
+
+            if (sources.isEmpty()) {
+                Toast.makeText(this, "No points sources found. Add some using the + button!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Loaded " + sources.size() + " points sources", Toast.LENGTH_SHORT).show();
+            }
+
         } catch (Exception e) {
-            Toast.makeText(this, "Error loading points sources", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error loading points sources: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // PointsSourcesAdapter.OnPointsSourceClickListener implementation
+    @Override
+    public void onPointsSourceClick(PointsSource pointsSource) {
+        // Use the points source - add points to user
+        try {
+            int currentPoints = preferencesManager.getCounter();
+            currentPoints += pointsSource.getPointsValue();
+            preferencesManager.setCounter(currentPoints);
+
+            // Record transaction
+            EnhancedTransaction transaction = new EnhancedTransaction(
+                "EARN",
+                pointsSource.getName(),
+                pointsSource.getDescription(),
+                pointsSource.getPointsValue(),
+                pointsSource.getCategory()
+            );
+            preferencesManager.addTransaction(transaction);
+
+            Toast.makeText(this, "Earned " + pointsSource.getPointsValue() + " points from " + pointsSource.getName() + "!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error using points source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onEditPointsSource(PointsSource pointsSource) {
+        // Edit functionality - for now show a message
+        Toast.makeText(this, "Edit functionality for '" + pointsSource.getName() + "' coming soon!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeletePointsSource(PointsSource pointsSource) {
+        try {
+            customizationManager.deletePointsSource(pointsSource.getId());
+            loadPointsSources(); // Refresh the list
+            Toast.makeText(this, "Points source '" + pointsSource.getName() + "' deleted!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error deleting points source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

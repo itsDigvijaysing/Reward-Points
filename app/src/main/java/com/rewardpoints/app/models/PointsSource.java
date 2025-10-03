@@ -14,6 +14,8 @@ public class PointsSource {
     private long createdDate;
     private long lastUsedDate;
     private int timesUsed;
+    private int dailyLimit;
+    private int weeklyLimit;
 
     public PointsSource() {
         // Default constructor
@@ -65,6 +67,12 @@ public class PointsSource {
 
     public int getTimesUsed() { return timesUsed; }
     public void setTimesUsed(int timesUsed) { this.timesUsed = timesUsed; }
+
+    public int getDailyLimit() { return dailyLimit; }
+    public void setDailyLimit(int dailyLimit) { this.dailyLimit = dailyLimit; }
+
+    public int getWeeklyLimit() { return weeklyLimit; }
+    public void setWeeklyLimit(int weeklyLimit) { this.weeklyLimit = weeklyLimit; }
 
     public void incrementUsage() {
         this.timesUsed++;

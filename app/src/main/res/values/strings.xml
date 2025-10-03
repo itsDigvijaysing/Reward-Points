@@ -19,6 +19,8 @@
     <string name="reward_claimed">Reward Claimed!</string>
     <string name="points_earned">Points Earned: %d</string>
     <string name="points_spent">Points Spent: %d</string>
+    <string name="total_points_earned">Total Points Earned</string>
+    <string name="total_points_spent">Total Points Spent</string>
     <string name="insufficient_points">Insufficient points for this reward</string>
     <string name="points_required">%d points required</string>
     <string name="claim_reward">Claim Reward</string>
@@ -47,7 +49,10 @@
     <string name="mood_neutral">Neutral</string>
     <string name="mood_sad">Sad</string>
     <string name="mood_very_sad">Very Sad</string>
-    <string name="mood_feedback_title">Daily Mood Check-in</string>
+
+    <!-- Welcome and Messages -->
+    <string name="welcome_title">Welcome</string>
+    <string name="mood_feedback_title">Daily Check-in</string>
     <string name="mood_feedback_subtitle">How are you feeling today?</string>
 
     <!-- Achievements -->
@@ -88,6 +93,9 @@
     <string name="transaction_history">Transaction History</string>
     <string name="points_analytics">Points Analytics</string>
     <string name="monthly_summary">Monthly Summary</string>
+    <string name="all_time">All Time</string>
+    <string name="this_month">This Month</string>
+    <string name="this_week">This Week</string>
     <string name="clear_history">Clear History</string>
     <string name="export_history">Export History</string>
     <string name="history_cleared">History cleared successfully</string>
@@ -105,6 +113,7 @@
     <string name="done">Done</string>
     <string name="reset">Reset</string>
     <string name="restore_defaults">Restore Defaults</string>
+    <string name="skip">Skip</string>
 
     <!-- Dialogs -->
     <string name="confirmation_title">Confirmation</string>
@@ -121,14 +130,14 @@
 
     <!-- Error Messages -->
     <string name="error_generic">Something went wrong. Please try again.</string>
-    <string name="error_data_load">Unable to load data</string>
+    <string name="error_data_load">Failed to load data. Please try again.</string>
     <string name="error_save_failed">Failed to save changes</string>
     <string name="error_invalid_input">Please enter valid information</string>
     <string name="error_reward_name_required">Reward name is required</string>
     <string name="error_points_value_required">Points value is required</string>
     <string name="error_points_must_be_positive">Points must be a positive number</string>
 
-    <!-- Accessibility -->
+    <!-- Content Descriptions for Accessibility -->
     <string name="content_description_close_button">Close dialog</string>
     <string name="content_description_mood_button">Select mood feedback</string>
     <string name="content_description_achievement_button">Record achievement</string>
@@ -159,28 +168,24 @@
     <string name="support_email">support@rewardpoints.app</string>
     <string name="app_version">Version %s</string>
 
-    <!-- Onboarding -->
-    <string name="welcome_title">Welcome to Reward Points!</string>
-    <string name="welcome_subtitle">Track your daily achievements and reward yourself</string>
-    <string name="onboarding_points_title">Earn Points</string>
-    <string name="onboarding_points_desc">Complete daily missions and achievements to earn points</string>
-    <string name="onboarding_rewards_title">Claim Rewards</string>
-    <string name="onboarding_rewards_desc">Use your points to unlock personalized rewards</string>
-    <string name="onboarding_customize_title">Customize Everything</string>
-    <string name="onboarding_customize_desc">Add your own rewards and point sources</string>
+    <!-- Welcome and Onboarding -->
+    <string name="welcome_subtitle">Start earning points for your daily activities!</string>
     <string name="get_started">Get Started</string>
-    <string name="skip">Skip</string>
-    <string name="next">Next</string>
 
-    <!-- Statistics -->
-    <string name="total_points_earned">Total Points Earned</string>
-    <string name="total_points_spent">Total Points Spent</string>
-    <string name="current_balance">Current Balance</string>
-    <string name="rewards_claimed">Rewards Claimed</string>
-    <string name="achievements_unlocked">Achievements Unlocked</string>
-    <string name="missions_completed">Missions Completed</string>
-    <string name="streak_days">Day Streak</string>
-    <string name="this_week">This Week</string>
-    <string name="this_month">This Month</string>
-    <string name="all_time">All Time</string>
+    <!-- Empty States -->
+    <string name="no_rewards_available">No rewards available yet. Tap the + button to add some!</string>
+    <string name="no_points_sources">No points sources found. Add some activities to earn points!</string>
+    <string name="coming_soon">Coming Soon!</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_points_desc">Earn points for completing daily tasks</string>
+    <string name="onboarding_rewards_desc">Redeem points for rewards you set</string>
+    <string name="onboarding_customize_desc">Customize everything to fit your lifestyle</string>
+
+    <!-- Activity Titles -->
+    <string name="manage_rewards">Manage Rewards</string>
+    <string name="create_reward">Create Reward</string>
+    <string name="daily_missions">Daily Missions</string>
+    <string name="achievements_title">Achievements</string>
+
 </resources>
