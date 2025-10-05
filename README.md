@@ -1,30 +1,178 @@
-# Reward Points App
+# Reward Points - Personal Achievement Tracker
 
-## Earn Reward points by your Achievements
+<div align="center">
 
-Reward Points App is your personal mood tracker and productivity companion. Start complete your day by logging your mood, and earn points based on how you feel. 
-Feeling great? Get bonus points! Feeling down? MoodPoints will cheer you up with encouraging messages and tips.
+![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
+![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)
+![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
+![F-Droid](https://img.shields.io/badge/F--Droid-Ready-green.svg)
 
-Earn points not just for your mood, but also for completing daily missions and achieving milestones. Whether it's finishing a project, hitting the gym, or learning something new, every accomplishment counts.
+**A simple, privacy-focused personal reward system that helps you track achievements and motivate yourself through a points-based system.**
 
-Use your accumulated points to treat yourself. Redeem them to watch a movie, play a game, travel to a new place, or even purchase items because you deserve it.
+[Download](#download) • [Features](#features) • [Privacy](#privacy) • [Building](#building) • [Contributing](#contributing)
 
-Stay motivated, track your progress, and reward yourself with Reward Points!
+</div>
 
-This app could help users stay mindful of their emotions, stay motivated to complete tasks, and enjoy rewards for their efforts.
+## 📱 Overview
 
-## Reward Points version 1.0 Todo : (Completed) (Testing...)
+Reward Points is a completely **offline**, **open-source** personal motivation app that gamifies your daily achievements. Track your mood, complete missions, set goals, and reward yourself with points - all while keeping your data 100% private and local.
 
-- [X] Start with simple Native App for Mobile No need of Hybrid, Web App (Cloud Sub. Expired) so use Local Storage.  
-- [X] Start Page Ask How was your Today Mood Symbols will be great & give some points.  
-- [X] There should be Log Page as well to keep track of added & Converted Points.  
-- [X] If we do something special that day then, create way to add Some Points.  
-- [X] Reward points can be used for somethings like Traveling Time, Gaming Time, Movie Time, etc.
+Perfect for anyone who wants to build better habits, stay motivated, and maintain privacy without sacrificing functionality.
 
-## Reward Points Version 2.0 Todo :
+## ✨ Features
 
-- [ ] After activating your reward it will notify you if reward time completed.
-- [ ] High Cache Management & optimization.
-- [ ] Add more features like, Add Points If you do Specific Task, e.g. Worked on your Project, Helped your Health, etc.
-- [ ] Update the Reward Benefits, e.g. Traveling Time, Gaming Time, Movie Time, etc.
-- [ ] Optimize the App & Update the UI/UX.
+### 🎯 **Core Functionality**
+- **Daily Mood Tracking** - Log how you're feeling and earn points
+- **Custom Rewards** - Create personalized rewards to redeem with points
+- **Daily Missions** - Set and complete daily tasks for consistent motivation
+- **Long-term Goals** - Track bigger achievements and milestones
+- **Transaction History** - View detailed history of all points earned and spent
+- **Achievement System** - Unlock achievements as you progress
+
+### 🛡️ **Privacy & Security**
+- **100% Offline** - No internet connection required
+- **Local Storage Only** - All data stays on your device
+- **No Tracking** - Zero analytics, ads, or data collection
+- **No Permissions** - Doesn't request unnecessary Android permissions
+- **Open Source** - Full transparency with source code review
+
+### 🎨 **User Experience**
+- **Material Design 3** - Modern, clean interface
+- **Dark/Light Theme** - Automatic theme switching support
+- **Intuitive Navigation** - Easy-to-use interface for all ages
+- **Responsive Design** - Works on phones and tablets
+- **Accessibility** - Designed with accessibility in mind
+
+## 📥 Download
+
+### F-Droid (Recommended)
+*Coming Soon* - The app will be available on F-Droid, the privacy-focused app store.
+
+### Direct APK
+Download the latest release APK from the [Releases](../../releases) section.
+
+### Build from Source
+See the [Building](#building) section below.
+
+## 🚀 Quick Start
+
+1. **Install the app** from F-Droid or download the APK
+2. **Set your username** in the welcome screen
+3. **Log your daily mood** to start earning points
+4. **Create custom rewards** for things you enjoy
+5. **Set daily missions** to build consistent habits
+6. **Redeem rewards** when you've earned enough points!
+
+## 🏗️ Building
+
+### Prerequisites
+- Android Studio Arctic Fox or newer
+- JDK 8 or newer
+- Android SDK with API level 21+
+
+### Build Steps
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/Reward-Points.git
+cd Reward-Points
+
+# Build debug APK
+./gradlew assembleDebug
+
+# Build release APK
+./gradlew assembleRelease
+```
+
+The APK will be generated in `app/build/outputs/apk/`
+
+## 🔒 Privacy
+
+Your privacy is our top priority:
+
+- **No Network Access** - The app doesn't connect to the internet
+- **Local Data Only** - Everything is stored on your device using encrypted SharedPreferences
+- **No Analytics** - We don't collect usage statistics or crash reports
+- **No Ads** - Completely ad-free experience
+- **No Accounts** - No registration or login required
+- **Open Source** - Code is fully auditable and transparent
+
+## 🛠️ Technical Details
+
+### Architecture
+- **Native Android** - Built with Java and AndroidX libraries
+- **Material Design 3** - Modern UI components and theming
+- **Local Storage** - Uses encrypted SharedPreferences for data persistence
+- **MVVM Pattern** - Clean architecture with proper separation of concerns
+
+### Dependencies
+- AndroidX libraries (AppCompat, Material, etc.)
+- Gson for JSON serialization
+- AndroidX Security for encrypted storage
+- Only FOSS-compatible dependencies
+
+### Compatibility
+- **Minimum Android Version:** 5.0 (API 21)
+- **Target Android Version:** 14 (API 34)
+- **Architecture:** ARM, ARM64, x86, x86_64
+- **Storage:** ~10MB installation size
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+### Ways to Contribute
+- 🐛 **Report bugs** via GitHub Issues
+- 💡 **Suggest features** for future versions
+- 🔧 **Submit pull requests** with improvements
+- 📖 **Improve documentation** and help others
+- 🌍 **Translate the app** to other languages
+
+### Development Setup
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and test thoroughly
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to your branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+### Code Guidelines
+- Follow Android development best practices
+- Maintain API 21+ compatibility
+- Keep dependencies FOSS-compatible
+- Add appropriate comments and documentation
+- Test on multiple device sizes and Android versions
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ **Use** the app for any purpose
+- ✅ **Study** and modify the source code
+- ✅ **Share** the app with others
+- ✅ **Distribute** modified versions
+- ⚠️ **Must** keep the same license for derivatives
+- ⚠️ **Must** provide source code for modifications
+
+## 🙏 Acknowledgments
+
+- **Material Design** - Google's design system
+- **AndroidX** - Modern Android development libraries
+- **F-Droid Community** - For promoting FOSS apps
+- **Contributors** - Everyone who helps improve the app
+
+## 📞 Support
+
+- **Issues:** Report bugs and request features via [GitHub Issues](../../issues)
+- **Discussions:** Join conversations in [GitHub Discussions](../../discussions)
+- **Security:** Report security issues privately via email (see SECURITY.md)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for privacy-conscious users who value local data control**
+
+[⬆ Back to Top](#reward-points---personal-achievement-tracker)
+
+</div>
