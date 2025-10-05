@@ -1,0 +1,28 @@
+Reward Points - Personal Achievement Tracker
+
+A simple, privacy-focused personal reward system that helps you track achievements and motivate yourself through a points-based system.
+
+FEATURES:
+• Track daily achievements and mood
+• Create custom rewards to redeem with points
+• Set daily missions and long-term goals
+• View detailed transaction history
+• Completely offline - no internet required
+• No ads, no tracking, no data collection
+• Material Design 3 interface
+• Dark/Light theme support
+
+PRIVACY:
+• 100% offline operation
+• All data stored locally on your device
+• No network permissions required
+• No analytics or crash reporting
+• Open source and transparent
+
+PERFECT FOR:
+• Personal motivation and goal tracking
+• Habit building and daily routines
+• Gamifying personal achievements
+• Privacy-conscious users who want local data storage
+
+This app is completely free and open source (FOSS). Source code available for review and contributions.

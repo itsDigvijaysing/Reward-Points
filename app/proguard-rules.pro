@@ -42,30 +42,43 @@
     public static *** d(...);
     public static *** v(...);
     public static *** i(...);
+    public static *** w(...);
 }
 
-# Samsung Galaxy Store specific rules
--keep class com.samsung.** { *; }
--dontwarn com.samsung.**
+# F-Droid specific rules - Open Source App Store
+# F-Droid builds from source, so we need robust obfuscation rules
 
-# Samsung Galaxy Store SDK compatibility
--keep class com.sec.** { *; }
--dontwarn com.sec.**
+# FOSS compatibility - keep open source components
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn javax.lang.model.element.Modifier
 
-# Enhanced security for Samsung devices
+# F-Droid privacy optimization - remove analytics and tracking
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** w(...);
+}
+
+# F-Droid compatibility for reproducible builds
+-keepattributes *Annotation*,InnerClasses,Signature,SourceFile,LineNumberTable
+
+# F-Droid security optimization
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# Samsung Galaxy Store analytics compatibility
--keep class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
+# F-Droid Parcelable compatibility (better than Samsung version)
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
 }
 
-# Optimize for Samsung Galaxy Store distribution
+# F-Droid build optimization - more aggressive than commercial stores
 -optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
--optimizationpasses 5
+-optimizationpasses 3
 -allowaccessmodification
+-dontpreverify
 
-# Samsung Galaxy Store crash reporting compatibility
--keepattributes *Annotation*,InnerClasses,Signature,Exceptions
+# F-Droid crash reporting compatibility (FOSS crash reporting)
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

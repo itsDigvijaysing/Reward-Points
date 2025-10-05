@@ -52,14 +52,15 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            // Samsung Galaxy Store specific optimizations
+            // F-Droid specific optimizations
             zipAlignEnabled true
             debuggable false
 
-            // Add Samsung Galaxy Store metadata
+            // F-Droid metadata - emphasize FOSS nature
             manifestPlaceholders = [
-                targetStore: "Samsung Galaxy Store",
-                storeVersion: "samsung"
+                targetStore: "F-Droid",
+                storeVersion: "fdroid",
+                appDescription: "Open Source Reward Points Tracker"
             ]
         }
     }
