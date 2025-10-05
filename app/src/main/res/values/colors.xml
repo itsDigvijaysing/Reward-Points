@@ -9,7 +9,7 @@
     <color name="background_dark">#121212</color>
 
     <!-- New colors for enhanced functionality -->
-    <color name="success_green">#4CAF50</color>
+    <color name="success_green">#67FF6A</color>
     <color name="warning_orange">#FF9800</color>
     <color name="error_red">#F44336</color>
     <color name="achievement_gold">#FFD700</color>
@@ -80,5 +80,5 @@
     <color name="purple_700">#FF3700B3</color>
 
     <!-- CRITICAL: Adding missing launcher background color -->
-    <color name="ic_launcher_background">#3DDC84</color>
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources>

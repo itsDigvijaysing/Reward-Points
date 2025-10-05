@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
 
         // Record transaction
         EnhancedTransaction transaction = new EnhancedTransaction(
-                "EARN", source, description, points, "Daily"
+                "EARN", source, description, points, "Manual"
         );
         preferencesManager.addTransaction(transaction);
 
@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
 
         // Record transaction
         EnhancedTransaction transaction = new EnhancedTransaction(
-                "REDEEM", "Reward Redemption", reward.getName(), -reward.getPointsCost(), "Daily"
+                "REDEEM", "Reward Redemption", reward.getName(), reward.getPointsCost(), "Daily"
         );
         preferencesManager.addTransaction(transaction);
 

@@ -19,6 +19,8 @@ import com.rewardpoints.app.utils.PreferencesManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +32,14 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
     private LinearProgressIndicator achievementProgressBar;
     private LinearLayout emptyStateLayout;
     private FloatingActionButton fabAddAchievement;
+    private ChipGroup filterChipGroup;
+    private Chip chipAll, chipUnlocked, chipLocked;
 
     private AchievementManager achievementManager;
     private PreferencesManager preferencesManager;
     private AchievementsAdapter achievementsAdapter;
 
-    private boolean showingCompleted = false;
+    private int currentFilter = 0; // 0 = All, 1 = Completed, 2 = Incomplete
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +58,14 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
         achievementProgressText = findViewById(R.id.achievement_progress_text);
         achievementProgressBar = findViewById(R.id.achievement_progress_bar);
         emptyStateLayout = findViewById(R.id.empty_state_layout);
-        emptyStateText = emptyStateLayout != null ? emptyStateLayout.findViewById(android.R.id.text1) : null; // Use system text view if custom doesn't exist
+        emptyStateText = emptyStateLayout != null ? emptyStateLayout.findViewById(android.R.id.text1) : null;
         fabAddAchievement = findViewById(R.id.fab_add_achievement);
+
+        // Initialize filter chips
+        filterChipGroup = findViewById(R.id.filter_chip_group);
+        chipAll = findViewById(R.id.chip_all);
+        chipUnlocked = findViewById(R.id.chip_unlocked);
+        chipLocked = findViewById(R.id.chip_locked);
 
         achievementManager = new AchievementManager(this);
         preferencesManager = new PreferencesManager(this);
@@ -81,26 +91,65 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
         if (fabAddAchievement != null) {
             fabAddAchievement.setOnClickListener(v -> showCreateAchievementDialog());
         }
+
+        // Setup filter chip listeners
+        if (filterChipGroup != null) {
+            filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+                if (!checkedIds.isEmpty()) {
+                    int checkedId = checkedIds.get(0);
+                    if (checkedId == R.id.chip_all) {
+                        currentFilter = 0;
+                    } else if (checkedId == R.id.chip_unlocked) {
+                        currentFilter = 1;
+                    } else if (checkedId == R.id.chip_locked) {
+                        currentFilter = 2;
+                    }
+                    loadAchievements();
+                }
+            });
+        }
     }
 
     private void loadAchievements() {
         try {
             // Update current points
             int currentPoints = preferencesManager.getCounter();
-            // Removed reference to currentPointsText as it's no longer in the layout
 
-            // Load achievements based on current tab
+            // Load all achievements
             List<Achievement> allAchievements = achievementManager.getUserAchievements();
             List<Achievement> filteredAchievements = new ArrayList<>();
 
             if (allAchievements != null) {
                 for (Achievement achievement : allAchievements) {
-                    if (showingCompleted && achievement.isCompleted()) {
-                        filteredAchievements.add(achievement);
-                    } else if (!showingCompleted && !achievement.isCompleted()) {
-                        filteredAchievements.add(achievement);
+                    switch (currentFilter) {
+                        case 0: // All achievements
+                            filteredAchievements.add(achievement);
+                            break;
+                        case 1: // Completed achievements only
+                            if (achievement.isCompleted()) {
+                                filteredAchievements.add(achievement);
+                            }
+                            break;
+                        case 2: // Incomplete achievements only
+                            if (!achievement.isCompleted()) {
+                                filteredAchievements.add(achievement);
+                            }
+                            break;
                     }
                 }
+
+                // Sort achievements: incomplete first, then completed
+                filteredAchievements.sort((a1, a2) -> {
+                    // First sort by completion status (incomplete first)
+                    if (a1.isCompleted() != a2.isCompleted()) {
+                        return a1.isCompleted() ? 1 : -1; // incomplete (false) comes first
+                    }
+                    // For achievements with same completion status, sort by creation time (newest first)
+                    return Long.compare(
+                        Long.parseLong(a2.getId().replace("custom_", "")),
+                        Long.parseLong(a1.getId().replace("custom_", ""))
+                    );
+                });
             }
 
             // Update progress
@@ -134,11 +183,19 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
                 emptyStateLayout.setVisibility(View.VISIBLE);
 
                 if (emptyStateText != null) {
-                    if (showingCompleted) {
-                        emptyStateText.setText("🎯 No completed goals yet\n\nComplete some goals to see them here!");
-                    } else {
-                        emptyStateText.setText("🎯 No goals set yet\n\nTap + to create your first long-term goal!");
+                    String emptyMessage;
+                    switch (currentFilter) {
+                        case 1: // Completed filter
+                            emptyMessage = "🎯 No completed goals yet\n\nComplete some goals to see them here!";
+                            break;
+                        case 2: // Incomplete filter
+                            emptyMessage = "🎉 All goals completed!\n\nCreate new goals to continue your journey!";
+                            break;
+                        default: // All filter
+                            emptyMessage = "🎯 No goals set yet\n\nTap + to create your first long-term goal!";
+                            break;
                     }
+                    emptyStateText.setText(emptyMessage);
                 }
             }
 
@@ -218,14 +275,21 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
     public void onAchievementClick(Achievement achievement) {
         if (!achievement.isCompleted()) {
             showCompleteAchievementDialog(achievement);
+        } else {
+            // Show completed achievement details
+            showCompletedAchievementDetails(achievement);
         }
     }
 
     @Override
     public void onDeleteAchievement(Achievement achievement) {
+        String title = achievement.isCompleted() ? "Delete Completed Goal" : "Delete Goal";
+        String message = "Are you sure you want to delete '" + achievement.getName() + "'?" +
+                (achievement.isCompleted() ? "\n\nNote: This goal was already completed." : "");
+
         new MaterialAlertDialogBuilder(this)
-            .setTitle("Delete Goal")
-            .setMessage("Are you sure you want to delete '" + achievement.getName() + "'?")
+            .setTitle(title)
+            .setMessage(message)
             .setPositiveButton("Delete", (dialog, which) -> {
                 achievementManager.deleteUserAchievement(achievement.getId());
                 Toast.makeText(this, "Goal deleted", Toast.LENGTH_SHORT).show();
@@ -243,6 +307,21 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
                 completeAchievement(achievement);
             })
             .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void showCompletedAchievementDetails(Achievement achievement) {
+        String completedDate = "";
+        if (achievement.getUnlockedDate() > 0) {
+            completedDate = "\n\nCompleted: " + new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+                    .format(new java.util.Date(achievement.getUnlockedDate()));
+        }
+
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("🏆 Completed Goal")
+            .setMessage(achievement.getName() + "\n\n" + achievement.getDescription() +
+                       "\n\nReward: " + achievement.getRewardPoints() + " points" + completedDate)
+            .setPositiveButton("OK", null)
             .show();
     }
 
