@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Description (optional)">
+        android:hint="Description">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/achievement_description_input"
@@ -39,7 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Points Target">
+        android:hint="Hours Count">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/achievement_target_input"
@@ -53,7 +53,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Points Reward (optional)">
+        android:hint="Points Reward">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/achievement_points_input"

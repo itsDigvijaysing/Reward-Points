@@ -15,7 +15,9 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Create Points Source"
+            android:background="@color/primary"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="Create Secret Points Source"
             app:titleTextColor="@color/on_primary" />
 
     </com.google.android.material.appbar.AppBarLayout>
