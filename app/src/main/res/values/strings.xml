@@ -24,7 +24,7 @@
     <string name="insufficient_points">Insufficient points for this reward</string>
     <string name="points_required">%d points required</string>
     <string name="claim_reward">Claim Reward</string>
-    <string name="customize_rewards">Customize Rewards</string>
+    <string name="customize_rewards">Customize</string>
 
     <!-- Reward Categories -->
     <string name="entertainment">Entertainment</string>
@@ -32,7 +32,6 @@
     <string name="shopping">Shopping</string>
     <string name="travel">Travel</string>
     <string name="food_dining">Food &amp; Dining</string>
-    <string name="education">Education</string>
     <string name="custom_category">Custom Category</string>
 
     <!-- Default Rewards -->

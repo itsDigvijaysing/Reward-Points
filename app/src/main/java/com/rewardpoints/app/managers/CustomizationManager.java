@@ -61,7 +61,6 @@ public class CustomizationManager {
         // Only basic activities (reduced from 10+ to 3)
         defaultSources.add(new PointsSource("Task Completed", "Finished a task", 25, "Achievement"));
         defaultSources.add(new PointsSource("Exercise", "Physical activity", 35, "Health"));
-        defaultSources.add(new PointsSource("Learning", "Studied or learned something", 30, "Education"));
 
         savePointsSources(defaultSources);
     }

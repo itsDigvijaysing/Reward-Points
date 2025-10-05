@@ -63,7 +63,6 @@
     <!-- Missing category and state colors -->
     <color name="success">#4CAF50</color>
     <color name="error">#F44336</color>
-    <color name="education">#9C27B0</color>
     <color name="entertainment">#E91E63</color>
     <color name="food">#FF5722</color>
     <color name="health">#4CAF50</color>

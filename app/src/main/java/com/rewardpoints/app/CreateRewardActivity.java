@@ -55,7 +55,6 @@ public class CreateRewardActivity extends AppCompatActivity {
         nameInputLayout = findViewById(R.id.name_input_layout);
         pointsInputLayout = findViewById(R.id.points_input_layout);
         categoryChipGroup = findViewById(R.id.category_chip_group);
-        prioritySlider = findViewById(R.id.priority_slider);
         saveBtn = findViewById(R.id.save_btn);
         cancelBtn = findViewById(R.id.cancel_btn);
 
@@ -145,7 +144,6 @@ public class CreateRewardActivity extends AppCompatActivity {
         if (selectedId == R.id.chip_shopping) return getString(R.string.shopping);
         if (selectedId == R.id.chip_travel) return getString(R.string.travel);
         if (selectedId == R.id.chip_food) return getString(R.string.food_dining);
-        if (selectedId == R.id.chip_education) return getString(R.string.education);
 
         return getString(R.string.entertainment); // Default
     }

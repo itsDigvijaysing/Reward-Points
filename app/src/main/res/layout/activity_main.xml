@@ -20,7 +20,7 @@
             android:layout_height="match_parent"
             app:contentScrim="@color/primary"
             app:expandedTitleGravity="center_horizontal|bottom"
-            app:expandedTitleMarginBottom="48dp"
+            app:expandedTitleMarginBottom="42dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
             <!-- Header Content -->
@@ -39,15 +39,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_title"
                     android:textColor="@color/on_primary"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="normal"
                     android:layout_marginBottom="8dp" />
 
                 <!-- Points Counter -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="200dp"
+                    android:layout_width="240dp"
                     android:layout_height="120dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="20dp"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="8dp"
                     app:cardBackgroundColor="@color/surface">
@@ -117,7 +117,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -134,7 +134,7 @@
                         android:textSize="14sp"
                         android:textColor="@color/on_surface_variant"
                         android:layout_marginTop="4dp"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="8dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btndayinfo"
@@ -146,13 +146,6 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Quick Actions Section -->
-            <TextView
-                style="@style/SectionHeaderStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Quick Actions" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -179,7 +172,7 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="4dp">
 
                         <!-- Fixed ImageView with proper scaling -->
                         <FrameLayout
@@ -210,7 +203,7 @@
                             android:gravity="center"
                             android:maxLines="1"
                             android:ellipsize="end"
-                            android:layout_marginTop="8dp" />
+                            android:layout_marginTop="6dp" />
 
                     </LinearLayout>
 
@@ -235,7 +228,7 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="4dp">
 
                         <!-- Fixed ImageView with proper scaling -->
                         <FrameLayout
