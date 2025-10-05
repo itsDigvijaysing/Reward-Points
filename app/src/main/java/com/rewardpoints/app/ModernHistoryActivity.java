@@ -146,8 +146,9 @@ public class ModernHistoryActivity extends AppCompatActivity {
         for (EnhancedTransaction transaction : allTransactions) {
             if ("EARN".equals(transaction.getType())) {
                 totalEarned += transaction.getAmount();
-            } else if ("SPEND".equals(transaction.getType())) {
-                totalSpent += transaction.getAmount();
+            } else if ("SPEND".equals(transaction.getType()) || "REDEEM".equals(transaction.getType())) {
+                // Count both SPEND and REDEEM transactions as spent points
+                totalSpent += Math.abs(transaction.getAmount()); // Use absolute value in case amount is negative
             }
         }
 

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.rewardpoints.app.R;
 import com.rewardpoints.app.models.Achievement;
@@ -123,28 +124,28 @@ public class AchievementsAdapter extends RecyclerView.Adapter<AchievementsAdapte
             if (achievementIcon != null) {
                 if (isUnlocked) {
                     achievementIcon.setImageResource(android.R.drawable.star_big_on);
-                    achievementIcon.setColorFilter(context.getResources().getColor(android.R.color.holo_orange_light));
+                    achievementIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_orange_light));
                 } else {
                     achievementIcon.setImageResource(android.R.drawable.star_big_off);
-                    achievementIcon.setColorFilter(context.getResources().getColor(android.R.color.darker_gray));
+                    achievementIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.darker_gray));
                 }
             }
 
             // Set card appearance based on unlock status
             if (cardView != null) {
                 if (isUnlocked) {
-                    cardView.setCardBackgroundColor(context.getResources().getColor(android.R.color.white));
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
                     cardView.setAlpha(1.0f);
                 } else {
-                    cardView.setCardBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.background_light));
                     cardView.setAlpha(0.7f);
                 }
             }
 
             // Set text colors based on unlock status
             int textColor = isUnlocked ?
-                context.getResources().getColor(android.R.color.black) :
-                context.getResources().getColor(android.R.color.darker_gray);
+                ContextCompat.getColor(context, android.R.color.black) :
+                ContextCompat.getColor(context, android.R.color.darker_gray);
 
             if (nameText != null) {
                 nameText.setTextColor(textColor);
@@ -158,11 +159,11 @@ public class AchievementsAdapter extends RecyclerView.Adapter<AchievementsAdapte
                 if (isUnlocked) {
                     progressBar.setProgress(100);
                     progressText.setText("Completed!");
-                    progressText.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
+                    progressText.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
                 } else {
                     progressBar.setProgress(0);
                     progressText.setText("In Progress");
-                    progressText.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
+                    progressText.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
                 }
             }
         }

@@ -30,7 +30,15 @@ android {
             keyPassword "android"
         }
         release {
-            // For production, you should create and use your own keystore
+            // TODO: Create and configure your production keystore
+            // For now, commenting out debug keystore usage in release
+            // storeFile file("your-release-key.keystore")
+            // storePassword "your-store-password"
+            // keyAlias "your-key-alias"
+            // keyPassword "your-key-password"
+
+            // Temporary fallback to debug for development
+            // IMPORTANT: Replace with production keystore before releasing to app store
             storeFile file("debug.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"

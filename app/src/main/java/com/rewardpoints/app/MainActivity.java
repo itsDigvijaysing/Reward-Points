@@ -3,6 +3,7 @@ package com.rewardpoints.app;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -24,7 +25,6 @@ import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 import java.util.Iterator;
@@ -160,7 +160,16 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
         // Update welcome message with user name and version
         String userName = preferencesManager.getUserName();
         if (welcomeText != null) {
-            String welcomeMessage = getString(R.string.welcome_title) + ", " + userName + "! (v1.5.0 - Enhanced Daily Missions)";
+            // Use a safer approach for version name
+            String versionName = "1.5.0"; // Fallback version
+            try {
+                versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            } catch (Exception e) {
+                // Use fallback version if package info not available
+                Log.w(TAG, "Could not get version name, using fallback", e);
+            }
+
+            String welcomeMessage = getString(R.string.welcome_title) + ", " + userName + "! (v" + versionName + " - Enhanced Daily Missions)";
             welcomeText.setText(welcomeMessage);
         }
     }
@@ -298,19 +307,25 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
         // Show a helpful message for empty rewards
         if (congratsText != null) {
             congratsText.setText(getString(R.string.no_rewards_available));
-            congratsText.setTextColor(getResources().getColor(android.R.color.holo_blue_bright));
+            congratsText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_bright));
             congratsText.setVisibility(View.VISIBLE);
             congratsText.setAlpha(1f);
 
-            // Hide the message after 5 seconds
-            congratsText.postDelayed(() -> {
-                if (congratsText != null && congratsText.getText().equals(getString(R.string.no_rewards_available))) {
-                    congratsText.animate()
+            // Use Handler with WeakReference to prevent memory leaks
+            android.os.Handler handler = new android.os.Handler();
+            java.lang.ref.WeakReference<TextView> textRef = new java.lang.ref.WeakReference<>(congratsText);
+            String targetText = getString(R.string.no_rewards_available);
+
+            handler.postDelayed(() -> {
+                TextView textView = textRef.get();
+                if (textView != null && targetText.equals(textView.getText().toString())) {
+                    textView.animate()
                         .alpha(0f)
                         .setDuration(500)
                         .withEndAction(() -> {
-                            if (congratsText != null) {
-                                congratsText.setVisibility(View.GONE);
+                            TextView tv = textRef.get();
+                            if (tv != null) {
+                                tv.setVisibility(View.GONE);
                             }
                         })
                         .start();
@@ -470,15 +485,20 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
                     .setDuration(500)
                     .start();
 
-            // Hide after 3 seconds
-            congratsText.postDelayed(() -> {
-                if (congratsText != null) {
-                    congratsText.animate()
+            // Use Handler with WeakReference to prevent memory leaks
+            android.os.Handler handler = new android.os.Handler();
+            java.lang.ref.WeakReference<TextView> textRef = new java.lang.ref.WeakReference<>(congratsText);
+
+            handler.postDelayed(() -> {
+                TextView textView = textRef.get();
+                if (textView != null) {
+                    textView.animate()
                             .alpha(0f)
                             .setDuration(500)
                             .withEndAction(() -> {
-                                if (congratsText != null) {
-                                    congratsText.setVisibility(View.GONE);
+                                TextView tv = textRef.get();
+                                if (tv != null) {
+                                    tv.setVisibility(View.GONE);
                                 }
                             })
                             .start();

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.rewardpoints.app.R;
 import com.rewardpoints.app.models.DailyMission;
@@ -136,10 +137,10 @@ public class MissionsAdapter extends RecyclerView.Adapter<MissionsAdapter.Missio
             if (statusText != null) {
                 if (mission.isCompleted()) {
                     statusText.setText("✅ Completed");
-                    statusText.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
+                    statusText.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
                 } else {
                     statusText.setText("📋 Available");
-                    statusText.setTextColor(context.getResources().getColor(android.R.color.holo_blue_bright));
+                    statusText.setTextColor(ContextCompat.getColor(context, android.R.color.holo_blue_bright));
                 }
             }
 
@@ -160,10 +161,10 @@ public class MissionsAdapter extends RecyclerView.Adapter<MissionsAdapter.Missio
             // Set card background based on completion status
             if (cardView != null) {
                 if (mission.isCompleted()) {
-                    cardView.setCardBackgroundColor(context.getResources().getColor(android.R.color.holo_green_light));
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_green_light));
                     cardView.setAlpha(0.7f);
                 } else {
-                    cardView.setCardBackgroundColor(context.getResources().getColor(android.R.color.white));
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
                     cardView.setAlpha(1.0f);
                 }
             }

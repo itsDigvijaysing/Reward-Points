@@ -51,6 +51,9 @@ public class EnhancedTransaction {
     public int getPoints() { return points; }
     public void setPoints(int points) { this.points = points; }
 
+    // Helper method for backward compatibility - HistoryAdapter calls getAmount()
+    public int getAmount() { return points; }
+
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
@@ -72,13 +75,19 @@ public class EnhancedTransaction {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    // Utility methods
-    public boolean isEarningTransaction() {
+    // Helper method for HistoryAdapter - determines if transaction is earning points
+    public boolean isEarning() {
         return "EARN".equals(type);
     }
 
-    public boolean isSpendingTransaction() {
+    // Helper method to determine if transaction is spending points
+    public boolean isSpending() {
         return "SPEND".equals(type) || "REDEEM".equals(type);
+    }
+
+    // Helper method for display purposes
+    public String getTitle() {
+        return description != null ? description : source;
     }
 
     public String getFormattedTimestamp() {
@@ -95,16 +104,12 @@ public class EnhancedTransaction {
     }
 
     // Additional utility methods needed by other classes
-    public boolean isEarning() {
+    public boolean isEarningTransaction() {
         return "EARN".equals(type);
     }
 
-    public int getAmount() {
-        return Math.abs(points); // Return absolute value for amount
-    }
-
-    public String getTitle() {
-        return source; // Use source as title
+    public boolean isSpendingTransaction() {
+        return "SPEND".equals(type) || "REDEEM".equals(type);
     }
 
     @Override
