@@ -14,10 +14,7 @@ import com.rewardpoints.app.adapters.HistoryAdapter;
 import com.rewardpoints.app.managers.CustomizationManager;
 import com.rewardpoints.app.models.EnhancedTransaction;
 import com.rewardpoints.app.utils.PreferencesManager;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,10 +26,7 @@ import java.util.Locale;
 public class ModernHistoryActivity extends AppCompatActivity {
 
     private RecyclerView historyRecyclerView;
-    private TextView totalEarnedText, totalSpentText; // , emptyStateText;
-    private MaterialButton clearHistoryBtn;
-    private FloatingActionButton exportFab;
-    private TabLayout filterTabs;
+    private TextView totalEarnedText, totalSpentText;
 
     private CustomizationManager customizationManager;
     private PreferencesManager preferencesManager;
@@ -50,18 +44,13 @@ public class ModernHistoryActivity extends AppCompatActivity {
         setupToolbar();
         setupRecyclerView();
         setupClickListeners();
-        setupFilterTabs();
         loadData();
     }
 
     private void initializeComponents() {
-        historyRecyclerView = findViewById(R.id.history_recycler_view);
+        historyRecyclerView = findViewById(R.id.transactions_recycler_view);
         totalEarnedText = findViewById(R.id.total_earned_text);
         totalSpentText = findViewById(R.id.total_spent_text);
-        clearHistoryBtn = findViewById(R.id.clear_history_btn);
-        exportFab = findViewById(R.id.export_fab);
-        filterTabs = findViewById(R.id.filter_tabs);
-        // emptyStateText = findViewById(R.id.empty_state_text); // Comment out until layout is updated
 
         customizationManager = new CustomizationManager(this);
         preferencesManager = new PreferencesManager(this);
@@ -84,50 +73,10 @@ public class ModernHistoryActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        if (clearHistoryBtn != null) {
-            clearHistoryBtn.setOnClickListener(v -> showClearHistoryDialog());
-        }
-
-        if (exportFab != null) {
-            exportFab.setOnClickListener(v -> exportHistory());
-        }
-    }
-
-    private void setupFilterTabs() {
-        if (filterTabs != null) {
-            filterTabs.addTab(filterTabs.newTab().setText(getString(R.string.all_time)));
-            filterTabs.addTab(filterTabs.newTab().setText(getString(R.string.this_month)));
-            filterTabs.addTab(filterTabs.newTab().setText(getString(R.string.this_week)));
-
-            filterTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                @Override
-                public void onTabSelected(TabLayout.Tab tab) {
-                    switch (tab.getPosition()) {
-                        case 0:
-                            currentFilter = "all";
-                            break;
-                        case 1:
-                            currentFilter = "month";
-                            break;
-                        case 2:
-                            currentFilter = "week";
-                            break;
-                    }
-                    applyFilter();
-                }
-
-                @Override
-                public void onTabUnselected(TabLayout.Tab tab) {}
-
-                @Override
-                public void onTabReselected(TabLayout.Tab tab) {}
-            });
-        }
     }
 
     private void loadData() {
         try {
-            // Get transactions from PreferencesManager instead of CustomizationManager
             allTransactions = preferencesManager.getTransactions();
             applyFilter();
             updateSummary();
@@ -155,8 +104,6 @@ public class ModernHistoryActivity extends AppCompatActivity {
         if (historyAdapter != null) {
             historyAdapter.updateTransactions(filteredTransactions);
         }
-
-        // updateEmptyState(filteredTransactions.isEmpty());
     }
 
     private List<EnhancedTransaction> filterTransactionsByMonth(Calendar calendar) {
@@ -209,38 +156,6 @@ public class ModernHistoryActivity extends AppCompatActivity {
         }
         if (totalSpentText != null) {
             totalSpentText.setText(String.valueOf(totalSpent));
-        }
-    }
-
-    // private void updateEmptyState(boolean isEmpty) {
-    //     if (emptyStateText != null) {
-    //         if (isEmpty) {
-    //             emptyStateText.setVisibility(android.view.View.VISIBLE);
-    //             emptyStateText.setText(getString(R.string.history_empty_message));
-    //         } else {
-    //             emptyStateText.setVisibility(android.view.View.GONE);
-    //         }
-    //     }
-    // }
-
-    private void showClearHistoryDialog() {
-        new MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.confirmation_title))
-            .setMessage(getString(R.string.clear_history_confirmation))
-            .setPositiveButton(getString(R.string.confirm), (dialog, which) -> clearHistory())
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show();
-    }
-
-    private void clearHistory() {
-        try {
-            preferencesManager.clearTransactions();
-            allTransactions.clear();
-            applyFilter();
-            updateSummary();
-            Toast.makeText(this, getString(R.string.history_cleared), Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_SHORT).show();
         }
     }
 

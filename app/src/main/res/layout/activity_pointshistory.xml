@@ -12,9 +12,9 @@
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="4dp">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -35,47 +35,47 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <!-- Statistics Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:layout_marginBottom="16dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp"
-                    app:cardBackgroundColor="@color/success">
+                    app:cardBackgroundColor="@color/success_green">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:gravity="center">
 
                         <TextView
                             android:id="@+id/total_earned_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="24sp"
+                            android:text="@string/default_zero"
+                            android:textSize="20sp"
                             android:textStyle="bold"
-                            android:textColor="@color/white" />
+                            android:textColor="@android:color/white" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/total_points_earned"
+                            android:text="@string/total_earned"
                             android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:textAlignment="center" />
+                            android:textColor="@android:color/white" />
 
                     </LinearLayout>
 
@@ -83,36 +83,35 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp"
-                    app:cardBackgroundColor="@color/error">
+                    app:cardBackgroundColor="@color/error_red">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:gravity="center">
 
                         <TextView
                             android:id="@+id/total_spent_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="24sp"
+                            android:text="@string/default_zero"
+                            android:textSize="20sp"
                             android:textStyle="bold"
-                            android:textColor="@color/white" />
+                            android:textColor="@android:color/white" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/total_points_spent"
+                            android:text="@string/total_spent"
                             android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:textAlignment="center" />
+                            android:textColor="@android:color/white" />
 
                     </LinearLayout>
 
@@ -120,122 +119,92 @@
 
             </LinearLayout>
 
-            <!-- Filter Tabs -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/filter_tabs"
-                style="@style/TabStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:tabMode="scrollable" />
-
-            <!-- History Content -->
+            <!-- Filter Options -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <!-- Header -->
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/filter_transactions"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/filter_chip_group"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/transaction_history"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/on_surface" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/clear_history_btn"
-                            style="@style/Widget.Material3.Button.TextButton"
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_all"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/clear_history"
-                            android:textColor="@color/error" />
+                            android:text="@string/filter_all"
+                            android:checked="true"
+                            style="@style/Widget.Material3.Chip.Filter" />
 
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant" />
-
-                    <!-- History RecyclerView -->
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/history_recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:padding="8dp" />
-
-                    <!-- Empty State -->
-                    <LinearLayout
-                        android:id="@+id/empty_state_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="32dp"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:src="@drawable/ic_history_empty"
-                            android:contentDescription="@string/no_history_available"
-                            app:tint="@color/on_surface_variant"
-                            android:layout_marginBottom="16dp" />
-
-                        <TextView
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_earned"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/no_history_available"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/on_surface_variant"
-                            android:layout_marginBottom="8dp" />
+                            android:text="@string/filter_earned"
+                            style="@style/Widget.Material3.Chip.Filter" />
 
-                        <TextView
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_spent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/history_empty_message"
-                            android:textSize="14sp"
-                            android:textColor="@color/on_surface_variant"
-                            android:textAlignment="center" />
+                            android:text="@string/filter_spent"
+                            style="@style/Widget.Material3.Chip.Filter" />
 
-                    </LinearLayout>
+                    </com.google.android.material.chip.ChipGroup>
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Transactions RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/transactions_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/empty_state_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_transactions"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Floating Action Button for Export -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/export_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/export_history"
-        app:srcCompat="@drawable/ic_export"
-        app:tint="@color/on_primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

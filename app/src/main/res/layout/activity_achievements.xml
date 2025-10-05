@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_light">
+    android:background="@color/background">
 
     <!-- App Bar -->
     <com.google.android.material.appbar.AppBarLayout
@@ -17,9 +17,9 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/primary"
             app:title="🏆 Achievements"
-            app:titleTextColor="@android:color/white"
+            app:titleTextColor="@color/on_primary"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="@android:color/white" />
+            app:navigationIconTint="@color/on_primary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -42,21 +42,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
+                app:cardElevation="4dp"
                 app:cardBackgroundColor="@color/primary">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp"
+                    android:padding="16dp"
                     android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Achievement Progress"
-                        android:textColor="@android:color/white"
+                        android:text="@string/achievement_progress"
+                        android:textColor="@color/on_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -64,8 +64,8 @@
                         android:id="@+id/achievement_progress_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0 / 0 Unlocked"
-                        android:textColor="@android:color/white"
+                        android:text="@string/achievements_unlocked"
+                        android:textColor="@color/on_primary"
                         android:textSize="24sp"
                         android:textStyle="bold"
                         android:layout_marginTop="8dp" />
@@ -74,60 +74,49 @@
                         android:id="@+id/achievement_progress_bar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        app:indicatorColor="@android:color/white"
-                        app:trackColor="@color/primary_dark"
+                        android:layout_marginTop="8dp"
+                        app:indicatorColor="@color/on_primary"
+                        app:trackColor="@color/primary_variant"
                         app:trackThickness="8dp" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Current Points Display -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Filter Chips -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/filter_chip_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:singleSelection="true"
+                app:selectionRequired="true">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_all"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:text="@string/filter_all"
+                    android:checked="true"
+                    style="@style/Widget.Material3.Chip.Filter" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Current Points"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_unlocked"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_unlocked"
+                    style="@style/Widget.Material3.Chip.Filter" />
 
-                    <TextView
-                        android:id="@+id/current_points_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_locked"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_locked"
+                    style="@style/Widget.Material3.Chip.Filter" />
 
-                </LinearLayout>
+            </com.google.android.material.chip.ChipGroup>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Achievements List -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Your Achievements"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
-
+            <!-- Achievements RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/achievements_recycler_view"
                 android:layout_width="match_parent"
@@ -147,25 +136,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎯"
-                    android:textSize="48sp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="No achievements yet!"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Start earning points to unlock achievements"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:gravity="center" />
+                    android:text="@string/no_achievements"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
 
@@ -180,8 +154,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:contentDescription="@string/content_description_add_achievement"
         app:srcCompat="@drawable/ic_add"
         app:backgroundTint="@color/primary"
-        app:tint="@android:color/white" />
+        app:tint="@color/on_primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

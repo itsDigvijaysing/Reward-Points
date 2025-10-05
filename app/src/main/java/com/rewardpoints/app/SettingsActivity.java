@@ -2,7 +2,6 @@ package com.rewardpoints.app;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -10,7 +9,7 @@ import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.rewardpoints.app.managers.CustomizationManager;
@@ -18,12 +17,12 @@ import com.rewardpoints.app.utils.PreferencesManager;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    // UI Components
-    private TextInputEditText usernameInput, dailyLimitInput;
-    private TextInputLayout usernameInputLayout, dailyLimitInputLayout;
-    private MaterialSwitch dailyLimitSwitch, dailyRemindersSwitch, achievementNotificationsSwitch;
-    private MaterialButton saveProfileBtn, resetPointsBtn, manageRewardsBtn, managePointsSourcesBtn;
-    private MaterialButton exportDataBtn, resetAppBtn;
+    // UI Components - fixed switch type
+    private TextInputEditText usernameInput;
+    private TextInputLayout usernameInputLayout;
+    private SwitchMaterial notificationsSwitch;
+    private MaterialButton saveUsernameButton, manageRewardsBtn, managePointsSourcesBtn;
+    private MaterialButton viewPointsHistoryBtn, resetDataBtn;
 
     // Managers
     private PreferencesManager preferencesManager;
@@ -41,127 +40,129 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        try {
+            androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                setSupportActionBar(toolbar);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error setting up toolbar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void initializeComponents() {
-        // Text inputs
-        usernameInput = findViewById(R.id.username_input);
-        dailyLimitInput = findViewById(R.id.daily_limit_input);
-        usernameInputLayout = findViewById(R.id.username_input_layout);
-        dailyLimitInputLayout = findViewById(R.id.daily_limit_input_layout);
-
-        // Switches
-        dailyLimitSwitch = findViewById(R.id.daily_limit_switch);
-        dailyRemindersSwitch = findViewById(R.id.daily_reminders_switch);
-        achievementNotificationsSwitch = findViewById(R.id.achievement_notifications_switch);
-
-        // Buttons
-        saveProfileBtn = findViewById(R.id.save_profile_btn);
-        resetPointsBtn = findViewById(R.id.reset_points_btn);
-        manageRewardsBtn = findViewById(R.id.manage_rewards_btn);
-        managePointsSourcesBtn = findViewById(R.id.manage_points_sources_btn);
-        exportDataBtn = findViewById(R.id.export_data_btn);
-        resetAppBtn = findViewById(R.id.reset_app_btn);
-
-        // Initialize managers
-        preferencesManager = new PreferencesManager(this);
-        customizationManager = new CustomizationManager(this);
-
-        // Set app version
         try {
-            String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            findViewById(R.id.app_version_text).setTag("Version " + versionName);
-        } catch (PackageManager.NameNotFoundException e) {
-            // Version not found, use default
+            // Text inputs - with null checks
+            usernameInputLayout = findViewById(R.id.username_input_layout);
+            usernameInput = findViewById(R.id.username_edit_text);
+
+            // Switches - with null checks
+            notificationsSwitch = findViewById(R.id.notifications_switch);
+
+            // Buttons - with null checks
+            saveUsernameButton = findViewById(R.id.save_username_button);
+            manageRewardsBtn = findViewById(R.id.manage_rewards_button);
+            managePointsSourcesBtn = findViewById(R.id.manage_points_sources_button);
+            viewPointsHistoryBtn = findViewById(R.id.view_points_history_button);
+            resetDataBtn = findViewById(R.id.reset_data_button);
+
+            // Initialize managers
+            preferencesManager = new PreferencesManager(this);
+            customizationManager = new CustomizationManager(this);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error initializing settings: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
     private void setupClickListeners() {
-        // Daily limit switch toggle
-        dailyLimitSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            dailyLimitInputLayout.setVisibility(isChecked ? android.view.View.VISIBLE : android.view.View.GONE);
-        });
+        try {
+            // Profile save button - with null check
+            if (saveUsernameButton != null) {
+                saveUsernameButton.setOnClickListener(v -> saveProfile());
+            }
 
-        // Profile save button
-        saveProfileBtn.setOnClickListener(v -> saveProfile());
+            // Management buttons - with null checks
+            if (manageRewardsBtn != null) {
+                manageRewardsBtn.setOnClickListener(v -> openManageRewards());
+            }
+            if (managePointsSourcesBtn != null) {
+                managePointsSourcesBtn.setOnClickListener(v -> openManagePointsSources());
+            }
+            if (viewPointsHistoryBtn != null) {
+                viewPointsHistoryBtn.setOnClickListener(v -> openPointsHistory());
+            }
 
-        // Reset points button
-        resetPointsBtn.setOnClickListener(v -> showResetPointsDialog());
+            // Reset data button - with null check
+            if (resetDataBtn != null) {
+                resetDataBtn.setOnClickListener(v -> showResetAppDialog());
+            }
 
-        // Management buttons
-        manageRewardsBtn.setOnClickListener(v -> openManageRewards());
-        managePointsSourcesBtn.setOnClickListener(v -> openManagePointsSources());
+            // Save settings when switch changes - with null check
+            if (notificationsSwitch != null) {
+                notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> saveNotificationSettings());
+            }
 
-        // Data export and reset
-        exportDataBtn.setOnClickListener(v -> exportAllData());
-        resetAppBtn.setOnClickListener(v -> showResetAppDialog());
-
-        // Save settings when switches change
-        dailyRemindersSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> saveNotificationSettings());
-        achievementNotificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> saveNotificationSettings());
+        } catch (Exception e) {
+            Toast.makeText(this, "Error setting up click listeners: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadSettings() {
-        // Load user profile
-        String username = preferencesManager.getUserName();
-        if (!TextUtils.isEmpty(username)) {
-            usernameInput.setText(username);
+        try {
+            // Load user profile - with null checks
+            String username = preferencesManager.getUserName();
+            if (!TextUtils.isEmpty(username) && usernameInput != null) {
+                usernameInput.setText(username);
+            }
+
+            // Load notification settings - using the correct method name
+            if (notificationsSwitch != null) {
+                notificationsSwitch.setChecked(preferencesManager.isNotificationsEnabled());
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error loading settings: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        // Load points system settings
-        boolean isDailyLimitEnabled = preferencesManager.isDailyLimitEnabled();
-        dailyLimitSwitch.setChecked(isDailyLimitEnabled);
-        dailyLimitInputLayout.setVisibility(isDailyLimitEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-
-        if (isDailyLimitEnabled) {
-            int dailyLimit = preferencesManager.getDailyPointsLimit();
-            dailyLimitInput.setText(String.valueOf(dailyLimit));
-        }
-
-        // Load notification settings
-        dailyRemindersSwitch.setChecked(preferencesManager.isDailyRemindersEnabled());
-        achievementNotificationsSwitch.setChecked(preferencesManager.isAchievementNotificationsEnabled());
     }
 
     private void saveProfile() {
-        String username = usernameInput.getText().toString().trim();
-
-        if (TextUtils.isEmpty(username)) {
-            usernameInputLayout.setError("Name is required");
-            return;
-        }
-
-        // Save username
-        preferencesManager.setUserName(username);
-
-        // Save daily limit settings
-        preferencesManager.setDailyLimitEnabled(dailyLimitSwitch.isChecked());
-
-        if (dailyLimitSwitch.isChecked()) {
-            String limitStr = dailyLimitInput.getText().toString().trim();
-            if (!TextUtils.isEmpty(limitStr)) {
-                try {
-                    int limit = Integer.parseInt(limitStr);
-                    if (limit > 0) {
-                        preferencesManager.setDailyPointsLimit(limit);
-                    }
-                } catch (NumberFormatException e) {
-                    // Invalid number, ignore
-                }
+        try {
+            if (usernameInput == null || usernameInputLayout == null) {
+                Toast.makeText(this, "Error: UI elements not found", Toast.LENGTH_SHORT).show();
+                return;
             }
-        }
 
-        Toast.makeText(this, getString(R.string.settings_saved_successfully), Toast.LENGTH_SHORT).show();
+            String username = usernameInput.getText().toString().trim();
+
+            if (TextUtils.isEmpty(username)) {
+                usernameInputLayout.setError("Name is required");
+                return;
+            }
+
+            // Save username
+            preferencesManager.setUserName(username);
+            usernameInputLayout.setError(null); // Clear any previous error
+
+            Toast.makeText(this, "Settings saved successfully!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error saving profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void saveNotificationSettings() {
-        preferencesManager.setDailyRemindersEnabled(dailyRemindersSwitch.isChecked());
-        preferencesManager.setAchievementNotificationsEnabled(achievementNotificationsSwitch.isChecked());
+        try {
+            if (notificationsSwitch != null) {
+                preferencesManager.setNotificationsEnabled(notificationsSwitch.isChecked());
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error saving notification settings: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showResetPointsDialog() {
@@ -184,6 +185,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void openManagePointsSources() {
         startActivity(new Intent(this, ManagePointsSourcesActivity.class));
+    }
+
+    private void openPointsHistory() {
+        startActivity(new Intent(this, PointsHistoryActivity.class));
     }
 
     private void exportAllData() {

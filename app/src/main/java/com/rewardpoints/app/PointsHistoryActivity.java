@@ -10,7 +10,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.button.MaterialButton;
 import com.rewardpoints.app.adapters.HistoryAdapter;
 import com.rewardpoints.app.utils.PreferencesManager;
 
@@ -46,7 +45,7 @@ public class PointsHistoryActivity extends AppCompatActivity {
     private void initializeComponents() {
         try {
             preferencesManager = new PreferencesManager(this);
-            historyRecyclerView = findViewById(R.id.history_recycler_view);
+            historyRecyclerView = findViewById(R.id.transactions_recycler_view);
             emptyStateLayout = findViewById(R.id.empty_state_layout);
             totalEarnedText = findViewById(R.id.total_earned_text);
             totalSpentText = findViewById(R.id.total_spent_text);
@@ -141,14 +140,8 @@ public class PointsHistoryActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        try {
-            MaterialButton clearHistoryBtn = findViewById(R.id.clear_history_btn);
-            if (clearHistoryBtn != null) {
-                clearHistoryBtn.setOnClickListener(v -> clearHistory());
-            }
-        } catch (Exception e) {
-            showToast("Error setting up buttons");
-        }
+        // Removed reference to clear_history_btn as it doesn't exist in our new layout
+        // Clear history functionality can be added back later if needed
     }
 
     private void clearHistory() {

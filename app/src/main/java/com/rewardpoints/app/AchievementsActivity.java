@@ -26,7 +26,7 @@ import java.util.List;
 public class AchievementsActivity extends AppCompatActivity implements AchievementsAdapter.OnAchievementClickListener {
 
     private RecyclerView achievementsRecyclerView;
-    private TextView achievementProgressText, currentPointsText, emptyStateText;
+    private TextView achievementProgressText, emptyStateText;
     private LinearProgressIndicator achievementProgressBar;
     private LinearLayout emptyStateLayout;
     private FloatingActionButton fabAddAchievement;
@@ -52,7 +52,6 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
     private void initializeComponents() {
         achievementsRecyclerView = findViewById(R.id.achievements_recycler_view);
         achievementProgressText = findViewById(R.id.achievement_progress_text);
-        currentPointsText = findViewById(R.id.current_points_text);
         achievementProgressBar = findViewById(R.id.achievement_progress_bar);
         emptyStateLayout = findViewById(R.id.empty_state_layout);
         emptyStateText = emptyStateLayout != null ? emptyStateLayout.findViewById(android.R.id.text1) : null; // Use system text view if custom doesn't exist
@@ -88,9 +87,7 @@ public class AchievementsActivity extends AppCompatActivity implements Achieveme
         try {
             // Update current points
             int currentPoints = preferencesManager.getCounter();
-            if (currentPointsText != null) {
-                currentPointsText.setText(String.valueOf(currentPoints));
-            }
+            // Removed reference to currentPointsText as it's no longer in the layout
 
             // Load achievements based on current tab
             List<Achievement> allAchievements = achievementManager.getUserAchievements();

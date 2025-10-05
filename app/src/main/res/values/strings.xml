@@ -188,4 +188,47 @@
     <string name="daily_missions">Daily Missions</string>
     <string name="achievements_title">Achievements</string>
 
+    <!-- Daily Missions -->
+    <string name="daily_streak">🔥 Daily Streak</string>
+    <string name="days">Days</string>
+    <string name="completed_today">%1$d / %2$d Completed Today</string>
+    <string name="no_daily_missions">⭐ No daily missions yet\n\nTap + to create your first daily mission!\n\nMissions reset every day at midnight.</string>
+
+    <!-- Achievements -->
+    <string name="achievement_progress">Achievement Progress</string>
+    <string name="achievements_unlocked">%1$d / %2$d Unlocked</string>
+    <string name="filter_all">All</string>
+    <string name="filter_unlocked">Unlocked</string>
+    <string name="filter_locked">Locked</string>
+    <string name="no_achievements">🏆 No achievements yet\n\nComplete missions and goals to unlock achievements!</string>
+
+    <!-- Points History -->
+    <string name="total_earned">Total Earned</string>
+    <string name="total_spent">Total Spent</string>
+    <string name="filter_transactions">Filter Transactions</string>
+    <string name="filter_earned">Earned</string>
+    <string name="filter_spent">Spent</string>
+    <string name="no_transactions">📊 No transactions yet\n\nStart earning and spending points to see your history here!</string>
+
+    <!-- Settings -->
+    <string name="user_profile">User Profile</string>
+    <string name="username_hint">Username</string>
+    <string name="points_management">Points Management</string>
+    <string name="manage_points_sources">Manage Points Sources</string>
+    <string name="manage_rewards_title">Manage Rewards</string>
+    <string name="view_points_history">View Points History</string>
+    <string name="app_settings">App Settings</string>
+    <string name="notifications">Notifications</string>
+    <string name="notification_description">Get reminded about daily missions</string>
+    <string name="reset_all_data">Reset All Data</string>
+
+    <!-- Content Descriptions for new FABs -->
+    <string name="content_description_add_mission">Add new daily mission</string>
+    <string name="content_description_add_achievement">Add new achievement</string>
+    <string name="content_description_add_reward">Add new reward</string>
+    <string name="content_description_add_source">Add new points source</string>
+
+    <!-- Default values -->
+    <string name="default_zero">0</string>
+
 </resources>

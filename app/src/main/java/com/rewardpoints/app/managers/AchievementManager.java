@@ -147,6 +147,11 @@ public class AchievementManager {
 
     // Check for automatic achievements and award them
     public void checkAchievements(int currentPoints) {
+        // DISABLED: Automatic achievement awarding to prevent unwanted points
+        // This was causing points to be awarded automatically for system achievements
+        // Users should only get points from their own custom achievements
+
+        /* COMMENTED OUT - AUTOMATIC ACHIEVEMENT SYSTEM
         List<Achievement> systemAchievements = getAllAchievements();
 
         for (Achievement achievement : systemAchievements) {
@@ -171,5 +176,6 @@ public class AchievementManager {
                 }
             }
         }
+        */
     }
 }
