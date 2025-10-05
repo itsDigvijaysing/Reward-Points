@@ -7,9 +7,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.rewardpoints.app.managers.CustomizationManager;
@@ -21,7 +19,6 @@ public class CreateRewardActivity extends AppCompatActivity {
     private TextInputEditText nameInput, descriptionInput, pointsInput;
     private TextInputLayout nameInputLayout, pointsInputLayout;
     private ChipGroup categoryChipGroup;
-    private Slider prioritySlider;
     private MaterialButton saveBtn, cancelBtn;
 
     // Manager
@@ -77,7 +74,6 @@ public class CreateRewardActivity extends AppCompatActivity {
             String description = descriptionInput.getText().toString().trim();
             int points = Integer.parseInt(pointsInput.getText().toString().trim());
             String category = getSelectedCategory();
-            int priority = (int) prioritySlider.getValue();
 
             // Create new reward
             CustomReward reward = new CustomReward(
@@ -86,9 +82,6 @@ public class CreateRewardActivity extends AppCompatActivity {
                 points,
                 category
             );
-
-            // Set priority after creation
-            // Note: Priority feature can be added to CustomReward model later if needed
 
             // Save reward
             customizationManager.addCustomReward(reward);
