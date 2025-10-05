@@ -53,27 +53,15 @@ public class CustomizationManager {
     private void createDefaultPointsSources() {
         List<PointsSource> defaultSources = new ArrayList<>();
 
-        // Mood-based points
-        defaultSources.add(new PointsSource("Very Happy Day", "Feeling amazing today", 120, "Mood"));
-        defaultSources.add(new PointsSource("Happy Day", "Good day overall", 60, "Mood"));
-        defaultSources.add(new PointsSource("Okay Day", "Neutral mood", 20, "Mood"));
-        defaultSources.add(new PointsSource("Difficult Day", "Challenging but managed", 10, "Mood"));
+        // Only essential mood-based points (reduced from 4 to 3)
+        defaultSources.add(new PointsSource("Great Day", "Feeling fantastic today", 50, "Mood"));
+        defaultSources.add(new PointsSource("Good Day", "Having a nice day", 30, "Mood"));
+        defaultSources.add(new PointsSource("Okay Day", "Regular day", 15, "Mood"));
 
-        // Achievement-based points
-        defaultSources.add(new PointsSource("Major Achievement", "Significant accomplishment", 200, "Achievement"));
-        defaultSources.add(new PointsSource("Important Achievement", "Notable accomplishment", 120, "Achievement"));
-        defaultSources.add(new PointsSource("Good Achievement", "Nice accomplishment", 60, "Achievement"));
-
-        // Mission-based points
-        defaultSources.add(new PointsSource("Health Mission", "Completed health activity", 25, "Mission"));
-        defaultSources.add(new PointsSource("Work Mission", "Completed work task", 25, "Mission"));
-        defaultSources.add(new PointsSource("Self Development", "Learning or growth activity", 25, "Mission"));
-
-        // Custom activities
-        defaultSources.add(new PointsSource("Exercise Session", "Completed workout", 40, "Health"));
-        defaultSources.add(new PointsSource("Reading Session", "Read for 30+ minutes", 30, "Education"));
-        defaultSources.add(new PointsSource("Meditation", "Mindfulness practice", 35, "Health"));
-        defaultSources.add(new PointsSource("Skill Practice", "Practice a skill", 50, "Education"));
+        // Only basic activities (reduced from 10+ to 3)
+        defaultSources.add(new PointsSource("Task Completed", "Finished a task", 25, "Achievement"));
+        defaultSources.add(new PointsSource("Exercise", "Physical activity", 35, "Health"));
+        defaultSources.add(new PointsSource("Learning", "Studied or learned something", 30, "Education"));
 
         savePointsSources(defaultSources);
     }
@@ -98,7 +86,17 @@ public class CustomizationManager {
     public List<CustomReward> getCustomRewards() {
         String json = preferencesManager.getString(KEY_CUSTOM_REWARDS, "[]");
         Type listType = new TypeToken<List<CustomReward>>(){}.getType();
-        return gson.fromJson(json, listType);
+        try {
+            List<CustomReward> rewards = gson.fromJson(json, listType);
+            return rewards != null ? rewards : new ArrayList<>();
+        } catch (com.google.gson.JsonSyntaxException e) {
+            // Handle corrupted JSON data by returning empty list and resetting
+            preferencesManager.putString(KEY_CUSTOM_REWARDS, "[]");
+            return new ArrayList<>();
+        } catch (Exception e) {
+            // Handle any other parsing errors
+            return new ArrayList<>();
+        }
     }
 
     public void saveCustomRewards(List<CustomReward> rewards) {
@@ -125,7 +123,12 @@ public class CustomizationManager {
 
     public void deleteCustomReward(String rewardId) {
         List<CustomReward> rewards = getCustomRewards();
-        rewards.removeIf(reward -> reward.getId().equals(rewardId));
+        // API 21+ compatible removal instead of removeIf()
+        for (int i = rewards.size() - 1; i >= 0; i--) {
+            if (rewards.get(i).getId().equals(rewardId)) {
+                rewards.remove(i);
+            }
+        }
         saveCustomRewards(rewards);
     }
 
@@ -143,7 +146,17 @@ public class CustomizationManager {
     public List<PointsSource> getPointsSources() {
         String json = preferencesManager.getString(KEY_POINTS_SOURCES, "[]");
         Type listType = new TypeToken<List<PointsSource>>(){}.getType();
-        return gson.fromJson(json, listType);
+        try {
+            List<PointsSource> sources = gson.fromJson(json, listType);
+            return sources != null ? sources : new ArrayList<>();
+        } catch (com.google.gson.JsonSyntaxException e) {
+            // Handle corrupted JSON data by returning empty list and resetting
+            preferencesManager.putString(KEY_POINTS_SOURCES, "[]");
+            return new ArrayList<>();
+        } catch (Exception e) {
+            // Handle any other parsing errors
+            return new ArrayList<>();
+        }
     }
 
     public void savePointsSources(List<PointsSource> sources) {
@@ -170,7 +183,12 @@ public class CustomizationManager {
 
     public void deletePointsSource(String sourceId) {
         List<PointsSource> sources = getPointsSources();
-        sources.removeIf(source -> source.getId().equals(sourceId));
+        // API 21+ compatible removal instead of removeIf()
+        for (int i = sources.size() - 1; i >= 0; i--) {
+            if (sources.get(i).getId().equals(sourceId)) {
+                sources.remove(i);
+            }
+        }
         savePointsSources(sources);
     }
 
@@ -189,7 +207,17 @@ public class CustomizationManager {
     public List<EnhancedTransaction> getEnhancedTransactions() {
         String json = preferencesManager.getString(KEY_ENHANCED_TRANSACTIONS, "[]");
         Type listType = new TypeToken<List<EnhancedTransaction>>(){}.getType();
-        return gson.fromJson(json, listType);
+        try {
+            List<EnhancedTransaction> transactions = gson.fromJson(json, listType);
+            return transactions != null ? transactions : new ArrayList<>();
+        } catch (com.google.gson.JsonSyntaxException e) {
+            // Handle corrupted JSON data by returning empty list and resetting
+            preferencesManager.putString(KEY_ENHANCED_TRANSACTIONS, "[]");
+            return new ArrayList<>();
+        } catch (Exception e) {
+            // Handle any other parsing errors
+            return new ArrayList<>();
+        }
     }
 
     public void saveEnhancedTransactions(List<EnhancedTransaction> transactions) {

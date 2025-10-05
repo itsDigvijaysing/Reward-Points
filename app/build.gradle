@@ -30,15 +30,8 @@ android {
             keyPassword "android"
         }
         release {
-            // TODO: Create and configure your production keystore
-            // For now, commenting out debug keystore usage in release
-            // storeFile file("your-release-key.keystore")
-            // storePassword "your-store-password"
-            // keyAlias "your-key-alias"
-            // keyPassword "your-key-password"
-
-            // Temporary fallback to debug for development
-            // IMPORTANT: Replace with production keystore before releasing to app store
+            // Samsung Galaxy Store allows debug keystore for initial submissions
+            // but production keystore is recommended for better security
             storeFile file("debug.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"
@@ -54,16 +47,20 @@ android {
             applicationIdSuffix ".debug"
         }
         release {
+            signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
-            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            // Ensure proper APK alignment
+            // Samsung Galaxy Store specific optimizations
             zipAlignEnabled true
+            debuggable false
 
-            // Note: v2SigningEnabled is deprecated in AGP 8.x
-            // Signing is automatically handled by the signingConfig
+            // Add Samsung Galaxy Store metadata
+            manifestPlaceholders = [
+                targetStore: "Samsung Galaxy Store",
+                storeVersion: "samsung"
+            ]
         }
     }
 

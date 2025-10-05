@@ -53,7 +53,12 @@ public class AchievementManager {
     public void deleteUserAchievement(String achievementId) {
         List<Achievement> achievements = preferencesManager.getUserAchievements();
         if (achievements != null) {
-            achievements.removeIf(a -> a.getId().equals(achievementId));
+            // API 21+ compatible removal instead of removeIf()
+            for (int i = achievements.size() - 1; i >= 0; i--) {
+                if (achievements.get(i).getId().equals(achievementId)) {
+                    achievements.remove(i);
+                }
+            }
             preferencesManager.saveUserAchievements(achievements);
         }
     }

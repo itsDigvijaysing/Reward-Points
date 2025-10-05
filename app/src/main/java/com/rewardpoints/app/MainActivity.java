@@ -157,19 +157,10 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Update welcome message with user name and version
+        // Update welcome message with user name only (removed version to prevent text overlap)
         String userName = preferencesManager.getUserName();
         if (welcomeText != null) {
-            // Use a safer approach for version name
-            String versionName = "1.5.0"; // Fallback version
-            try {
-                versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            } catch (Exception e) {
-                // Use fallback version if package info not available
-                Log.w(TAG, "Could not get version name, using fallback", e);
-            }
-
-            String welcomeMessage = getString(R.string.welcome_title) + ", " + userName + "! (v" + versionName + " - Enhanced Daily Missions)";
+            String welcomeMessage = getString(R.string.welcome_title) + ", " + userName + "!";
             welcomeText.setText(welcomeMessage);
         }
     }

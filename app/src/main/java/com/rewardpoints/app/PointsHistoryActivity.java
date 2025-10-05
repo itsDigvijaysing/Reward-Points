@@ -87,13 +87,19 @@ public class PointsHistoryActivity extends AppCompatActivity {
                 totalSpentText.setText(String.valueOf(totalSpent));
             }
 
-            // Load transaction history
-            List<String> historyList = getHistoryFromPreferences();
+            // Load modern transaction history from EnhancedTransactions
+            List<com.rewardpoints.app.models.EnhancedTransaction> modernTransactions = preferencesManager.getTransactions();
 
-            if (historyList.isEmpty()) {
-                showEmptyState();
+            if (modernTransactions.isEmpty()) {
+                // Fallback to legacy history if modern transactions are empty
+                List<String> legacyHistory = getHistoryFromPreferences();
+                if (legacyHistory.isEmpty()) {
+                    showEmptyState();
+                } else {
+                    showLegacyHistoryData(legacyHistory);
+                }
             } else {
-                showHistoryData(historyList);
+                showModernHistoryData(modernTransactions);
             }
         } catch (Exception e) {
             showToast("Error loading history");
@@ -129,7 +135,17 @@ public class PointsHistoryActivity extends AppCompatActivity {
         }
     }
 
-    private void showHistoryData(List<String> historyList) {
+    private void showModernHistoryData(List<com.rewardpoints.app.models.EnhancedTransaction> transactions) {
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(View.GONE);
+        }
+        if (historyRecyclerView != null) {
+            historyRecyclerView.setVisibility(View.VISIBLE);
+            historyAdapter.updateTransactions(transactions);
+        }
+    }
+
+    private void showLegacyHistoryData(List<String> historyList) {
         if (emptyStateLayout != null) {
             emptyStateLayout.setVisibility(View.GONE);
         }

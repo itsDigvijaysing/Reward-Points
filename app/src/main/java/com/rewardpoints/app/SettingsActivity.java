@@ -120,13 +120,41 @@ public class SettingsActivity extends AppCompatActivity {
                 usernameInput.setText(username);
             }
 
-            // Load notification settings - using the correct method name
+            // Load notifications setting - with null check
             if (notificationsSwitch != null) {
                 notificationsSwitch.setChecked(preferencesManager.isNotificationsEnabled());
             }
 
+            // Display app version in Settings
+            displayAppVersion();
+
         } catch (Exception e) {
             Toast.makeText(this, "Error loading settings: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void displayAppVersion() {
+        try {
+            // Get real app version from package manager
+            String versionName = "1.5.0"; // Fallback version
+            int versionCode = 5; // Fallback version code
+
+            try {
+                android.content.pm.PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                versionName = packageInfo.versionName;
+                versionCode = packageInfo.versionCode;
+            } catch (Exception e) {
+                // Use fallback versions if package info not available
+            }
+
+            // Since app_version_text doesn't exist in layout, we'll show version in title instead
+            if (getSupportActionBar() != null) {
+                String versionText = "Settings - v" + versionName;
+                getSupportActionBar().setTitle(versionText);
+            }
+
+        } catch (Exception e) {
+            // Silently fail if version display is not available
         }
     }
 

@@ -346,7 +346,12 @@ public class DailyMissionsActivity extends AppCompatActivity implements Missions
         try {
             List<DailyMission> missions = preferencesManager.getUserDailyMissions();
             if (missions != null) {
-                missions.removeIf(m -> m.getId().equals(mission.getId()));
+                // API 21+ compatible removal instead of removeIf()
+                for (int i = missions.size() - 1; i >= 0; i--) {
+                    if (missions.get(i).getId().equals(mission.getId())) {
+                        missions.remove(i);
+                    }
+                }
                 preferencesManager.saveUserDailyMissions(missions);
                 Toast.makeText(this, "Mission deleted", Toast.LENGTH_SHORT).show();
                 loadMissions();

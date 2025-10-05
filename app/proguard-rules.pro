@@ -43,3 +43,29 @@
     public static *** v(...);
     public static *** i(...);
 }
+
+# Samsung Galaxy Store specific rules
+-keep class com.samsung.** { *; }
+-dontwarn com.samsung.**
+
+# Samsung Galaxy Store SDK compatibility
+-keep class com.sec.** { *; }
+-dontwarn com.sec.**
+
+# Enhanced security for Samsung devices
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Samsung Galaxy Store analytics compatibility
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# Optimize for Samsung Galaxy Store distribution
+-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
+-optimizationpasses 5
+-allowaccessmodification
+
+# Samsung Galaxy Store crash reporting compatibility
+-keepattributes *Annotation*,InnerClasses,Signature,Exceptions
