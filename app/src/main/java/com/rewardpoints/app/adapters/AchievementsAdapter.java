@@ -123,35 +123,42 @@ public class AchievementsAdapter extends RecyclerView.Adapter<AchievementsAdapte
 
             if (achievementIcon != null) {
                 if (isUnlocked) {
-                    achievementIcon.setImageResource(android.R.drawable.star_big_on);
-                    achievementIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_orange_light));
-                } else {
                     achievementIcon.setImageResource(android.R.drawable.star_big_off);
                     achievementIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.darker_gray));
+                } else {
+                    achievementIcon.setImageResource(android.R.drawable.star_big_on);
+                    achievementIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_orange_light));
                 }
             }
 
             // Set card appearance based on unlock status
             if (cardView != null) {
                 if (isUnlocked) {
-                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
+                    // Medium gray background using app's color template
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.text_hint));
                     cardView.setAlpha(1.0f);
                 } else {
-                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.background_light));
-                    cardView.setAlpha(0.7f);
+                    // Normal white background for incomplete achievements
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
+                    cardView.setAlpha(1.0f);
                 }
             }
 
             // Set text colors based on unlock status
             int textColor = isUnlocked ?
-                ContextCompat.getColor(context, android.R.color.black) :
-                ContextCompat.getColor(context, android.R.color.darker_gray);
+                ContextCompat.getColor(context, android.R.color.secondary_text_dark) :
+                ContextCompat.getColor(context, android.R.color.black);
 
             if (nameText != null) {
                 nameText.setTextColor(textColor);
             }
             if (descriptionText != null) {
                 descriptionText.setTextColor(textColor);
+            }
+            if (bonusPointsText != null) {
+                bonusPointsText.setTextColor(isUnlocked ?
+                    ContextCompat.getColor(context, android.R.color.secondary_text_dark) :
+                    ContextCompat.getColor(context, android.R.color.holo_blue_bright));
             }
 
             // Set progress (for now, simple unlocked/locked state)

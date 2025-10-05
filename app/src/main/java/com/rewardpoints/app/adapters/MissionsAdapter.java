@@ -161,8 +161,9 @@ public class MissionsAdapter extends RecyclerView.Adapter<MissionsAdapter.Missio
             // Set card background based on completion status
             if (cardView != null) {
                 if (mission.isCompleted()) {
-                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_green_light));
-                    cardView.setAlpha(0.7f);
+                    // Medium gray background using app's color template
+                    cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.text_hint));
+                    cardView.setAlpha(1.0f);
                 } else {
                     cardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
                     cardView.setAlpha(1.0f);
