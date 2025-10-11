@@ -1,6 +1,7 @@
 package com.rewardpoints.app;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.core.content.ContextCompat;
@@ -55,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements RewardsAdapter.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Force light mode to prevent automatic dark mode switching
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: Starting MainActivity");
 
