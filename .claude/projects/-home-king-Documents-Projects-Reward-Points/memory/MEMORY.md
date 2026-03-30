@@ -1,0 +1,4 @@
+- [Project Vision](project_vision.md) — Anime RPG Status Window: Todoist + stats hexagon + liquid glass + rank system
+- [User Preferences](user_preferences.md) — Loves liquid glass, premium dark UI, anime status window aesthetic
+- [Key Decisions](key_decisions.md) — Simple math (p1=4pts, 10pts=+1stat, cap 100), ranks E-S streak-based, AI deferred
+- [Keep It Simple](feedback_simplicity.md) — User explicitly wants no overcomplicated mechanics, integer math only
