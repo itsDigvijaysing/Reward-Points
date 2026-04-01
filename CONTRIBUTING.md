@@ -1,6 +1,6 @@
-# Contributing to Reward Points
+# Contributing to Stat Up
 
-Thank you for your interest in contributing to Reward Points! This document provides guidelines for contributing to this privacy-focused, offline reward tracking app.
+Thank you for your interest in contributing to Stat Up! This document provides guidelines for contributing to this privacy-focused, offline reward tracking app.
 
 ## 🤝 Ways to Contribute
 
@@ -200,4 +200,4 @@ How does this maintain offline/privacy principles?
 - **GitHub Discussions** - For questions and general discussion
 - **Code Reviews** - Learn from feedback on pull requests
 
-Thank you for contributing to Reward Points and helping make it better for everyone! 🎉
+Thank you for contributing to Stat Up and helping make it better for everyone! 🎉

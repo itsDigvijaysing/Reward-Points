@@ -1,16 +1,19 @@
-Reward Points - Personal Achievement Tracker
+Stat Up - RPG Gamification for Real Life
 
-A simple, privacy-focused personal reward system that helps you track achievements and motivate yourself through a points-based system.
+An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.
 
 FEATURES:
-• Track daily achievements and mood
-• Create custom rewards to redeem with points
-• Set daily missions and long-term goals
-• View detailed transaction history
-• Completely offline - no internet required
+• RPG stats system — Strength, Intelligence, Wisdom, Dexterity, Charisma, Vitality
+• Hexagon radar chart with tap-to-expand stat details
+• Rank system — progress from E → S based on streak consistency
+• Create custom tasks with priority and stat assignment
+• Todoist integration with label-to-stat routing
+• Custom rewards to redeem with earned points
+• Achievement system with built-in and custom achievements
+• Streak calendar with month navigation
+• Completely offline core - no internet required
 • No ads, no tracking, no data collection
-• Material Design 3 interface
-• Dark/Light theme support
+• Premium liquid glass UI
 
 PRIVACY:
 • 100% offline operation

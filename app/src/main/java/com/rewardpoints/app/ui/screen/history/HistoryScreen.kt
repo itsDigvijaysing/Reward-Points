@@ -9,21 +9,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,18 +50,11 @@ fun HistoryScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Header with back button and calendar toggle
+        // Header with calendar toggle
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = TextPrimary
-                )
-            }
             Text(
                 text = "History",
                 color = TextPrimary,
@@ -92,7 +84,11 @@ fun HistoryScreen(
                 StreakCalendar(
                     calendarDays = uiState.calendarDays,
                     currentStreak = uiState.currentStreak,
-                    longestStreak = uiState.longestStreak
+                    longestStreak = uiState.longestStreak,
+                    month = uiState.calendarMonth,
+                    year = uiState.calendarYear,
+                    onPreviousMonth = { viewModel.previousMonth() },
+                    onNextMonth = { viewModel.nextMonth() }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -190,8 +186,24 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                items(uiState.filteredTransactions, key = { it.id }) { transaction ->
+                items(uiState.visibleTransactions, key = { it.id }) { transaction ->
                     TransactionCard(transaction = transaction)
+                }
+
+                if (uiState.hasMore) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            GlassButtonSmall(
+                                text = "Load More (${uiState.filteredTransactions.size - uiState.visibleTransactions.size} remaining)",
+                                onClick = { viewModel.loadMore() }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -200,10 +212,19 @@ fun HistoryScreen(
 
 @Composable
 private fun StreakCalendar(
-    calendarDays: List<DayStatus>,
+    calendarDays: List<DayStatus?>,
     currentStreak: Int,
-    longestStreak: Int
+    longestStreak: Int,
+    month: Int,
+    year: Int,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
 ) {
+    val now = Calendar.getInstance()
+    val isCurrentMonth = year == now.get(Calendar.YEAR) && month == now.get(Calendar.MONTH)
+    val monthNames = listOf("January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December")
+
     GlassCard(
         modifier = Modifier.fillMaxWidth(),
         elevated = true
@@ -246,14 +267,45 @@ private fun StreakCalendar(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Day of week labels
+            // Month navigation header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
+                IconButton(onClick = onPreviousMonth) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronLeft,
+                        contentDescription = "Previous month",
+                        tint = TextSecondary
+                    )
+                }
+                Text(
+                    text = "${monthNames[month]} $year",
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = Inter
+                )
+                IconButton(
+                    onClick = onNextMonth,
+                    enabled = !isCurrentMonth
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Next month",
+                        tint = if (isCurrentMonth) TextTertiary.copy(alpha = 0.3f) else TextSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Day of week labels
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.Center
@@ -269,25 +321,21 @@ private fun StreakCalendar(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // Calendar grid (4 weeks = 28 days) - using Column/Row for better control
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
+            // Calendar grid
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 calendarDays.chunked(7).forEach { week ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
                         week.forEach { day ->
-                            Box(modifier = Modifier.weight(1f)) {
-                                CalendarDay(dayStatus = day, modifier = Modifier.align(Alignment.Center))
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (day != null) {
+                                    CalendarDay(dayStatus = day)
+                                }
                             }
-                        }
-                        // Fill remaining slots if week is incomplete
-                        repeat(7 - week.size) {
-                            Box(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -303,27 +351,27 @@ private fun StreakCalendar(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(BackgroundSurface)
-                )
-                Text(
-                    text = " No activity",
-                    color = TextTertiary,
-                    fontSize = 10.sp
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
                         .background(AccentSuccess)
                 )
-                Text(
-                    text = " Points earned",
-                    color = TextTertiary,
-                    fontSize = 10.sp
+                Text(text = " Done", color = TextTertiary, fontSize = 10.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(AccentError.copy(alpha = 0.7f))
                 )
+                Text(text = " Missed", color = TextTertiary, fontSize = 10.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, AccentPrimary, CircleShape)
+                )
+                Text(text = " Today", color = TextTertiary, fontSize = 10.sp)
             }
         }
     }
@@ -334,36 +382,37 @@ private fun CalendarDay(
     dayStatus: DayStatus,
     modifier: Modifier = Modifier
 ) {
-    val dateFormat = SimpleDateFormat("d", Locale.getDefault())
-    val dayNumber = dateFormat.format(Date(dayStatus.date))
-
     val backgroundColor = when {
-        dayStatus.hasActivity && dayStatus.pointsEarned >= 10 -> AccentSuccess
-        dayStatus.hasActivity -> AccentSuccess.copy(alpha = 0.6f)
-        else -> BackgroundSurface.copy(alpha = 0.5f)
+        dayStatus.isFuture -> Color.Transparent
+        dayStatus.isToday && dayStatus.hasActivity -> AccentSuccess
+        dayStatus.isToday -> Color.Transparent
+        dayStatus.hasActivity -> AccentSuccess
+        else -> AccentError.copy(alpha = 0.7f) // Missed day
     }
 
-    val borderColor = when {
+    val textColor = when {
+        dayStatus.isFuture -> TextTertiary.copy(alpha = 0.4f)
         dayStatus.isToday -> AccentPrimary
-        else -> androidx.compose.ui.graphics.Color.Transparent
+        dayStatus.hasActivity -> BackgroundBase
+        else -> TextPrimary // Missed day text
     }
 
     Box(
         modifier = modifier
-            .size(32.dp)
+            .size(34.dp)
             .clip(CircleShape)
             .background(backgroundColor)
             .then(
                 if (dayStatus.isToday) {
-                    Modifier.border(2.dp, borderColor, CircleShape)
+                    Modifier.border(2.dp, AccentPrimary, CircleShape)
                 } else Modifier
             ),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = dayNumber,
-            color = if (dayStatus.hasActivity) BackgroundBase else TextTertiary,
-            fontSize = 11.sp,
+            text = dayStatus.dayOfMonth.toString(),
+            color = textColor,
+            fontSize = 12.sp,
             fontWeight = if (dayStatus.isToday) FontWeight.Bold else FontWeight.Normal
         )
     }

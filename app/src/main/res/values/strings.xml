@@ -1,7 +1,7 @@
 <resources>
     <!-- App Basic Info -->
-    <string name="app_name">Reward Points</string>
-    <string name="app_description">A personal reward tracking application to motivate daily activities and achievements</string>
+    <string name="app_name">Stat Up</string>
+    <string name="app_description">An RPG-inspired gamification app to level up your real-life stats and rank</string>
 
     <!-- Main Screen -->
     <string name="total_points">Total Points</string>
@@ -135,7 +135,7 @@
     <!-- Privacy and Legal -->
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="data_usage_notice">This app stores data locally on your device and does not share information with third parties</string>
-    <string name="developer_name">Reward Points Developer</string>
+    <string name="developer_name">Stat Up Developer</string>
     <string name="support_email">support@rewardpoints.app</string>
     <string name="app_version">Version %s</string>
 

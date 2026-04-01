@@ -197,8 +197,7 @@ private fun StatusFooter(
         FooterItem(
             emoji = "⭐",
             label = "Rank Up",
-            value = starDisplay,
-            isStarLine = true
+            value = "$filledLines / 5"
         )
     }
 }
@@ -302,7 +301,7 @@ private fun RankInfoDialog(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Rank list
-                    Rank.entries.forEach { rank ->
+                    Rank.entries.reversed().forEach { rank ->
                         val isCurrent = rank == currentRank
                         Row(
                             modifier = Modifier

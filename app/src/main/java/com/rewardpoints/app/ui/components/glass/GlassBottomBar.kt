@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,12 +46,6 @@ fun GlassBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .height(GlassTokens.BottomBarHeight)
-            .shadow(
-                elevation = 16.dp,
-                shape = shape,
-                ambientColor = Color.Black.copy(alpha = 0.3f),
-                spotColor = AccentPrimary.copy(alpha = 0.1f)
-            )
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(

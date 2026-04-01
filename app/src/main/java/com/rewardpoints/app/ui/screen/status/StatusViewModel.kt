@@ -42,8 +42,10 @@ class StatusViewModel(
             ) { username, stats, hexStyle ->
                 // Check for rank up
                 stats?.let {
-                    if (previousRank != null && it.rank.order > previousRank!!.order) {
-                        _rankUpEvent.emit(it.rank)
+                    previousRank?.let { prev ->
+                        if (it.rank.order > prev.order) {
+                            _rankUpEvent.emit(it.rank)
+                        }
                     }
                     previousRank = it.rank
                 }
@@ -125,15 +127,6 @@ class StatusViewModel(
         return rankCalculator.getStreakDaysToNextRank(stats)
     }
 
-    // For testing rank-up animation
-    fun simulateRankUp() {
-        viewModelScope.launch {
-            val currentRank = _uiState.value.stats.rank
-            currentRank.nextRank()?.let { newRank ->
-                _rankUpEvent.emit(newRank)
-            }
-        }
-    }
 }
 
 data class StatusUiState(

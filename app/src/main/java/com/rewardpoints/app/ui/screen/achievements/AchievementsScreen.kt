@@ -67,8 +67,8 @@ fun AchievementsScreen(
             items(uiState.achievements, key = { it.id }) { achievement ->
                 AchievementCard(
                     achievement = achievement,
-                    isCustom = achievement.id.startsWith("custom_"),
-                    onDelete = { viewModel.deleteAchievement(achievement) }
+                    onDelete = { viewModel.deleteAchievement(achievement) },
+                    onComplete = { viewModel.completeAchievement(achievement) }
                 )
             }
 
@@ -82,8 +82,8 @@ fun AchievementsScreen(
     if (uiState.showCreateDialog) {
         CreateAchievementDialog(
             onDismiss = { viewModel.hideCreateDialog() },
-            onCreate = { name, desc, emoji, category, target ->
-                viewModel.createAchievement(name, desc, emoji, category, target)
+            onCreate = { name, desc, emoji, category, target, reward ->
+                viewModel.createAchievement(name, desc, emoji, category, target, reward)
             }
         )
     }
@@ -171,8 +171,8 @@ private fun AchievementsHeader(
 @Composable
 private fun AchievementCard(
     achievement: Achievement,
-    isCustom: Boolean = false,
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    onComplete: () -> Unit = {}
 ) {
     val alpha = if (achievement.isUnlocked) 1f else 0.6f
     val animatedProgress by animateFloatAsState(
@@ -180,15 +180,8 @@ private fun AchievementCard(
         animationSpec = tween(500),
         label = "achievementProgress"
     )
-    
-    // Calculate reward points based on target (higher target = more points)
-    val rewardPoints = when {
-        achievement.target >= 100 -> 50
-        achievement.target >= 50 -> 30
-        achievement.target >= 25 -> 20
-        achievement.target >= 10 -> 15
-        else -> 10
-    }
+
+    val rewardPoints = achievement.displayRewardPoints
 
     GlassCard(
         modifier = Modifier
@@ -249,17 +242,19 @@ private fun AchievementCard(
                     }
                 }
 
-                Text(
-                    text = achievement.description,
-                    color = TextTertiary,
-                    fontSize = 12.sp,
-                    fontFamily = Inter,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
+                if (achievement.description.isNotBlank()) {
+                    Text(
+                        text = achievement.description,
+                        color = TextTertiary,
+                        fontSize = 12.sp,
+                        fontFamily = Inter,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 // Reward points badge
                 Text(
                     text = "🏆 +$rewardPoints pts",
@@ -272,50 +267,57 @@ private fun AchievementCard(
                 if (!achievement.isUnlocked) {
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Progress bar
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(Color.White.copy(alpha = 0.1f))
+                    if (achievement.isNoGoal) {
+                        // Manual completion button for no-goal achievements
+                        GlassButtonSmall(
+                            text = "Mark Complete",
+                            onClick = onComplete,
+                            primary = true
+                        )
+                    } else {
+                        // Progress bar
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxHeight()
-                                    .fillMaxWidth(animatedProgress)
+                                    .weight(1f)
+                                    .height(4.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .background(achievement.category.color)
+                                    .background(Color.White.copy(alpha = 0.1f))
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .fillMaxWidth(animatedProgress)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(achievement.category.color)
+                                )
+                            }
+
+                            Text(
+                                text = "${achievement.progress}/${achievement.target}",
+                                color = TextTertiary,
+                                fontSize = 10.sp,
+                                fontFamily = Inter
                             )
                         }
-
-                        Text(
-                            text = "${achievement.progress}/${achievement.target}",
-                            color = TextTertiary,
-                            fontSize = 10.sp,
-                            fontFamily = Inter
-                        )
                     }
                 }
             }
 
-            // Delete button for custom achievements
-            if (isCustom) {
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = TextTertiary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+            // Delete button for all achievements
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = TextTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }
@@ -324,13 +326,15 @@ private fun AchievementCard(
 @Composable
 private fun CreateAchievementDialog(
     onDismiss: () -> Unit,
-    onCreate: (name: String, description: String, emoji: String, category: AchievementCategory, target: Int) -> Unit
+    onCreate: (name: String, description: String, emoji: String, category: AchievementCategory, target: Int, rewardPoints: Int) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("🏆") }
     var selectedCategory by remember { mutableStateOf(AchievementCategory.SPECIAL) }
     var target by remember { mutableStateOf("10") }
+    var rewardPoints by remember { mutableStateOf("10") }
+    var noGoal by remember { mutableStateOf(false) }
 
     val emojiOptions = listOf("🏆", "⭐", "🎯", "💪", "🧠", "🔥", "💎", "👑", "🚀", "🎖️", "⚡", "🌟")
 
@@ -373,7 +377,7 @@ private fun CreateAchievementDialog(
                         fontFamily = Inter
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (row in 0 until 2) {
                             Row(
@@ -408,45 +412,82 @@ private fun CreateAchievementDialog(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Description
+                    // Description (optional)
                     GlassTextField(
                         value = description,
                         onValueChange = { description = it },
-                        label = "Description",
+                        label = "Description (optional)",
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Target - 3x2 grid
+                    // No Goal toggle
+                    GlassButtonSmall(
+                        text = if (noGoal) "✓ No Goal (manual completion)" else "No Goal (manual completion)",
+                        onClick = { noGoal = !noGoal },
+                        primary = noGoal,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Target - 3x2 grid (hidden when no goal)
+                    if (!noGoal) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Target (goal number):",
+                            color = TextSecondary,
+                            fontSize = 14.sp,
+                            fontFamily = Inter
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val targets = listOf("1", "5", "10", "25", "50", "100")
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            for (row in 0 until 2) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    for (col in 0 until 3) {
+                                        val idx = row * 3 + col
+                                        if (idx < targets.size) {
+                                            val t = targets[idx]
+                                            GlassButtonSmall(
+                                                text = t,
+                                                onClick = { target = t },
+                                                primary = target == t,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Reward points selector
                     Text(
-                        text = "Target (goal number):",
+                        text = "Points:",
                         color = TextSecondary,
                         fontSize = 14.sp,
                         fontFamily = Inter
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    
-                    val targets = listOf("1", "5", "10", "25", "50", "100")
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        for (row in 0 until 2) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                for (col in 0 until 3) {
-                                    val idx = row * 3 + col
-                                    if (idx < targets.size) {
-                                        val t = targets[idx]
-                                        GlassButtonSmall(
-                                            text = t,
-                                            onClick = { target = t },
-                                            primary = target == t,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                }
-                            }
+
+                    val pointsOptions = listOf("5", "10", "15", "25", "50")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        pointsOptions.forEach { p ->
+                            GlassButtonSmall(
+                                text = p,
+                                onClick = { rewardPoints = p },
+                                primary = rewardPoints == p,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
 
@@ -466,17 +507,18 @@ private fun CreateAchievementDialog(
                         GlassButton(
                             text = "Create",
                             onClick = {
-                                if (name.isNotBlank() && description.isNotBlank()) {
+                                if (name.isNotBlank()) {
                                     onCreate(
                                         name,
                                         description,
                                         emoji,
                                         selectedCategory,
-                                        target.toIntOrNull() ?: 10
+                                        if (noGoal) 0 else (target.toIntOrNull() ?: 10),
+                                        rewardPoints.toIntOrNull() ?: 10
                                     )
                                 }
                             },
-                            enabled = name.isNotBlank() && description.isNotBlank(),
+                            enabled = name.isNotBlank(),
                             modifier = Modifier.weight(1f)
                         )
                     }

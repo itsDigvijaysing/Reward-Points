@@ -1,4 +1,4 @@
-Privacy Policy for Reward Points App
+Privacy Policy for Stat Up App
 
 Last updated: October 2, 2025
 

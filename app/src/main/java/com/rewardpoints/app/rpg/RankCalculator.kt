@@ -9,10 +9,11 @@ class RankCalculator {
         val currentRank = stats.rank
         val streakCounter = stats.rankUpStreakCounter + 1
 
-        return if (streakCounter >= Rank.STREAK_DAYS_TO_RANK_UP && currentRank.canRankUp()) {
+        val nextRank = currentRank.nextRank()
+        return if (streakCounter >= Rank.STREAK_DAYS_TO_RANK_UP && nextRank != null) {
             RankResult.RankUp(
-                newRank = currentRank.nextRank()!!,
-                message = "Congratulations! You've ranked up to ${currentRank.nextRank()!!.title}!"
+                newRank = nextRank,
+                message = "Congratulations! You've ranked up to ${nextRank.title}!"
             )
         } else {
             RankResult.Progress(
@@ -26,10 +27,11 @@ class RankCalculator {
         val currentRank = stats.rank
         val breakCounter = stats.rankDownBreakCounter + 1
 
-        return if (breakCounter >= Rank.BREAKS_TO_RANK_DOWN && currentRank.canRankDown()) {
+        val prevRank = currentRank.previousRank()
+        return if (breakCounter >= Rank.BREAKS_TO_RANK_DOWN && prevRank != null) {
             RankResult.RankDown(
-                newRank = currentRank.previousRank()!!,
-                message = "Your rank has degraded to ${currentRank.previousRank()!!.title}. Get back on track!"
+                newRank = prevRank,
+                message = "Your rank has degraded to ${prevRank.title}. Get back on track!"
             )
         } else {
             RankResult.Warning(

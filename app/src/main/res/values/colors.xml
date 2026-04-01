@@ -80,5 +80,5 @@
     <color name="purple_700">#FF3700B3</color>
 
     <!-- CRITICAL: Adding missing launcher background color -->
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#0A0A1A</color>
 </resources>

@@ -34,7 +34,7 @@ class SettingsViewModel(
                 userPreferences.showDecayAnimations,
                 userPreferences.hapticFeedback,
                 userPreferences.hexagonStyle
-            ) { values ->
+            ) { values: Array<Any?> ->
                 SettingsUiState(
                     username = values[0] as String,
                     todoistConnected = !(values[1] as String?).isNullOrBlank(),
@@ -100,16 +100,14 @@ class SettingsViewModel(
         
         try {
             val result = todoistApi.testConnection(token)
-            result.fold(
-                onSuccess = {
-                    userPreferences.setTodoistToken(token)
-                    achievementTracker.onTodoistConnected()
-                    Result.success(true)
-                },
-                onFailure = { error ->
-                    Result.failure(Exception("Invalid token: ${error.message ?: "Connection failed"}"))
-                }
-            )
+            if (result.isSuccess) {
+                userPreferences.setTodoistToken(token)
+                achievementTracker.onTodoistConnected()
+                Result.success(true)
+            } else {
+                val error = result.exceptionOrNull()
+                Result.failure(Exception("Invalid token: ${error?.message ?: "Connection failed"}"))
+            }
         } catch (e: Exception) {
             Result.failure(Exception("Connection error: ${e.message ?: "Unknown error"}"))
         }

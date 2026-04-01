@@ -1,9 +1,11 @@
 package com.rewardpoints.app.sync
 
 import android.content.Context
+import android.util.Log
 import androidx.work.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class TodoistSyncWorker(
@@ -29,12 +31,17 @@ class TodoistSyncWorker(
                     Result.retry()
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+            Log.w(TAG, "Network error during sync", e)
             Result.retry()
+        } catch (e: Exception) {
+            Log.e(TAG, "Unexpected error during sync", e)
+            Result.failure()
         }
     }
 
     companion object {
+        private const val TAG = "TodoistSyncWorker"
         private const val WORK_NAME = "todoist_sync"
 
         fun schedule(context: Context, intervalMinutes: Int = 15) {

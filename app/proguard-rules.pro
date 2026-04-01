@@ -1,4 +1,4 @@
-# Reward Points v3.0 ProGuard Rules
+# Stat Up v3.1 ProGuard Rules
 # Kotlin + Compose + Room + Ktor + Koin
 
 # Keep line numbers for debugging

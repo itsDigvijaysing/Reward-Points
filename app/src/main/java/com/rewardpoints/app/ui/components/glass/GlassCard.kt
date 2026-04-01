@@ -15,11 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -48,19 +46,12 @@ fun GlassCard(
     val actualFill = if (elevated) GlassFillElevated else fillColor
     val actualBorder = if (elevated) GlassBorderElevated else borderColor
     val actualRadius = if (elevated) GlassTokens.CardRadiusElevated else cornerRadius
-    val shadowElevation = if (elevated) GlassTokens.CardShadowElevationHigh else GlassTokens.CardShadowElevation
 
     val shape = RoundedCornerShape(actualRadius)
 
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(
-                elevation = shadowElevation,
-                shape = shape,
-                ambientColor = AccentPrimary.copy(alpha = 0.1f),
-                spotColor = AccentPrimary.copy(alpha = 0.15f)
-            )
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(
@@ -118,19 +109,12 @@ fun GlassCardWithHighlight(
     val actualFill = if (elevated) GlassFillElevated else GlassFill
     val actualBorder = if (elevated) GlassBorderElevated else GlassBorder
     val actualRadius = if (elevated) GlassTokens.CardRadiusElevated else cornerRadius
-    val shadowElevation = if (elevated) GlassTokens.CardShadowElevationHigh else GlassTokens.CardShadowElevation
 
     val shape = RoundedCornerShape(actualRadius)
 
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(
-                elevation = shadowElevation,
-                shape = shape,
-                ambientColor = AccentPrimary.copy(alpha = 0.12f),
-                spotColor = AccentPrimary.copy(alpha = 0.18f)
-            )
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(
@@ -190,12 +174,6 @@ fun GlassCardAccent(
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(
-                elevation = 12.dp,
-                shape = shape,
-                ambientColor = accentColor.copy(alpha = 0.2f),
-                spotColor = accentColor.copy(alpha = 0.3f)
-            )
             .clip(shape)
             .background(
                 brush = Brush.verticalGradient(

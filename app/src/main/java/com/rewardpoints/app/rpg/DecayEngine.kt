@@ -74,9 +74,50 @@ class DecayEngine(
 
         val totalLost = strLost + intLost + wisLost + dexLost + chaLost + vitLost
 
-        // Update streak counter based on star lines system
-        // Each break day: -1 star line
-        val newRankUpCounter = (stats.rankUpStreakCounter - 1).coerceAtLeast(-5)
+        // Star lines system: break day removes 1 star line
+        val newRankUpCounter = stats.rankUpStreakCounter - 1
+
+        // Check for rank down: stars go below 0 → immediate rank down
+        val previousRank = stats.rank.previousRank()
+        if (newRankUpCounter < 0 && previousRank != null) {
+            val newRank = previousRank
+
+            // Update stats with decay + reset streak
+            val updatedStats = stats.copy(
+                strStat = stats.strStat - strLost,
+                intStat = stats.intStat - intLost,
+                wisStat = stats.wisStat - wisLost,
+                dexStat = stats.dexStat - dexLost,
+                chaStat = stats.chaStat - chaLost,
+                vitStat = stats.vitStat - vitLost,
+                streak = 0,
+                rankUpStreakCounter = Rank.STREAK_DAYS_TO_RANK_UP, // Reset to 5 after rank down
+                rank = newRank,
+                updatedAt = System.currentTimeMillis()
+            )
+            playerRepository.updateStats(updatedStats)
+
+            // Log decay
+            if (totalLost > 0) {
+                decayLogDao.insert(
+                    DecayLogEntity(
+                        strLost = strLost, intLost = intLost, wisLost = wisLost,
+                        dexLost = dexLost, chaLost = chaLost, vitLost = vitLost,
+                        idleHours = null, reason = reason,
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+            }
+
+            return DecayResult.DecayWithRankDown(
+                statsLost = totalLost,
+                newRank = newRank,
+                breakCounter = 0
+            )
+        }
+
+        // Clamp at 0 if at lowest rank (E) — can't go negative
+        val clampedCounter = newRankUpCounter.coerceAtLeast(0)
 
         // Update stats
         val updatedStats = stats.copy(
@@ -87,7 +128,7 @@ class DecayEngine(
             chaStat = stats.chaStat - chaLost,
             vitStat = stats.vitStat - vitLost,
             streak = 0,
-            rankUpStreakCounter = newRankUpCounter,
+            rankUpStreakCounter = clampedCounter,
             updatedAt = System.currentTimeMillis()
         )
 
@@ -97,38 +138,19 @@ class DecayEngine(
         if (totalLost > 0) {
             decayLogDao.insert(
                 DecayLogEntity(
-                    strLost = strLost,
-                    intLost = intLost,
-                    wisLost = wisLost,
-                    dexLost = dexLost,
-                    chaLost = chaLost,
-                    vitLost = vitLost,
-                    idleHours = null,
-                    reason = reason,
+                    strLost = strLost, intLost = intLost, wisLost = wisLost,
+                    dexLost = dexLost, chaLost = chaLost, vitLost = vitLost,
+                    idleHours = null, reason = reason,
                     createdAt = System.currentTimeMillis()
                 )
-            )
-        }
-
-        // Check for rank down (star lines go negative)
-        if (newRankUpCounter < 0 && stats.rank.canRankDown()) {
-            val newRank = stats.rank.previousRank()!!
-            playerRepository.updateRank(newRank)
-            // Reset to 5 lines after rank down
-            playerRepository.updateRankUpCounter(5)
-
-            return DecayResult.DecayWithRankDown(
-                statsLost = totalLost,
-                newRank = newRank,
-                breakCounter = 0
             )
         }
 
         return if (totalLost > 0) {
             DecayResult.DecayApplied(
                 statsLost = totalLost,
-                breakCounter = -newRankUpCounter,
-                breaksToRankDown = -newRankUpCounter.coerceAtMost(0)
+                breakCounter = clampedCounter,
+                breaksToRankDown = clampedCounter
             )
         } else {
             DecayResult.NoDecay
@@ -139,15 +161,15 @@ class DecayEngine(
         val stats = playerRepository.getStatsOnce() ?: return StreakResult.NoStats
 
         val newStreak = stats.streak + 1
-        // Each successful day: +1 star line
         val newRankUpCounter = stats.rankUpStreakCounter + 1
 
         playerRepository.updateStreak(newStreak)
         playerRepository.updateRankUpCounter(newRankUpCounter)
 
         // Check for rank up (5 star lines = rank up)
-        if (newRankUpCounter >= Rank.STREAK_DAYS_TO_RANK_UP && stats.rank.canRankUp()) {
-            val newRank = stats.rank.nextRank()!!
+        val nextRank = stats.rank.nextRank()
+        if (newRankUpCounter >= Rank.STREAK_DAYS_TO_RANK_UP && nextRank != null) {
+            val newRank = nextRank
             playerRepository.updateRank(newRank)
             // Reset to 0 lines after rank up
             playerRepository.updateRankUpCounter(0)

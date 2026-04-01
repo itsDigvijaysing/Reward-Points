@@ -1,8 +1,8 @@
-# Reward Points - RPG Gamification for Real Life
+# Stat Up - RPG Gamification for Real Life
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.2-blue.svg)
 ![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)
@@ -16,9 +16,9 @@
 
 ## 📱 Overview
 
-Reward Points transforms your daily life into an RPG experience. Complete tasks to earn points, level up your character stats, maintain streaks to rank up, and redeem rewards you create. All with a beautiful liquid glass aesthetic inspired by iOS and anime "Status Window" interfaces.
+Stat Up transforms your daily life into an RPG experience. Complete tasks to earn points, level up your character stats, maintain streaks to rank up, and redeem rewards you create. All with a beautiful liquid glass aesthetic inspired by iOS and anime "Status Window" interfaces.
 
-### Why Reward Points?
+### Why Stat Up?
 
 - 🎮 **Gamified Productivity** - Turn boring tasks into exciting quests
 - ✨ **Premium UI** - Liquid glass effects, hexagon stat charts, animated rank badges
@@ -36,18 +36,27 @@ Reward Points transforms your daily life into an RPG experience. Complete tasks 
 
 ### 📋 **Task Management**
 - **Manual Tasks** - Create custom tasks with priority (P1-P4) and stat assignment
-- **Todoist Integration** - Connect your Todoist account to sync tasks (coming soon)
+- **Todoist Integration** - Connect your Todoist account, sync completed tasks with label-to-stat routing
 - **Priority Points** - P1=4pts, P2=3pts, P3=2pts, P4=1pt
+- **Background Sync** - TodoistSyncWorker runs every 15 minutes
 
 ### 🎁 **Rewards System**
 - **Custom Rewards** - Create personal rewards (e.g., "Watch an episode" = 50pts)
 - **Point Redemption** - Spend earned points on your rewards
 - **Transaction History** - Track all earnings and spendings
 
+### 🏆 **Achievements**
+- **Built-in Achievements** - 12 prebuilt achievements across streak, points, stats, tasks, rank, and special categories
+- **Custom Achievements** - Create your own with custom emoji, target goal, and reward points
+- **No-Goal Achievements** - Manual completion option for open-ended goals
+- **Delete Any Achievement** - Full control over your achievement list
+
 ### 📊 **Progress Tracking**
-- **Streak Calendar** - 28-day view showing your activity patterns
+- **Streak Calendar** - 28-day view with month label showing your activity patterns
+- **Stat Decay** - Midnight check: idle days lose 1 stat point per stat and 1 star line
 - **Mood Check-in** - Daily mood logging with +2 WIS bonus
-- **History Log** - Complete transaction history with filtering
+- **History Log** - Complete transaction history with filtering and pagination
+- **Per-Stat Breakdown** - Detailed view with weekly chart and top sources for each stat
 
 ### 🎨 **Premium UI**
 - **Liquid Glass Design** - Translucent cards, glowing borders, blur effects
@@ -146,26 +155,27 @@ Your privacy matters:
 
 ## 🗺️ Roadmap
 
-### ✅ Completed (v3.0)
+### ✅ Completed (v3.1.2)
 - [x] Complete Kotlin/Compose rewrite
 - [x] Liquid glass UI system
-- [x] Hexagon radar chart with labels
-- [x] Rank system with star lines progress
-- [x] Manual task creation
-- [x] Rewards create/redeem
-- [x] Streak calendar
-- [x] Mood check-in
+- [x] Hexagon radar chart (Simple/Glow styles)
+- [x] Rank system with star lines (E → S)
+- [x] Manual task creation with stat assignment
+- [x] Rewards create/redeem/delete
+- [x] Streak calendar with month display
+- [x] Mood check-in (+2 WIS)
 - [x] Settings with full reset
+- [x] Todoist integration (sync, label→stat routing, token validation)
+- [x] Stat decay system (midnight DecayWorker)
+- [x] Rank-up animations (particles + badge)
+- [x] Achievements system (built-in + custom + no-goal)
+- [x] Per-stat detailed breakdown (weekly chart, top sources)
+- [x] Collapsible stat bars with full stat names
 
-### 🚧 In Progress
-- [ ] Todoist API integration
-- [ ] Stat decay system (daily decay at midnight)
-- [ ] Rank-up animations
-
-### 📋 Planned
-- [ ] Achievements/Titles system
-- [ ] Per-stat detailed breakdown
-- [ ] AI Agent for task suggestions
+### 📋 Planned (v4.0)
+- [ ] AI Agent (provider TBD)
+- [ ] Real backdrop blur glass effect
+- [ ] Push notifications for sync
 - [ ] Widget support
 
 ## 🤝 Contributing

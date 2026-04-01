@@ -7,14 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.rewardpoints.app.ui.navigation.AppNavigation
-import com.rewardpoints.app.ui.theme.RewardPointsTheme
+import com.rewardpoints.app.ui.theme.StatUpTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            RewardPointsTheme {
+            StatUpTheme {
                 AppNavigation()
             }
         }

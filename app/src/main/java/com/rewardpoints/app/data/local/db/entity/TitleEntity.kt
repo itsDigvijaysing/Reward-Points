@@ -13,5 +13,6 @@ data class TitleEntity(
     val isUnlocked: Boolean = false,
     val unlockedAt: Long?,
     val progress: Int = 0,
-    val target: Int
+    val target: Int,
+    val rewardPoints: Int = 0
 )

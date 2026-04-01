@@ -38,36 +38,59 @@ class TodoistApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun getCompletedTasks(token: String, since: String? = null): Result<List<CompletedTask>> {
+    /**
+     * Fetch completed tasks. Tries Sync v9 endpoint (well-documented).
+     * Returns raw response preview in the exception message for debugging.
+     */
+    suspend fun getCompletedTasks(token: String, limit: Int = 30): Result<List<CompletedTask>> {
         return try {
-            val response = httpClient.get("$BASE_URL/tasks/completed/by_completion_date") {
+            // v1 API: GET /api/v1/tasks/completed (returns newest first)
+            // annotate_items=true gives us item_object with priority & labels
+            val response = httpClient.get("$BASE_URL/tasks/completed") {
                 header(HttpHeaders.Authorization, "Bearer $token")
-                since?.let { parameter("since", it) }
-                parameter("limit", "200")
+                parameter("limit", limit.toString())
+                parameter("annotate_items", "true")
             }
 
-            // Parse flexibly — response may be {items:[...]}, {results:[...]}, or [...]
             val responseText: String = response.bodyAsText()
             val jsonElement = json.parseToJsonElement(responseText)
 
-            val items: List<CompletedTask> = when {
-                jsonElement is JsonArray -> {
-                    json.decodeFromJsonElement(jsonElement)
-                }
-                jsonElement is JsonObject -> {
-                    val arr = jsonElement["items"]
-                        ?: jsonElement["results"]
-                        ?: jsonElement["completed_items"]
-                    if (arr != null && arr is JsonArray) {
-                        json.decodeFromJsonElement(arr)
-                    } else {
-                        emptyList()
-                    }
-                }
-                else -> emptyList()
+            if (jsonElement !is JsonObject || "items" !in jsonElement) {
+                val keys = if (jsonElement is JsonObject) jsonElement.keys.joinToString() else "not-object"
+                return Result.failure(Exception("Unexpected response [$keys]: ${responseText.take(150)}"))
             }
 
-            Result.success(items)
+            val itemsArray = jsonElement["items"] as? JsonArray ?: return Result.success(emptyList())
+
+            // Parse each item, extracting priority & labels from item_object
+            val tasks = itemsArray.mapNotNull { element ->
+                try {
+                    val obj = element.jsonObject
+                    val id = obj["id"]?.jsonPrimitive?.content ?: ""
+                    val taskId = obj["task_id"]?.jsonPrimitive?.content ?: ""
+                    val content = obj["content"]?.jsonPrimitive?.content ?: ""
+                    val completedAt = obj["completed_at"]?.jsonPrimitive?.content
+
+                    // Extract priority & labels from item_object (present with annotate_items=true)
+                    val itemObj = obj["item_object"]?.jsonObject
+                    val priority = itemObj?.get("priority")?.jsonPrimitive?.int ?: 1
+                    val labels = itemObj?.get("labels")?.jsonArray
+                        ?.map { it.jsonPrimitive.content } ?: emptyList()
+
+                    CompletedTask(
+                        id = id,
+                        taskId = taskId,
+                        content = content,
+                        priority = priority,
+                        labels = labels,
+                        completedAt = completedAt
+                    )
+                } catch (e: Exception) {
+                    null // skip malformed items
+                }
+            }
+
+            Result.success(tasks)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -133,6 +156,8 @@ data class CompletedTask(
     val id: String = "",
     @SerialName("task_id")
     val taskId: String = "",
+    @SerialName("item_id")
+    val itemId: String = "",
     val content: String = "",
     val priority: Int = 1,
     val labels: List<String> = emptyList(),
@@ -143,6 +168,6 @@ data class CompletedTask(
     @SerialName("completed_date")
     val completedDate: String? = null
 ) {
-    /** Stable identifier — prefer id, fall back to task_id */
-    val stableId: String get() = id.ifBlank { taskId }
+    /** Stable identifier — prefer id, then task_id, then item_id */
+    val stableId: String get() = id.ifBlank { taskId.ifBlank { itemId } }
 }

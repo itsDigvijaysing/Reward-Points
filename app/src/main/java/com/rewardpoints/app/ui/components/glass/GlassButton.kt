@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -100,16 +99,6 @@ fun GlassButton(
         modifier = modifier
             .scale(scale)
             .height(GlassTokens.ButtonHeight)
-            .then(
-                if (primary && enabled) {
-                    Modifier.shadow(
-                        elevation = 8.dp,
-                        shape = shape,
-                        ambientColor = accentColor.copy(alpha = 0.3f),
-                        spotColor = accentColor.copy(alpha = 0.4f)
-                    )
-                } else Modifier
-            )
             .clip(shape)
             .background(brush = backgroundBrush)
             .then(
@@ -261,12 +250,6 @@ fun GlassIconButton(
         modifier = modifier
             .scale(scale)
             .size(size)
-            .shadow(
-                elevation = 4.dp,
-                shape = shape,
-                ambientColor = AccentPrimary.copy(alpha = 0.15f),
-                spotColor = AccentPrimary.copy(alpha = 0.2f)
-            )
             .clip(shape)
             .background(brush = Brush.radialGradient(colors = bgColors))
             .border(1.dp, borderColor, shape)

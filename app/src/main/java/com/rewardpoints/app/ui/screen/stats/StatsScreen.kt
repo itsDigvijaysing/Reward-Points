@@ -238,7 +238,7 @@ private fun WeeklyChart(weeklyData: List<DayData>) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
+                    .height(140.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -262,16 +262,17 @@ private fun WeeklyChart(weeklyData: List<DayData>) {
                             Text(
                                 text = "${dayData.points}",
                                 color = AccentPrimary,
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
                                 fontFamily = Inter
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                         }
 
                         // Bar
                         Box(
                             modifier = Modifier
-                                .width(24.dp)
-                                .height((80.dp * animatedHeight).coerceAtLeast(4.dp))
+                                .width(20.dp)
+                                .height((90.dp * animatedHeight).coerceAtLeast(4.dp))
                                 .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                                 .background(
                                     brush = Brush.verticalGradient(
@@ -280,14 +281,15 @@ private fun WeeklyChart(weeklyData: List<DayData>) {
                                 )
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                        // Day label
+                        // Day label — single letter to avoid overlap
                         Text(
-                            text = dayData.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                            text = dayData.date.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
                             color = TextTertiary,
-                            fontSize = 10.sp,
-                            fontFamily = Inter
+                            fontSize = 11.sp,
+                            fontFamily = Inter,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }

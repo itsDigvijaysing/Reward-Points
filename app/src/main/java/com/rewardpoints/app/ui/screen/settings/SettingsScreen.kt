@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
@@ -125,7 +126,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Gemini AI",
+                            text = "AI Agent",
                             color = TextPrimary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -211,14 +212,14 @@ fun SettingsScreen(
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Text(
-                        text = "Reward Points",
+                        text = "Stat Up",
                         color = TextPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = Inter
                     )
                     Text(
-                        text = "v3.1.0 - Glass UI Edition",
+                        text = "v${com.rewardpoints.app.BuildConfig.VERSION_NAME}",
                         color = TextSecondary,
                         fontSize = 12.sp,
                         fontFamily = Inter
@@ -412,6 +413,10 @@ private fun TodoistConnectionDialog(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = TextPrimary,
                                 unfocusedTextColor = TextPrimary,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                errorContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
                                 cursorColor = AccentPrimary,
                                 focusedBorderColor = AccentPrimary,
                                 unfocusedBorderColor = GlassBorder,

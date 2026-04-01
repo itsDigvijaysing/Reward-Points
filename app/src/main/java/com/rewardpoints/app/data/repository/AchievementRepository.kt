@@ -14,34 +14,14 @@ class AchievementRepository(
     val achievements: Flow<List<Achievement>> = titleDao.getAll().map { entities ->
         entities.map { entity ->
             val template = Achievements.getById(entity.id)
-            Achievement(
-                id = entity.id,
-                name = entity.name,
-                description = entity.description,
-                emoji = entity.emoji ?: template?.emoji ?: "🏆",
-                category = template?.category ?: AchievementCategory.SPECIAL,
-                target = entity.target,
-                progress = entity.progress,
-                isUnlocked = entity.isUnlocked,
-                unlockedAt = entity.unlockedAt
-            )
+            entity.toAchievement(template)
         }
     }
 
     val unlockedAchievements: Flow<List<Achievement>> = titleDao.getUnlocked().map { entities ->
         entities.map { entity ->
             val template = Achievements.getById(entity.id)
-            Achievement(
-                id = entity.id,
-                name = entity.name,
-                description = entity.description,
-                emoji = entity.emoji ?: template?.emoji ?: "🏆",
-                category = template?.category ?: AchievementCategory.SPECIAL,
-                target = entity.target,
-                progress = entity.progress,
-                isUnlocked = entity.isUnlocked,
-                unlockedAt = entity.unlockedAt
-            )
+            entity.toAchievement(template)
         }
     }
 
@@ -96,7 +76,8 @@ class AchievementRepository(
         description: String,
         emoji: String,
         category: AchievementCategory,
-        target: Int
+        target: Int,
+        rewardPoints: Int = 0
     ) {
         val id = "custom_${System.currentTimeMillis()}"
         titleDao.insert(
@@ -108,7 +89,8 @@ class AchievementRepository(
                 isUnlocked = false,
                 unlockedAt = null,
                 progress = 0,
-                target = target
+                target = target,
+                rewardPoints = rewardPoints
             )
         )
     }
@@ -120,16 +102,19 @@ class AchievementRepository(
     suspend fun getAchievement(id: String): Achievement? {
         val entity = titleDao.getById(id) ?: return null
         val template = Achievements.getById(entity.id)
-        return Achievement(
-            id = entity.id,
-            name = entity.name,
-            description = entity.description,
-            emoji = entity.emoji ?: template?.emoji ?: "🏆",
-            category = template?.category ?: AchievementCategory.SPECIAL,
-            target = entity.target,
-            progress = entity.progress,
-            isUnlocked = entity.isUnlocked,
-            unlockedAt = entity.unlockedAt
-        )
+        return entity.toAchievement(template)
     }
+
+    private fun TitleEntity.toAchievement(template: Achievement?): Achievement = Achievement(
+        id = id,
+        name = name,
+        description = description,
+        emoji = emoji ?: template?.emoji ?: "🏆",
+        category = template?.category ?: AchievementCategory.SPECIAL,
+        target = target,
+        progress = progress,
+        isUnlocked = isUnlocked,
+        unlockedAt = unlockedAt,
+        rewardPoints = rewardPoints
+    )
 }

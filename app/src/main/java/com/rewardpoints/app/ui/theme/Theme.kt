@@ -1,12 +1,10 @@
 package com.rewardpoints.app.ui.theme
 
 import android.app.Activity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -29,20 +27,25 @@ private val DarkColorScheme = darkColorScheme(
     onErrorContainer = TextPrimary,
     background = BackgroundBase,
     onBackground = TextPrimary,
-    surface = BackgroundSurface,
+    surface = BackgroundBase,
     onSurface = TextPrimary,
-    surfaceVariant = GlassFill,
+    surfaceVariant = BackgroundBase,
     onSurfaceVariant = TextSecondary,
+    surfaceContainerLowest = BackgroundBase,
+    surfaceContainerLow = BackgroundBase,
+    surfaceContainer = BackgroundBase,
+    surfaceContainerHigh = BackgroundBase,
+    surfaceContainerHighest = BackgroundBase,
     outline = GlassBorder,
     outlineVariant = TextTertiary,
     inverseSurface = TextPrimary,
     inverseOnSurface = BackgroundBase,
     inversePrimary = AccentPrimary,
-    surfaceTint = AccentPrimary
+    surfaceTint = BackgroundBase
 )
 
 @Composable
-fun RewardPointsTheme(
+fun StatUpTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme
@@ -51,8 +54,7 @@ fun RewardPointsTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = BackgroundBase.toArgb()
-            window.navigationBarColor = BackgroundBase.toArgb()
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = false
                 isAppearanceLightNavigationBars = false

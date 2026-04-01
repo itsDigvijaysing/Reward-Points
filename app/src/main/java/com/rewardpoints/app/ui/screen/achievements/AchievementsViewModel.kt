@@ -46,10 +46,11 @@ class AchievementsViewModel(
         description: String,
         emoji: String,
         category: AchievementCategory,
-        target: Int
+        target: Int,
+        rewardPoints: Int
     ) {
         viewModelScope.launch {
-            achievementRepository.createCustomAchievement(name, description, emoji, category, target)
+            achievementRepository.createCustomAchievement(name, description, emoji, category, target, rewardPoints)
             hideCreateDialog()
         }
     }
@@ -57,6 +58,12 @@ class AchievementsViewModel(
     fun deleteAchievement(achievement: Achievement) {
         viewModelScope.launch {
             achievementRepository.deleteAchievement(achievement.id)
+        }
+    }
+
+    fun completeAchievement(achievement: Achievement) {
+        viewModelScope.launch {
+            achievementRepository.unlockDirectly(achievement.id)
         }
     }
 }

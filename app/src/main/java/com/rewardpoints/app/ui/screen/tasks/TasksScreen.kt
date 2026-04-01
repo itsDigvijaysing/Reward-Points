@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -103,26 +102,20 @@ fun TasksScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(bottom = 100.dp)
                 ) {
-                    // Todoist section
+                    // Todoist section (unified)
                     if (uiState.todoistConnected) {
                         item {
-                            TodoistSyncCard(
-                                lastSync = uiState.todoistLastSync,
-                                isSyncing = uiState.todoistSyncing,
-                                syncLog = uiState.todoistSyncLog,
-                                onSync = { viewModel.syncTodoist() }
-                            )
-                        }
-                        
-                        // Todoist Tasks Section
-                        item {
-                            TodoistTasksSection(
+                            TodoistSection(
                                 tasks = uiState.todoistTasks,
                                 isLoading = uiState.todoistTasksLoading,
                                 error = uiState.todoistTasksError,
                                 isExpanded = uiState.showTodoistTasks,
                                 onToggle = { viewModel.toggleTodoistTasks() },
-                                onRefresh = { viewModel.loadTodoistTasks() }
+                                onRefresh = { viewModel.loadTodoistTasks() },
+                                lastSync = uiState.todoistLastSync,
+                                isSyncing = uiState.todoistSyncing,
+                                syncLog = uiState.todoistSyncLog,
+                                onSync = { viewModel.syncTodoist() }
                             )
                         }
                     }
@@ -193,7 +186,13 @@ fun TasksScreen(
 }
 
 @Composable
-private fun TodoistSyncCard(
+private fun TodoistSection(
+    tasks: List<TodoistTask>,
+    isLoading: Boolean,
+    error: String?,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    onRefresh: () -> Unit,
     lastSync: String?,
     isSyncing: Boolean,
     syncLog: List<String>,
@@ -201,65 +200,117 @@ private fun TodoistSyncCard(
 ) {
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            // Header — tap to expand/collapse
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onToggle() }
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "📋", fontSize = 24.sp)
-                Spacer(modifier = Modifier.width(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Todoist Sync",
-                        color = TextPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = Inter
-                    )
-                    Text(
-                        text = if (lastSync != null) "Last: $lastSync" else "Never synced",
-                        color = TextTertiary,
-                        fontSize = 11.sp,
-                        fontFamily = Inter
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "📋", fontSize = 20.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "Todoist",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = Inter
+                        )
+                        Text(
+                            text = "${tasks.size} tasks • ${lastSync ?: "Never synced"}",
+                            color = TextTertiary,
+                            fontSize = 11.sp,
+                            fontFamily = Inter
+                        )
+                    }
                 }
-                if (isSyncing) {
-                    CircularProgressIndicator(
-                        color = AccentPrimary,
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    GlassButtonSmall(
-                        text = "Sync Now",
-                        onClick = onSync
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isSyncing || isLoading) {
+                        CircularProgressIndicator(
+                            color = AccentPrimary,
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        GlassButtonSmall(
+                            text = "Sync",
+                            onClick = onSync
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        tint = TextSecondary
                     )
                 }
             }
 
-            if (syncLog.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
+            // Error
+            if (error != null) {
+                Text(
+                    text = error,
+                    color = AccentError,
+                    fontSize = 12.sp,
+                    fontFamily = Inter,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            // Expanded content
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.04f))
-                        .padding(8.dp)
+                        .padding(top = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "Sync Log:",
-                            color = TextTertiary,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = Inter
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        syncLog.forEach { entry ->
+                    // Sync log (compact)
+                    if (syncLog.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.White.copy(alpha = 0.04f))
+                                .padding(8.dp)
+                        ) {
+                            Column {
+                                syncLog.take(3).forEach { entry ->
+                                    Text(
+                                        text = entry,
+                                        color = TextTertiary,
+                                        fontSize = 10.sp,
+                                        fontFamily = Inter
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Active tasks
+                    if (tasks.isNotEmpty()) {
+                        tasks.take(10).forEach { task ->
+                            TodoistTaskCard(task = task)
+                        }
+                        if (tasks.size > 10) {
                             Text(
-                                text = entry,
+                                text = "+${tasks.size - 10} more tasks",
                                 color = TextTertiary,
-                                fontSize = 10.sp,
-                                fontFamily = Inter
+                                fontSize = 12.sp,
+                                fontFamily = Inter,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -604,139 +655,6 @@ private fun CreateMissionDialog(
                         )
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TodoistTasksSection(
-    tasks: List<TodoistTask>,
-    isLoading: Boolean,
-    error: String?,
-    isExpanded: Boolean,
-    onToggle: () -> Unit,
-    onRefresh: () -> Unit
-) {
-    GlassCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { onToggle() }
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "📋", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = "Todoist Tasks",
-                            color = TextPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = Inter
-                        )
-                        Text(
-                            text = "${tasks.size} active tasks",
-                            color = TextTertiary,
-                            fontSize = 11.sp,
-                            fontFamily = Inter
-                        )
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = AccentPrimary,
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        IconButton(
-                            onClick = onRefresh,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refresh",
-                                tint = TextSecondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
-                        tint = TextSecondary
-                    )
-                }
-            }
-            
-            // Error message
-            if (error != null) {
-                Text(
-                    text = error,
-                    color = AccentError,
-                    fontSize = 12.sp,
-                    fontFamily = Inter,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-            
-            // Tasks list
-            AnimatedVisibility(
-                visible = isExpanded && tasks.isNotEmpty(),
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    tasks.take(10).forEach { task ->
-                        TodoistTaskCard(task = task)
-                    }
-                    
-                    if (tasks.size > 10) {
-                        Text(
-                            text = "+${tasks.size - 10} more tasks",
-                            color = TextTertiary,
-                            fontSize = 12.sp,
-                            fontFamily = Inter,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-            
-            // Empty state
-            AnimatedVisibility(
-                visible = isExpanded && tasks.isEmpty() && !isLoading && error == null,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Text(
-                    text = "No active tasks in Todoist",
-                    color = TextTertiary,
-                    fontSize = 13.sp,
-                    fontFamily = Inter,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                )
             }
         }
     }

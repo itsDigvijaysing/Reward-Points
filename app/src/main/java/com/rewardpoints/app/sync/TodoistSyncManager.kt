@@ -32,12 +32,11 @@ class TodoistSyncManager(
         }
 
         return try {
+            // Fetch recent completed tasks. First sync gets more history,
+            // subsequent syncs only need recent ones (dedup via externalId handles overlap).
             val lastSyncTime = userPreferences.lastSyncTime.first()
-            val since = if (lastSyncTime > 0) {
-                java.time.Instant.ofEpochMilli(lastSyncTime).toString()
-            } else null
-
-            val result = todoistApi.getCompletedTasks(token, since)
+            val limit = if (lastSyncTime > 0) 30 else 200
+            val result = todoistApi.getCompletedTasks(token, limit = limit)
 
             result.fold(
                 onSuccess = { tasks ->

@@ -53,7 +53,7 @@ fun AgentScreen(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Your personal AI assistant powered by Gemini will be here soon. It will help you stay motivated, track your progress, and provide personalized insights.",
+                    text = "Your personal AI assistant will be here soon. It will help you stay motivated, track your progress, and provide personalized insights.",
                     color = TextTertiary,
                     fontSize = 14.sp,
                     fontFamily = Inter,
