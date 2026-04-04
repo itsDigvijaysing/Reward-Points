@@ -6,6 +6,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -18,8 +19,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.Rank
+import com.rewardpoints.app.ui.components.glass.GlassButton
+import com.rewardpoints.app.ui.components.glass.GlassCard
 import com.rewardpoints.app.ui.theme.*
 
 @Composable
@@ -33,6 +38,7 @@ fun StatusWindow(
 ) {
     val shape = RoundedCornerShape(24.dp)
     var showStatBars by remember { mutableStateOf(false) }
+    var showRankInfo by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -56,24 +62,31 @@ fun StatusWindow(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Rank Badge
-        RankBadge(rank = stats.rank)
+        // Rank Badge — clickable for rank info
+        Box(
+            modifier = Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { showRankInfo = true }
+        ) {
+            RankBadge(rank = stats.rank, showTitle = false)
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Player Info
+        // Player Name
         Text(
-            text = "Player: $playerName",
+            text = playerName,
             color = TextPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
             fontFamily = Inter
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Total Points: ${stats.totalPointsEarned}",
+            text = "✨ ${stats.totalPointsEarned} pts",
             color = PointsGold,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
@@ -84,7 +97,10 @@ fun StatusWindow(
 
         // Hexagon Chart - clickable to toggle stat bars
         Box(
-            modifier = Modifier.clickable { showStatBars = !showStatBars }
+            modifier = Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { showStatBars = !showStatBars }
         ) {
             HexagonRadarChart(
                 stats = stats,
@@ -94,7 +110,6 @@ fun StatusWindow(
             )
         }
 
-        // Hint text - removed per user feedback
         // Collapsible Stat Bars
         AnimatedVisibility(
             visible = showStatBars,
@@ -109,12 +124,21 @@ fun StatusWindow(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Footer Info - shows star lines progress
+        // Footer — compact row with streak, points, rank progress
         StatusFooter(
             streak = stats.streak,
             starLines = stats.rankUpStreakCounter,
             availablePoints = availablePoints,
             onHistoryClick = onHistoryClick
+        )
+    }
+
+    // Rank Info Dialog
+    if (showRankInfo) {
+        RankInfoDialog(
+            currentRank = stats.rank,
+            starLines = stats.rankUpStreakCounter,
+            onDismiss = { showRankInfo = false }
         )
     }
 }
@@ -149,15 +173,14 @@ private fun StatusFooter(
     availablePoints: Int,
     onHistoryClick: () -> Unit = {}
 ) {
-    // Star lines visualization: ☆ for empty, ★ for filled
-    val starProgress = buildString {
-        repeat(starLines.coerceIn(0, 5)) { append("★") }
-        repeat((5 - starLines).coerceAtLeast(0)) { append("☆") }
-    }
+    // Star lines: compact inline display
+    val filledLines = starLines.coerceIn(0, 5)
+    val starDisplay = "★".repeat(filledLines) + "☆".repeat(5 - filledLines)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Top
     ) {
         FooterItem(
             emoji = "🔥",
@@ -171,28 +194,12 @@ private fun StatusFooter(
             highlight = true,
             onClick = onHistoryClick
         )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "⭐",
-                fontSize = 20.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Rank Up",
-                color = TextTertiary,
-                fontSize = 10.sp,
-                fontFamily = Inter
-            )
-            Text(
-                text = starProgress,
-                color = PointsGold,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
-        }
+        FooterItem(
+            emoji = "⭐",
+            label = "Rank Up",
+            value = starDisplay,
+            isStarLine = true
+        )
     }
 }
 
@@ -202,12 +209,17 @@ private fun FooterItem(
     label: String,
     value: String,
     highlight: Boolean = false,
+    isStarLine: Boolean = false,
     onClick: (() -> Unit)? = null
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = if (onClick != null) {
-            Modifier.clickable { onClick() }
+            Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
         } else Modifier
     ) {
         Text(
@@ -223,10 +235,124 @@ private fun FooterItem(
         )
         Text(
             text = value,
-            color = if (highlight) PointsGold else TextPrimary,
-            fontSize = 12.sp,
-            fontWeight = if (highlight) FontWeight.Bold else FontWeight.SemiBold,
-            fontFamily = Inter
+            color = if (highlight) PointsGold else if (isStarLine) PointsGold else TextPrimary,
+            fontSize = if (isStarLine) 10.sp else 12.sp,
+            fontWeight = if (highlight || isStarLine) FontWeight.Bold else FontWeight.SemiBold,
+            fontFamily = Inter,
+            letterSpacing = if (isStarLine) 1.sp else 0.sp
         )
+    }
+}
+
+@Composable
+private fun RankInfoDialog(
+    currentRank: Rank,
+    starLines: Int,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundBase.copy(alpha = 0.92f))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                elevated = true
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Rank System",
+                        color = TextPrimary,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Inter
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Your progress is tracked by Star Lines (★). " +
+                                "Each active day adds a line, each idle day removes one.",
+                        color = TextSecondary,
+                        fontSize = 14.sp,
+                        fontFamily = Inter
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "★★★★★ = Rank Up!\n" +
+                                "Lines below 0 = Rank Down",
+                        color = PointsGold,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Inter
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Rank list
+                    Rank.entries.forEach { rank ->
+                        val isCurrent = rank == currentRank
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (isCurrent) "▸" else "  ",
+                                color = rank.color,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Rank ${rank.name}",
+                                color = if (isCurrent) rank.color else TextSecondary,
+                                fontSize = 14.sp,
+                                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                fontFamily = Inter,
+                                modifier = Modifier.width(60.dp)
+                            )
+                            Text(
+                                text = rank.title,
+                                color = if (isCurrent) TextPrimary else TextTertiary,
+                                fontSize = 14.sp,
+                                fontFamily = Inter
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val linesDisplay = starLines.coerceIn(0, 5)
+                    Text(
+                        text = "Current: ${"★".repeat(linesDisplay)}${"☆".repeat(5 - linesDisplay)} (${starLines}/5)",
+                        color = TextPrimary,
+                        fontSize = 14.sp,
+                        fontFamily = Inter
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    GlassButton(
+                        text = "Got it",
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
     }
 }

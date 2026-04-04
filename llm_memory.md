@@ -8,39 +8,32 @@
 - **Repo**: /home/king/Documents/Projects/Reward-Points
 - **License**: GPL-3.0 | **Package**: com.rewardpoints.app
 
-## Current State (as of 2026-03-31)
-- **Status**: v3.0.1 (versionCode 8) — Phase 4 (Todoist integration) IN PROGRESS
+## Current State (as of 2026-04-05)
+- **Status**: v3.1.0 (versionCode 9) — v3 feature-complete
 - **Stack**: Kotlin, Compose, Room, Ktor, Koin, DataStore, WorkManager
-- **~76 Kotlin files**, app builds and runs on Waydroid
+- **76 Kotlin files**, app builds and runs on Waydroid
 
 ## What Works
-- ✅ Glass UI (cards, buttons, bottom bar, ambient background)
-- ✅ Status screen with StatusWindow, hexagon chart (Simple/Glow styles), rank badge
+- ✅ Glass UI (cards, buttons, bottom bar, ambient background, no click rectangles)
+- ✅ Status screen — player name + total pts (no rank title), hexagon chart, rank info popup on tap
 - ✅ Manual task/mission creation with stat assignment
-- ✅ Rewards create/redeem/delete
+- ✅ Rewards create/redeem/delete, points card → History navigation
 - ✅ History with streak calendar (28-day view)
 - ✅ Mood check-in (+2 WIS)
 - ✅ Manual points addition with stat selection
-- ✅ Settings with full reset, hexagon style preference
+- ✅ Settings with full reset (reinitializes stats + achievements), hexagon style
 - ✅ Decay worker (midnight check for activity → streak/decay)
 - ✅ Rank-up animations (particle effects + animated badge)
 - ✅ Collapsible stat bars with full stat names
-- ✅ Achievements system (shows reward points, simplified UI)
+- ✅ Achievements system (built-in + custom create/delete)
 - ✅ Per-stat detailed breakdown screen (3x2 selector, weekly chart, top sources)
-- ✅ Full Reset in Settings properly reinitializes player stats (base 5)
-- ✅ **Todoist token validation** on connect (validates API key before saving)
-- ✅ **Todoist active tasks display** (collapsible list with priority badges, due dates, labels)
-- ✅ **Sync status display** (last sync time, sync log)
-- ✅ **Manual sync button** with loading indicator
-
-## What's NOT Working / In Progress
-- ⚠️ **Completed tasks sync** — API response structure mismatch (items field not found)
-- ⚠️ **Points from Todoist tasks** — Not awarding because completed sync fails
-- ❌ Click points in Rewards → open History (not implemented)
+- ✅ Todoist sync — flexible JSON parsing, token validation, active tasks display
+- ✅ Todoist completed tasks → points (with labels → stat routing, without labels → points only)
+- ✅ App initialization: stats + achievements seeded in Application.onCreate()
 
 ## What's Remaining (v4.0)
-- ❌ Push notifications for sync
 - ❌ AI Agent (Gemini integration)
+- ❌ Push notifications for sync
 
 ## Points & Stats
 - **Reward points**: p1=4, p2=3, p3=2, p4=1
@@ -63,26 +56,13 @@ MVVM: Screen→ViewModel→Repository→(Room|Ktor)
 5 tabs: Status | Tasks | Rewards | Agent(placeholder) | Settings
 
 ## Todoist Integration
-
-### API Details
-- **IMPORTANT**: Todoist REST v2 API (`/rest/v2/tasks`) is DEPRECATED — returns 410 Gone
-- **Must use Sync API v1**: `https://api.todoist.com/api/v1/sync`
-- Sync API requires **POST with form data** (submitForm), not GET
-- Active items use field `checked` (not `is_completed`)
-- Completed tasks endpoint: `/api/v1/sync/completed/get_all`
-
-### Current Issue
-- `/api/v1/sync/completed/get_all` returns different JSON structure than expected
-- Error: `Field 'items' is required for type CompletedTasksResponse`
-- Active tasks (105) load correctly, completed tasks sync fails
-
-### Components
-- **SettingsViewModel.validateAndConnectTodoist()** - Validates token via `testConnection()` before saving
-- **TodoistConnectionDialog** - Shows validation status, error messages on invalid tokens
-- **TasksScreen** - Has collapsible `TodoistTasksSection` showing active tasks
-- **TodoistTaskCard** - Shows priority badge (P1-P4), content, due date, labels, points value
-- **Manual sync** - Attempts to sync completed tasks, updates sync log, refreshes active tasks
-- **Background sync** - TodoistSyncWorker runs every 15 min (but completed sync currently fails)
+- **Base URL**: `https://api.todoist.com/api/v1`
+- **Active tasks**: POST `$BASE_URL/sync` with `resource_types=["items"]` (Sync API, submitForm)
+- **Completed tasks**: GET `$BASE_URL/tasks/completed/by_completion_date` (v1 REST)
+- **Flexible parsing**: response parsed as JsonElement, handles `items`, `results`, or raw array
+- **No tags → points only** (no stat allocated), **with labels → routed to stat via StatMapping**
+- **Token validation**: `testConnection()` via Sync API user resource
+- Background sync: TodoistSyncWorker every 15 min
 
 ## Background Workers
 - **DecayWorker**: Runs at midnight, checks if earned points yesterday
@@ -108,15 +88,10 @@ MVVM: Screen→ViewModel→Repository→(Room|Ktor)
 - `ui/components/rpg/StatusWindow.kt` - Character sheet with collapsible stats
 - `ui/components/rpg/HexagonRadarChart.kt` - Stats visualization (Simple/Glow)
 - `rpg/DecayEngine.kt` - Stat decay & streak logic
-- `sync/TodoistApi.kt` - Todoist API client (Sync API v1)
+- `sync/TodoistApi.kt` - Todoist API client (flexible JSON parsing)
 - `sync/TodoistSyncManager.kt` - Sync logic + active tasks fetch
+- `RewardPointsApp.kt` - App initialization (stats + achievements seeding)
 - `di/AppModule.kt` - All Koin DI wiring (includes 15s HTTP timeout)
-
-## Next Steps to Fix Todoist
-1. Debug actual JSON response from `/api/v1/sync/completed/get_all`
-2. Update `CompletedTasksResponse` data class to match real response structure
-3. Test completed tasks sync and points awarding
-4. Add click handler: Points in Rewards → navigate to History
 
 ## Testing
 Waydroid multi-window mode: `waydroid prop set persist.waydroid.multi_windows true`

@@ -26,6 +26,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.rewardpoints.app.domain.model.Reward
 import com.rewardpoints.app.ui.components.glass.*
+import com.rewardpoints.app.ui.navigation.Routes
 import com.rewardpoints.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
@@ -69,10 +70,11 @@ fun RewardsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Balance Header
+            // Balance Header — tap to view history
             GlassCardWithHighlight(
                 modifier = Modifier.fillMaxWidth(),
-                elevated = true
+                elevated = true,
+                onClick = { navController.navigate(Routes.HISTORY) }
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),

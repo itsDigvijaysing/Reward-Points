@@ -2,6 +2,7 @@ package com.rewardpoints.app.ui.screen.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -75,9 +76,8 @@ fun SettingsScreen(
         // Integrations Section
         SettingsSection(title = "Integrations") {
             GlassCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showTodoistDialog = true }
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { showTodoistDialog = true }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -218,7 +218,7 @@ fun SettingsScreen(
                         fontFamily = Inter
                     )
                     Text(
-                        text = "v3.0.1 - Glass UI Edition",
+                        text = "v3.1.0 - Glass UI Edition",
                         color = TextSecondary,
                         fontSize = 12.sp,
                         fontFamily = Inter
@@ -232,9 +232,8 @@ fun SettingsScreen(
         // Danger Zone
         SettingsSection(title = "Danger Zone") {
             GlassCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showResetDialog = true }
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { showResetDialog = true }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -518,7 +517,10 @@ private fun HexagonStyleOption(
     modifier: Modifier = Modifier
 ) {
     GlassCard(
-        modifier = modifier.clickable { onClick() }
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null
+        ) { onClick() }
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),

@@ -83,7 +83,7 @@ val appModule = module {
     // ViewModels
     viewModel { StatusViewModel(get(), get(), get(), get(), get()) }
     viewModel { RewardsViewModel(get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { TasksViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { HistoryViewModel(get()) }
     viewModel { AchievementsViewModel(get()) }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.data.local.db.AppDatabase
+import com.rewardpoints.app.data.repository.AchievementRepository
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.sync.TodoistApi
@@ -17,7 +18,8 @@ class SettingsViewModel(
     private val database: AppDatabase,
     private val achievementTracker: AchievementTracker,
     private val playerRepository: PlayerRepository,
-    private val todoistApi: TodoistApi
+    private val todoistApi: TodoistApi,
+    private val achievementRepository: AchievementRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -121,8 +123,9 @@ class SettingsViewModel(
             // Clear all preferences and reset to defaults
             userPreferences.clearAll()
 
-            // Re-initialize player stats so the app doesn't crash (starts at base 5)
+            // Re-initialize so app doesn't crash (stats at base 5, achievements seeded)
             playerRepository.initializeStats()
+            achievementRepository.initializeAchievements()
         }
     }
 }

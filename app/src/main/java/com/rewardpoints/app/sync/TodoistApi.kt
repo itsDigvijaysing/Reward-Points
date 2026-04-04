@@ -4,20 +4,24 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.*
 
 class TodoistApi(private val httpClient: HttpClient) {
 
     companion object {
-        private const val SYNC_URL = "https://api.todoist.com/api/v1/sync"
+        private const val BASE_URL = "https://api.todoist.com/api/v1"
     }
+
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     suspend fun getTasks(token: String): Result<List<TodoistTask>> {
         return try {
             val response = httpClient.submitForm(
-                url = SYNC_URL,
+                url = "$BASE_URL/sync",
                 formParameters = parameters {
                     append("sync_token", "*")
                     append("resource_types", "[\"items\"]")
@@ -25,7 +29,7 @@ class TodoistApi(private val httpClient: HttpClient) {
             ) {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
-            
+
             val syncResponse: SyncResponse = response.body()
             val tasks = syncResponse.items.filter { !it.isCompleted }
             Result.success(tasks)
@@ -36,17 +40,34 @@ class TodoistApi(private val httpClient: HttpClient) {
 
     suspend fun getCompletedTasks(token: String, since: String? = null): Result<List<CompletedTask>> {
         return try {
-            val response = httpClient.submitForm(
-                url = "$SYNC_URL/completed/get_all",
-                formParameters = parameters {
-                    since?.let { append("since", it) }
-                    append("limit", "50")
-                }
-            ) {
+            val response = httpClient.get("$BASE_URL/tasks/completed/by_completion_date") {
                 header(HttpHeaders.Authorization, "Bearer $token")
+                since?.let { parameter("since", it) }
+                parameter("limit", "200")
             }
-            val wrapper: CompletedTasksResponse = response.body()
-            Result.success(wrapper.items)
+
+            // Parse flexibly — response may be {items:[...]}, {results:[...]}, or [...]
+            val responseText: String = response.bodyAsText()
+            val jsonElement = json.parseToJsonElement(responseText)
+
+            val items: List<CompletedTask> = when {
+                jsonElement is JsonArray -> {
+                    json.decodeFromJsonElement(jsonElement)
+                }
+                jsonElement is JsonObject -> {
+                    val arr = jsonElement["items"]
+                        ?: jsonElement["results"]
+                        ?: jsonElement["completed_items"]
+                    if (arr != null && arr is JsonArray) {
+                        json.decodeFromJsonElement(arr)
+                    } else {
+                        emptyList()
+                    }
+                }
+                else -> emptyList()
+            }
+
+            Result.success(items)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -55,7 +76,7 @@ class TodoistApi(private val httpClient: HttpClient) {
     suspend fun testConnection(token: String): Result<Boolean> {
         return try {
             val response = httpClient.submitForm(
-                url = SYNC_URL,
+                url = "$BASE_URL/sync",
                 formParameters = parameters {
                     append("sync_token", "*")
                     append("resource_types", "[\"user\"]")
@@ -63,7 +84,7 @@ class TodoistApi(private val httpClient: HttpClient) {
             ) {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
-            
+
             if (response.status.isSuccess()) {
                 Result.success(true)
             } else {
@@ -74,6 +95,8 @@ class TodoistApi(private val httpClient: HttpClient) {
         }
     }
 }
+
+// --- Sync API response (for active tasks) ---
 
 @Serializable
 data class SyncResponse(
@@ -103,16 +126,23 @@ data class TodoistDue(
     val string: String? = null
 )
 
-@Serializable
-data class CompletedTask(
-    @SerialName("task_id")
-    val taskId: String,
-    val content: String,
-    @SerialName("completed_at")
-    val completedAt: String
-)
+// --- Completed tasks response (v1 API) ---
 
 @Serializable
-data class CompletedTasksResponse(
-    val items: List<CompletedTask>
-)
+data class CompletedTask(
+    val id: String = "",
+    @SerialName("task_id")
+    val taskId: String = "",
+    val content: String = "",
+    val priority: Int = 1,
+    val labels: List<String> = emptyList(),
+    @SerialName("project_id")
+    val projectId: String? = null,
+    @SerialName("completed_at")
+    val completedAt: String? = null,
+    @SerialName("completed_date")
+    val completedDate: String? = null
+) {
+    /** Stable identifier — prefer id, fall back to task_id */
+    val stableId: String get() = id.ifBlank { taskId }
+}

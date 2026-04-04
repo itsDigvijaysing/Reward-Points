@@ -17,10 +17,6 @@ class AchievementsViewModel(
 
     init {
         viewModelScope.launch {
-            achievementRepository.initializeAchievements()
-        }
-
-        viewModelScope.launch {
             achievementRepository.achievements.collect { achievements ->
                 val unlocked = achievements.count { it.isUnlocked }
                 val total = achievements.size

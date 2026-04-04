@@ -56,9 +56,11 @@ class PointsRepository(
         )
         val id = transactionDao.insert(transaction)
 
-        if (type == TransactionType.EARN && statType != null) {
-            updateStatAccumulator(statType, points)
+        if (type == TransactionType.EARN) {
             playerStatsDao.addPoints(points)
+            if (statType != null) {
+                updateStatAccumulator(statType, points)
+            }
         }
 
         return transaction.copy(id = id).toDomain()
@@ -66,7 +68,7 @@ class PointsRepository(
 
     suspend fun earnPoints(
         points: Int,
-        statType: StatType,
+        statType: StatType? = null,
         source: TransactionSource,
         description: String? = null,
         relatedId: String? = null,

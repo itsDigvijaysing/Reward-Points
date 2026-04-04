@@ -35,10 +35,6 @@ class StatusViewModel(
 
     init {
         viewModelScope.launch {
-            playerRepository.initializeStats()
-        }
-
-        viewModelScope.launch {
             combine(
                 playerRepository.username,
                 playerRepository.playerStats,
