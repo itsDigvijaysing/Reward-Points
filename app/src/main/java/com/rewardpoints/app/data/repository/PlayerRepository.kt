@@ -1,0 +1,112 @@
+package com.rewardpoints.app.data.repository
+
+import com.rewardpoints.app.data.local.datastore.UserPreferences
+import com.rewardpoints.app.data.local.db.dao.PlayerStatsDao
+import com.rewardpoints.app.data.local.db.entity.PlayerStatsEntity
+import com.rewardpoints.app.domain.model.PlayerStats
+import com.rewardpoints.app.domain.model.Rank
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+class PlayerRepository(
+    private val playerStatsDao: PlayerStatsDao,
+    private val userPreferences: UserPreferences
+) {
+    val username: Flow<String> = userPreferences.username
+
+    val playerStats: Flow<PlayerStats?> = playerStatsDao.getStats().map { entity ->
+        entity?.toDomain()
+    }
+
+    suspend fun getStatsOnce(): PlayerStats? {
+        return playerStatsDao.getStatsOnce()?.toDomain()
+    }
+
+    suspend fun initializeStats() {
+        val existing = playerStatsDao.getStatsOnce()
+        if (existing == null) {
+            playerStatsDao.insert(
+                PlayerStatsEntity(
+                    id = 1,
+                    lastActivityAt = null,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
+    suspend fun updateStats(stats: PlayerStats) {
+        playerStatsDao.update(stats.toEntity())
+    }
+
+    suspend fun updateStreak(streak: Int) {
+        playerStatsDao.updateStreak(streak)
+    }
+
+    suspend fun updateRank(rank: Rank) {
+        playerStatsDao.updateRank(rank.name)
+    }
+
+    suspend fun updateRankUpCounter(counter: Int) {
+        playerStatsDao.updateRankUpCounter(counter)
+    }
+
+    suspend fun updateRankDownCounter(counter: Int) {
+        playerStatsDao.updateRankDownCounter(counter)
+    }
+
+    suspend fun addTotalPoints(points: Int) {
+        playerStatsDao.addPoints(points)
+    }
+
+    suspend fun setUsername(name: String) {
+        userPreferences.setUsername(name)
+    }
+
+    private fun PlayerStatsEntity.toDomain(): PlayerStats = PlayerStats(
+        strStat = strStat,
+        intStat = intStat,
+        wisStat = wisStat,
+        dexStat = dexStat,
+        chaStat = chaStat,
+        vitStat = vitStat,
+        strPointsAcc = strPointsAcc,
+        intPointsAcc = intPointsAcc,
+        wisPointsAcc = wisPointsAcc,
+        dexPointsAcc = dexPointsAcc,
+        chaPointsAcc = chaPointsAcc,
+        vitPointsAcc = vitPointsAcc,
+        totalPointsEarned = totalPointsEarned,
+        rank = Rank.fromString(rank),
+        streak = streak,
+        longestStreak = longestStreak,
+        rankUpStreakCounter = rankUpStreakCounter,
+        rankDownBreakCounter = rankDownBreakCounter,
+        lastActivityAt = lastActivityAt,
+        updatedAt = updatedAt
+    )
+
+    private fun PlayerStats.toEntity(): PlayerStatsEntity = PlayerStatsEntity(
+        id = 1,
+        strStat = strStat,
+        intStat = intStat,
+        wisStat = wisStat,
+        dexStat = dexStat,
+        chaStat = chaStat,
+        vitStat = vitStat,
+        strPointsAcc = strPointsAcc,
+        intPointsAcc = intPointsAcc,
+        wisPointsAcc = wisPointsAcc,
+        dexPointsAcc = dexPointsAcc,
+        chaPointsAcc = chaPointsAcc,
+        vitPointsAcc = vitPointsAcc,
+        totalPointsEarned = totalPointsEarned,
+        rank = rank.name,
+        streak = streak,
+        longestStreak = longestStreak,
+        rankUpStreakCounter = rankUpStreakCounter,
+        rankDownBreakCounter = rankDownBreakCounter,
+        lastActivityAt = lastActivityAt,
+        updatedAt = updatedAt
+    )
+}

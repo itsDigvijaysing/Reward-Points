@@ -1,74 +1,66 @@
-# Reward Points - Personal Achievement Tracker
+# Reward Points - RPG Gamification for Real Life
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
-![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
-![F-Droid](https://img.shields.io/badge/F--Droid-Ready-green.svg)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)
+![Compose](https://img.shields.io/badge/Jetpack_Compose-Material3-green.svg)
 
-**A simple, privacy-focused personal reward system that helps you track achievements and motivate yourself through a points-based system.**
+**An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.**
 
-[Download](#download) • [Features](#features) • [Privacy](#privacy) • [Building](#building) • [Contributing](#contributing)
+[Features](#-features) • [Screenshots](#-screenshots) • [Building](#-building) • [Architecture](#-architecture) • [Contributing](#-contributing)
 
 </div>
 
 ## 📱 Overview
 
-Reward Points is a completely **offline**, **open-source** personal motivation app that gamifies your daily achievements. Track your mood, complete missions, set goals, and reward yourself with points - all while keeping your data 100% private and local.
+Reward Points transforms your daily life into an RPG experience. Complete tasks to earn points, level up your character stats, maintain streaks to rank up, and redeem rewards you create. All with a beautiful liquid glass aesthetic inspired by iOS and anime "Status Window" interfaces.
 
-Perfect for anyone who wants to build better habits, stay motivated, and maintain privacy without sacrificing functionality.
+### Why Reward Points?
+
+- 🎮 **Gamified Productivity** - Turn boring tasks into exciting quests
+- ✨ **Premium UI** - Liquid glass effects, hexagon stat charts, animated rank badges
+- 🔒 **Privacy First** - 100% offline, no accounts, no tracking
+- 🎯 **Simple Yet Effective** - No complex systems, just points, stats, and ranks
 
 ## ✨ Features
 
-### 🎯 **Core Functionality**
-- **Daily Mood Tracking** - Log how you're feeling and earn points
-- **Custom Rewards** - Create personalized rewards to redeem with points
-- **Daily Missions** - Set and complete daily tasks for consistent motivation
-- **Long-term Goals** - Track bigger achievements and milestones
-- **Transaction History** - View detailed history of all points earned and spent
-- **Achievement System** - Unlock achievements as you progress
+### 🎯 **Core Gamification**
+- **RPG Stats System** - 6 stats: Strength, Intelligence, Wisdom, Dexterity, Charisma, Vitality
+- **Hexagon Radar Chart** - Visual representation of your stats with tap-to-expand details
+- **Rank System** - Progress from E → D → C → B → A → S based on streak consistency
+- **Star Lines Progress** - 5 streak days = ⭐ = Rank Up; breaks can cause rank down
+- **Points Economy** - Earn points from tasks, spend on custom rewards
 
-### 🛡️ **Privacy & Security**
-- **100% Offline** - No internet connection required
-- **Local Storage Only** - All data stays on your device
-- **No Tracking** - Zero analytics, ads, or data collection
-- **No Permissions** - Doesn't request unnecessary Android permissions
-- **Open Source** - Full transparency with source code review
+### 📋 **Task Management**
+- **Manual Tasks** - Create custom tasks with priority (P1-P4) and stat assignment
+- **Todoist Integration** - Connect your Todoist account to sync tasks (coming soon)
+- **Priority Points** - P1=4pts, P2=3pts, P3=2pts, P4=1pt
 
-### 🎨 **User Experience**
-- **Material Design 3** - Modern, clean interface
-- **Dark/Light Theme** - Automatic theme switching support
-- **Intuitive Navigation** - Easy-to-use interface for all ages
-- **Responsive Design** - Works on phones and tablets
-- **Accessibility** - Designed with accessibility in mind
+### 🎁 **Rewards System**
+- **Custom Rewards** - Create personal rewards (e.g., "Watch an episode" = 50pts)
+- **Point Redemption** - Spend earned points on your rewards
+- **Transaction History** - Track all earnings and spendings
 
-## 📥 Download
+### 📊 **Progress Tracking**
+- **Streak Calendar** - 28-day view showing your activity patterns
+- **Mood Check-in** - Daily mood logging with +2 WIS bonus
+- **History Log** - Complete transaction history with filtering
 
-### F-Droid (Recommended)
-*Coming Soon* - The app will be available on F-Droid, the privacy-focused app store.
-
-### Direct APK
-Download the latest release APK from the [Releases](../../releases) section.
-
-### Build from Source
-See the [Building](#building) section below.
-
-## 🚀 Quick Start
-
-1. **Install the app** from F-Droid or download the APK
-2. **Set your username** in the welcome screen
-3. **Log your daily mood** to start earning points
-4. **Create custom rewards** for things you enjoy
-5. **Set daily missions** to build consistent habits
-6. **Redeem rewards** when you've earned enough points!
+### 🎨 **Premium UI**
+- **Liquid Glass Design** - Translucent cards, glowing borders, blur effects
+- **Dark Theme** - Eye-friendly dark interface
+- **Smooth Animations** - AnimatedVisibility, progress animations, transitions
+- **RPG Aesthetic** - Status window design inspired by Solo Leveling and other anime
 
 ## 🏗️ Building
 
 ### Prerequisites
-- Android Studio Arctic Fox or newer
-- JDK 8 or newer
-- Android SDK with API level 21+
+- JDK 17 or newer
+- Android SDK with API level 26+
+- Gradle 8.x (wrapper included)
 
 ### Build Steps
 ```bash
@@ -79,100 +71,124 @@ cd Reward-Points
 # Build debug APK
 ./gradlew assembleDebug
 
-# Build release APK
+# Build release APK (requires signing config)
 ./gradlew assembleRelease
 ```
 
 The APK will be generated in `app/build/outputs/apk/`
 
+### Testing on Waydroid (Linux)
+```bash
+# Enable multi-window mode
+waydroid prop set persist.waydroid.multi_windows true
+systemctl restart waydroid-container
+
+# Install and run
+waydroid app install app/build/outputs/apk/debug/app-debug.apk
+waydroid app launch com.rewardpoints.app.debug
+```
+
+## 🏛️ Architecture
+
+### Tech Stack
+- **Language**: Kotlin 2.0
+- **UI**: Jetpack Compose with Material 3
+- **Architecture**: MVVM with Repository pattern
+- **DI**: Koin
+- **Database**: Room
+- **Preferences**: DataStore
+- **Network**: Ktor (for Todoist API)
+
+### Project Structure
+```
+app/src/main/java/com/rewardpoints/app/
+├── data/
+│   ├── local/
+│   │   ├── db/          # Room database, DAOs, entities
+│   │   └── datastore/   # User preferences
+│   └── repository/      # Data repositories
+├── domain/
+│   └── model/           # Domain models (PlayerStats, Rank, StatType)
+├── rpg/                 # Game mechanics (StatsEngine, RankCalculator, DecayEngine)
+├── ui/
+│   ├── components/
+│   │   ├── glass/       # Reusable glass UI components
+│   │   └── rpg/         # RPG-specific components (StatusWindow, HexagonChart)
+│   ├── screen/          # Screen composables and ViewModels
+│   └── theme/           # Colors, typography, design tokens
+└── di/                  # Koin modules
+```
+
+### Design Tokens
+```kotlin
+// Colors
+BackgroundBase = #0A0A0F
+SurfaceBase = #12121A
+AccentPrimary = #7C4DFF
+PointsGold = #FFD740
+
+// Glass Effect
+GlassFill = white @ 10% alpha
+GlassBorder = white @ 18% alpha
+GlassRadius = 24.dp
+```
+
 ## 🔒 Privacy
 
-Your privacy is our top priority:
+Your privacy matters:
 
-- **No Network Access** - The app doesn't connect to the internet
-- **Local Data Only** - Everything is stored on your device using encrypted SharedPreferences
-- **No Analytics** - We don't collect usage statistics or crash reports
-- **No Ads** - Completely ad-free experience
-- **No Accounts** - No registration or login required
-- **Open Source** - Code is fully auditable and transparent
+- **100% Offline** - No internet required for core functionality
+- **Local Data Only** - All data stored on-device using Room database
+- **No Analytics** - Zero tracking, telemetry, or crash reporting
+- **No Ads** - Completely ad-free
+- **No Accounts** - No registration or cloud sync
+- **Open Source** - Fully auditable code
 
-## 🛠️ Technical Details
+## 🗺️ Roadmap
 
-### Architecture
-- **Native Android** - Built with Java and AndroidX libraries
-- **Material Design 3** - Modern UI components and theming
-- **Local Storage** - Uses encrypted SharedPreferences for data persistence
-- **MVVM Pattern** - Clean architecture with proper separation of concerns
+### ✅ Completed (v3.0)
+- [x] Complete Kotlin/Compose rewrite
+- [x] Liquid glass UI system
+- [x] Hexagon radar chart with labels
+- [x] Rank system with star lines progress
+- [x] Manual task creation
+- [x] Rewards create/redeem
+- [x] Streak calendar
+- [x] Mood check-in
+- [x] Settings with full reset
 
-### Dependencies
-- AndroidX libraries (AppCompat, Material, etc.)
-- Gson for JSON serialization
-- AndroidX Security for encrypted storage
-- Only FOSS-compatible dependencies
+### 🚧 In Progress
+- [ ] Todoist API integration
+- [ ] Stat decay system (daily decay at midnight)
+- [ ] Rank-up animations
 
-### Compatibility
-- **Minimum Android Version:** 5.0 (API 21)
-- **Target Android Version:** 14 (API 34)
-- **Architecture:** ARM, ARM64, x86, x86_64
-- **Storage:** ~10MB installation size
+### 📋 Planned
+- [ ] Achievements/Titles system
+- [ ] Per-stat detailed breakdown
+- [ ] AI Agent for task suggestions
+- [ ] Widget support
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how you can help:
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Ways to Contribute
-- 🐛 **Report bugs** via GitHub Issues
-- 💡 **Suggest features** for future versions
-- 🔧 **Submit pull requests** with improvements
-- 📖 **Improve documentation** and help others
-- 🌍 **Translate the app** to other languages
-
-### Development Setup
+### Quick Start
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes and test thoroughly
-4. Commit your changes (`git commit -m 'Add amazing feature'`)
-5. Push to your branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
-
-### Code Guidelines
-- Follow Android development best practices
-- Maintain API 21+ compatibility
-- Keep dependencies FOSS-compatible
-- Add appropriate comments and documentation
-- Test on multiple device sizes and Android versions
+3. Make changes and test
+4. Commit (`git commit -m 'Add amazing feature'`)
+5. Push and open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
-
-### What this means:
-- ✅ **Use** the app for any purpose
-- ✅ **Study** and modify the source code
-- ✅ **Share** the app with others
-- ✅ **Distribute** modified versions
-- ⚠️ **Must** keep the same license for derivatives
-- ⚠️ **Must** provide source code for modifications
-
-## 🙏 Acknowledgments
-
-- **Material Design** - Google's design system
-- **AndroidX** - Modern Android development libraries
-- **F-Droid Community** - For promoting FOSS apps
-- **Contributors** - Everyone who helps improve the app
-
-## 📞 Support
-
-- **Issues:** Report bugs and request features via [GitHub Issues](../../issues)
-- **Discussions:** Join conversations in [GitHub Discussions](../../discussions)
-- **Security:** Report security issues privately via email (see SECURITY.md)
+GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for privacy-conscious users who value local data control**
+**Built with ❤️ for productivity enthusiasts and RPG lovers**
 
-[⬆ Back to Top](#reward-points---personal-achievement-tracker)
+[⬆ Back to Top](#reward-points---rpg-gamification-for-real-life)
 
 </div>

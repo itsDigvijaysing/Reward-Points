@@ -397,10 +397,8 @@ These display as **glass badges** on the profile, each with a unique icon and gl
 
 ```
 com.rewardpoints.app/
-├── di/                          # Koin modules
-│   ├── AppModule.kt
-│   ├── NetworkModule.kt
-│   └── DatabaseModule.kt
+├── di/
+│   └── AppModule.kt                    # All Koin DI (DB, repos, engines, ViewModels)
 ├── data/
 │   ├── local/
 │   │   ├── db/
@@ -411,126 +409,73 @@ com.rewardpoints.app/
 │   │   │   │   ├── MissionDao.kt
 │   │   │   │   ├── PlayerStatsDao.kt
 │   │   │   │   ├── StatMappingDao.kt
-│   │   │   │   └── AiMemoryDao.kt
+│   │   │   │   ├── DecayLogDao.kt
+│   │   │   │   ├── TitleDao.kt
+│   │   │   │   └── AiMemoryDao.kt      # Future (v4.0)
 │   │   │   └── entity/
 │   │   │       ├── RewardEntity.kt
 │   │   │       ├── TransactionEntity.kt
 │   │   │       ├── MissionEntity.kt
-│   │   │       ├── AchievementEntity.kt
 │   │   │       ├── PlayerStatsEntity.kt
 │   │   │       ├── StatMappingEntity.kt
 │   │   │       ├── DecayLogEntity.kt
-│   │   │       └── AiMemoryEntity.kt
+│   │   │       ├── TitleEntity.kt
+│   │   │       └── AiMemoryEntity.kt   # Future (v4.0)
 │   │   └── datastore/
 │   │       └── UserPreferences.kt
-│   ├── remote/
-│   │   ├── todoist/
-│   │   │   ├── TodoistApi.kt
-│   │   │   ├── TodoistModels.kt
-│   │   │   └── TodoistRepository.kt
-│   │   └── gemini/
-│   │       ├── GeminiApi.kt
-│   │       ├── GeminiModels.kt
-│   │       └── GeminiRepository.kt
 │   └── repository/
-│       ├── PointsRepository.kt
-│       ├── RewardRepository.kt
-│       ├── MissionRepository.kt
-│       ├── PlayerRepository.kt
-│       └── AiAgentRepository.kt
+│       ├── PointsRepository.kt          # Points + stat accumulator logic
+│       ├── RewardRepository.kt          # Reward CRUD + redemption
+│       ├── PlayerRepository.kt          # Player stats + rank + streak
+│       └── AchievementRepository.kt     # Achievement CRUD + progress tracking
 ├── domain/
-│   ├── model/
-│   │   ├── Reward.kt
-│   │   ├── Transaction.kt
-│   │   ├── Mission.kt
-│   │   ├── Achievement.kt
-│   │   ├── PlayerStats.kt
-│   │   ├── Rank.kt
-│   │   ├── StatType.kt
-│   │   ├── TodoistTask.kt
-│   │   ├── AiMessage.kt
-│   │   └── AiPersona.kt
-│   └── usecase/
-│       ├── EarnXpUseCase.kt
-│       ├── CalculateDecayUseCase.kt
-│       ├── CalculateRankUseCase.kt
-│       ├── RedeemRewardUseCase.kt
-│       ├── SyncTodoistUseCase.kt
-│       └── ChatWithAgentUseCase.kt
+│   └── model/
+│       ├── Reward.kt
+│       ├── Transaction.kt
+│       ├── Achievement.kt               # 24 hardcoded achievements
+│       ├── PlayerStats.kt
+│       ├── Rank.kt
+│       └── StatType.kt
 ├── ui/
 │   ├── theme/
-│   │   ├── Theme.kt              # LiquidGlass theme
+│   │   ├── Theme.kt
 │   │   ├── Color.kt
-│   │   ├── Type.kt
-│   │   ├── Shape.kt
-│   │   └── GlassTokens.kt        # Glass-specific design tokens
+│   │   └── Type.kt
 │   ├── components/
 │   │   ├── glass/
 │   │   │   ├── GlassCard.kt
 │   │   │   ├── GlassButton.kt
 │   │   │   ├── GlassTextField.kt
-│   │   │   ├── GlassBottomBar.kt
-│   │   │   ├── GlassTopBar.kt
-│   │   │   └── GlassDialog.kt
+│   │   │   └── GlassBottomBar.kt
 │   │   ├── rpg/
-│   │   │   ├── HexagonRadarChart.kt    # The stat hexagon (Canvas)
-│   │   │   ├── StatusWindow.kt         # Full status window composable
-│   │   │   ├── RankBadge.kt            # Rank letter with glow
-│   │   │   ├── StatBar.kt              # Individual stat progress bar
-│   │   │   ├── LevelIndicator.kt       # Level + XP progress
-│   │   │   ├── DecayOverlay.kt         # Cracked glass for inactivity
-│   │   │   └── RankUpAnimation.kt      # Full-screen rank-up ceremony
-│   │   ├── AmbientBackground.kt        # The floating gradient orbs
-│   │   ├── PointsCounter.kt            # Animated rolling counter
-│   │   ├── StreakIndicator.kt
-│   │   ├── RewardCard.kt
-│   │   ├── TaskCard.kt
-│   │   ├── MissionCard.kt
-│   │   ├── AiChatBubble.kt
-│   │   └── AchievementBadge.kt
+│   │   │   ├── HexagonRadarChart.kt
+│   │   │   ├── StatusWindow.kt
+│   │   │   ├── RankBadge.kt
+│   │   │   ├── StatBar.kt
+│   │   │   └── RankUpAnimation.kt
+│   │   └── AmbientBackground.kt
 │   ├── screen/
-│   │   ├── status/
-│   │   │   ├── StatusScreen.kt          # THE status window (home)
-│   │   │   ├── FullStatsScreen.kt       # Detailed stat breakdown
-│   │   │   └── StatusViewModel.kt
-│   │   ├── tasks/
-│   │   │   ├── TasksScreen.kt
-│   │   │   └── TasksViewModel.kt
-│   │   ├── rewards/
-│   │   │   ├── RewardsScreen.kt
-│   │   │   ├── CreateRewardScreen.kt
-│   │   │   └── RewardsViewModel.kt
-│   │   ├── agent/
-│   │   │   ├── AgentChatScreen.kt
-│   │   │   ├── PersonaEditorScreen.kt
-│   │   │   └── AgentViewModel.kt
-│   │   ├── history/
-│   │   │   ├── HistoryScreen.kt
-│   │   │   └── HistoryViewModel.kt
-│   │   └── settings/
-│   │       ├── SettingsScreen.kt
-│   │       └── SettingsViewModel.kt
+│   │   ├── status/        StatusScreen.kt, StatusViewModel.kt
+│   │   ├── tasks/         TasksScreen.kt, TasksViewModel.kt
+│   │   ├── rewards/       RewardsScreen.kt, RewardsViewModel.kt
+│   │   ├── stats/         StatsScreen.kt, StatsViewModel.kt
+│   │   ├── achievements/  AchievementsScreen.kt, AchievementsViewModel.kt
+│   │   ├── history/       HistoryScreen.kt, HistoryViewModel.kt
+│   │   ├── agent/         AgentScreen.kt (placeholder)
+│   │   └── settings/      SettingsScreen.kt, SettingsViewModel.kt
 │   └── navigation/
 │       ├── AppNavigation.kt
 │       └── Routes.kt
-├── ai/
-│   ├── AgentEngine.kt             # Core agent logic
-│   ├── MemoryManager.kt           # Read/write/evolve memory
-│   ├── PersonaParser.kt           # Parse YAML/MD persona files
-│   └── PromptBuilder.kt           # Build prompts with persona + memory + context
 ├── rpg/
-│   ├── StatsEngine.kt             # XP calculation, stat updates
-│   ├── DecayEngine.kt             # Decay calculation logic
-│   ├── RankCalculator.kt          # Level + rank determination
-│   └── TitleChecker.kt            # Achievement title unlock checks
-├── sync/
-│   ├── TodoistSyncWorker.kt       # WorkManager periodic sync
-│   ├── DecayWorker.kt             # WorkManager midnight decay check
-│   └── SyncManager.kt
-└── util/
-    ├── DateUtils.kt
-    ├── PointsCalculator.kt
-    └── Extensions.kt
+│   ├── StatsEngine.kt              # Stat mapping utilities
+│   ├── DecayEngine.kt              # Decay + streak + rank up/down
+│   ├── RankCalculator.kt           # Rank progression helpers
+│   └── AchievementTracker.kt       # Achievement progress tracking engine
+└── sync/
+    ├── TodoistApi.kt                # Ktor HTTP client for Todoist REST API
+    ├── TodoistSyncManager.kt        # Sync logic (priority points + stat routing)
+    ├── TodoistSyncWorker.kt         # WorkManager periodic sync (every 15 min)
+    └── DecayWorker.kt               # WorkManager midnight decay check
 ```
 
 ---
@@ -644,11 +589,10 @@ The home screen IS the Status Window. This is what users see first — their cha
 
 **Features:**
 - Auto-sync with Todoist (pull tasks, detect completions)
-- Point value based on task priority (p1=50, p2=30, p3=20, p4=10)
-- Optional: label-based bonus multipliers (e.g., "hard" label = 2x)
-- Progress bar for today's task completion
+- Point value based on task priority (p1=4pts, p2=3pts, p3=2pts, p4=1pt)
+- Label-based stat routing (labels map to STR/INT/WIS/DEX/CHA/VIT)
+- Manual missions with custom point values and stat assignment
 - Manual sync button + background WorkManager sync every 15 min
-- Completing a task here marks it done in Todoist AND earns points
 
 ### 5.3 Rewards Screen
 
@@ -1035,56 +979,64 @@ CREATE TABLE titles (
 
 ---
 
-## 9. Build Phases
+## 9. Build Phases — Status as of 2026-03-31
 
-### Phase 1 — Foundation + Glass UI + RPG Core (Week 1-2)
-- [ ] Project setup: Kotlin, Compose, Room, Koin, Navigation
-- [ ] Design system: Theme, Colors, Typography, GlassTokens
-- [ ] Glass components: GlassCard, GlassButton, GlassTextField, GlassBottomBar
-- [ ] Ambient background with gradient orbs
-- [ ] Room database setup with ALL entities and DAOs (including RPG tables)
-- [ ] DataStore for user preferences
-- [ ] RPG engine: StatsEngine, RankCalculator, DecayEngine
-- [ ] HexagonRadarChart composable (Canvas-drawn, animated)
-- [ ] StatusWindow composable (the main character sheet)
-- [ ] RankBadge + StatBar components
-- [ ] Status Screen (home) with static/mock data
-- [ ] Bottom navigation (5 tabs: Status, Tasks, Rewards, Agent, Settings)
+### Phase 1 — Foundation + Glass UI + RPG Core ✅ COMPLETE
+- [x] Project setup: Kotlin, Compose, Room, Koin, Navigation
+- [x] Design system: Theme, Colors, Typography
+- [x] Glass components: GlassCard, GlassButton, GlassTextField, GlassBottomBar
+- [x] Ambient background with gradient orbs
+- [x] Room database setup with all entities and DAOs
+- [x] DataStore for user preferences
+- [x] RPG engine: StatsEngine, RankCalculator, DecayEngine
+- [x] HexagonRadarChart composable (Canvas-drawn, animated)
+- [x] StatusWindow composable (the main character sheet)
+- [x] RankBadge + StatBar components
+- [x] Status Screen (home) with live data
+- [x] Bottom navigation (5 tabs: Status, Tasks, Rewards, Agent, Settings)
 
-### Phase 2 — Core Features + XP System (Week 2-3)
-- [ ] XP earning flow: EarnXpUseCase with stat routing
-- [ ] Stat mapping UI in settings (map Todoist projects/labels → stats)
-- [ ] Level calculation + rank determination
-- [ ] Rank-up animation (full-screen ceremony)
-- [ ] Decay system: DecayWorker (midnight), cracked glass overlay
-- [ ] Comeback bonus mechanic (1.5x after idle)
-- [ ] Rewards: create, list, redeem with animations
-- [ ] Missions: daily missions with stat assignment, completion tracking, streaks
-- [ ] Titles/Achievements: unlock system with RPG titles, glass badges
-- [ ] Transaction history: filterable list with glass cards, stat column
-- [ ] Mood check-in: daily mood selector → WIS XP
-- [ ] Full Stats screen (detailed breakdown, XP history per stat, decay log)
-- [ ] Settings screen: profile, point rules, data management
+### Phase 2 — Core Features + Points System ✅ COMPLETE
+- [x] Points earning flow via PointsRepository with stat routing
+- [x] Stat accumulator system (10 pts = +1 stat point)
+- [x] Rank-up animation (full-screen ceremony with particles)
+- [x] Decay system: DecayWorker (midnight check)
+- [x] Rewards: create, list, redeem
+- [x] Missions: daily missions with stat assignment, completion tracking, streaks
+- [x] Achievements/Titles: UI screen + AchievementTracker engine (24 achievements across 6 categories)
+- [x] Transaction history with streak calendar (28-day view)
+- [x] Mood check-in: daily mood selector → +2 WIS
+- [x] Full Stats screen (weekly chart, stat breakdown, top sources)
+- [x] Settings screen: profile, Todoist connection, full reset
+- [x] Manual point entry with stat selection
 
-### Phase 3 — Todoist Integration (Week 3-4)
-- [ ] Todoist API client with Ktor
-- [ ] Settings: API token input, validation, connection status
-- [ ] Task sync: fetch, cache, detect completions
-- [ ] WorkManager periodic sync (every 15 min)
-- [ ] Tasks screen: today's tasks, upcoming, stat tag on each task
-- [ ] Point calculation: priority-based + label multipliers → routed to mapped stat
-- [ ] Stat mapping screen: assign Todoist projects/labels to STR/INT/WIS/DEX/CHA/VIT
+### Phase 3 — Todoist Integration ✅ COMPLETE
+- [x] Todoist API client with Ktor (TodoistApi.kt)
+- [x] Settings: API token input, connection status
+- [x] Task sync: fetch completed tasks, detect new completions via externalId
+- [x] WorkManager periodic sync (TodoistSyncWorker, every 15 min)
+- [x] Tasks screen: manual missions + Todoist active task display
+- [x] Priority-based points: p1=4, p2=3, p3=2, p4=1 (via todoistPriorityToPoints)
+- [x] Label-based stat routing via StatMapping table + routeToStat()
+- [x] Sync routes through PointsRepository so stat accumulators update correctly
 
-### Phase 4 — Polish & Refinement (Week 4-5)
-- [ ] All animations: hexagon breathing, stat vertex pulse, rank-up particles, decay warning
-- [ ] Glass shader refinement (test on multiple devices)
-- [ ] Fallback UI for Android < 13 (no AGSL shaders — use simple translucency)
+### Phase 4 — Polish & Future Work
+- [x] Rank-up particle animations
+- [x] Agent tab placeholder: glass card with "Coming in next version" message
+- [ ] Cracked glass overlay for extended inactivity (72h+)
 - [ ] Error states: no internet, invalid API token, sync failures
 - [ ] Empty states with RPG-themed messaging
-- [ ] Agent tab placeholder: glass card with "Coming in next version" message
 - [ ] App icon design (glass-style)
 - [ ] Performance optimization: lazy loading, bitmap caching
-- [ ] Testing: unit tests for ViewModels, integration tests for sync
+- [ ] Testing: unit tests for ViewModels
+- [ ] Stat mapping UI in settings (currently mappings must be set via DB directly)
+- [ ] Comebacks / recovery bonus after rank-down
+
+### Phase 5 — AI Agent (v4.0 — FUTURE)
+- [ ] Gemini API integration
+- [ ] Persona system (YAML-based)
+- [ ] Evolving memory system
+- [ ] Chat interface
+- [ ] Daily insight on Status Window
 
 ---
 
@@ -1092,8 +1044,7 @@ CREATE TABLE titles (
 
 ```
 /llm_memory.md         — Compressed project memory for LLM collaboration
-/plan.md               — This file
-/persona.yaml          — Default AI agent persona (future version, not created yet)
+/plan.md               — This file (you are reading it)
 ```
 
 ---
