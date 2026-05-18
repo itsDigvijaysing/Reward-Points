@@ -45,9 +45,6 @@ interface PlayerStatsDao {
     @Query("UPDATE player_stats SET rankUpStreakCounter = :counter WHERE id = 1")
     suspend fun updateRankUpCounter(counter: Int)
 
-    @Query("UPDATE player_stats SET rankDownBreakCounter = :counter WHERE id = 1")
-    suspend fun updateRankDownCounter(counter: Int)
-
     @Query("UPDATE player_stats SET totalPointsEarned = totalPointsEarned + :points WHERE id = 1")
     suspend fun addPoints(points: Int)
 

@@ -5,7 +5,7 @@
 ![Version](https://img.shields.io/badge/version-3.1.2-blue.svg)
 ![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple.svg)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.1-purple.svg)
 ![Compose](https://img.shields.io/badge/Jetpack_Compose-Material3-green.svg)
 
 **An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.**
@@ -22,7 +22,7 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 
 - 🎮 **Gamified Productivity** - Turn boring tasks into exciting quests
 - ✨ **Premium UI** - Liquid glass effects, hexagon stat charts, animated rank badges
-- 🔒 **Privacy First** - 100% offline, no accounts, no tracking
+- 🔒 **Privacy First** - Offline-first core, no accounts, no tracking; Todoist and AI Coach are opt-in only
 - 🎯 **Simple Yet Effective** - No complex systems, just points, stats, and ranks
 
 ## ✨ Features
@@ -67,20 +67,23 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 ## 🏗️ Building
 
 ### Prerequisites
-- JDK 17 or newer
-- Android SDK with API level 26+
-- Gradle 8.x (wrapper included)
+- **JDK 17** (Gradle 8.13 does not run on JDK 24+; pure JDK 17 is what AGP 8.11.2 expects)
+- **Android SDK** with platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools (compileSdk 36, minSdk 26)
+- Gradle 8.13 (wrapper included)
 
 ### Build Steps
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Reward-Points.git
-cd Reward-Points
+git clone https://github.com/yourusername/Stat-Up.git
+cd Stat-Up
 
 # Build debug APK
 ./gradlew assembleDebug
 
-# Build release APK (requires signing config)
+# Build release APK
+# Without a real keystore this falls back to debug signing.
+# To produce a Play-ready APK, copy keystore.properties.template → keystore.properties
+# and fill in the real values (see template comments).
 ./gradlew assembleRelease
 ```
 
@@ -100,13 +103,15 @@ waydroid app launch com.rewardpoints.app.debug
 ## 🏛️ Architecture
 
 ### Tech Stack
-- **Language**: Kotlin 2.0
-- **UI**: Jetpack Compose with Material 3
+- **Language**: Kotlin 2.1.20
+- **UI**: Jetpack Compose (Compose BOM 2025.03.01) with Material 3 + [Haze 1.7.2](https://chrisbanes.github.io/haze/) for real GPU backdrop blur on API 31+
 - **Architecture**: MVVM with Repository pattern
-- **DI**: Koin
-- **Database**: Room
-- **Preferences**: DataStore
-- **Network**: Ktor (for Todoist API)
+- **DI**: Koin 3.5.6
+- **Database**: Room 2.7.1
+- **Preferences**: DataStore 1.1.4 (plain) + AndroidX Security 1.1.0-alpha06 (`EncryptedSharedPreferences`, AES-256-GCM, for Todoist + Gemini tokens)
+- **Network**: Ktor 3.1.2 (Todoist API + Gemini Generative Language API)
+- **Background**: WorkManager 2.10.1 (DecayWorker, TodoistSyncWorker)
+- **Widget**: AppWidgetProvider + RemoteViews (4×2 home-screen widget showing rank/balance/streak/today)
 
 ### Project Structure
 ```
@@ -146,8 +151,8 @@ GlassRadius = 24.dp
 
 Your privacy matters:
 
-- **100% Offline** - No internet required for core functionality
-- **Local Data Only** - All data stored on-device using Room database
+- **Offline First** - Core gamification (stats, tasks, rewards, achievements, decay) works fully offline. The only network use is opt-in Todoist sync, which requires you to manually enter your own API token.
+- **Local Data Only** - All data stored on-device using Room database. Todoist API tokens are stored in `EncryptedSharedPreferences` (AndroidX Security).
 - **No Analytics** - Zero tracking, telemetry, or crash reporting
 - **No Ads** - Completely ad-free
 - **No Accounts** - No registration or cloud sync
@@ -172,11 +177,16 @@ Your privacy matters:
 - [x] Per-stat detailed breakdown (weekly chart, top sources)
 - [x] Collapsible stat bars with full stat names
 
-### 📋 Planned (v4.0)
-- [ ] AI Agent (provider TBD)
-- [ ] Real backdrop blur glass effect
-- [ ] Push notifications for sync
-- [ ] Widget support
+### ✅ v4.0 (merged, build verified 2026-05-14)
+- [x] AI Agent — Gemini chat (free tier `gemini-2.0-flash`), ephemeral transcript, persona + fresh player-state injected per send. Gated in Settings by an encrypted API key.
+- [x] Real backdrop blur — Haze 1.7.2; real GPU blur on API 31+, auto-falls-back to a translucent scrim on older devices.
+- [x] Push notifications — channels for sync results + auth failures; declines handled silently.
+- [x] Home-screen widget — 4×2 read-only widget with rank/balance/streak/today; refreshes are push-driven (no polling).
+
+### 🔭 Roadmap beyond v4.0
+- [ ] Decay & rank-up notifications (channels already created, just need wiring)
+- [ ] Widget configure activity for a few size variants
+- [ ] AI Agent: persist conversations (table already exists, currently dormant)
 
 ## 🤝 Contributing
 
@@ -199,6 +209,6 @@ GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for productivity enthusiasts and RPG lovers**
 
-[⬆ Back to Top](#reward-points---rpg-gamification-for-real-life)
+[⬆ Back to Top](#stat-up---rpg-gamification-for-real-life)
 
 </div>

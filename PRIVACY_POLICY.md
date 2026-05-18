@@ -1,37 +1,70 @@
 Privacy Policy for Stat Up App
 
-Last updated: October 2, 2025
+Last updated: May 17, 2026
 
-1. Data Collection
-This application stores the following data locally on your device:
+1. Summary
+Stat Up is an offline-first app. The core features — stats, ranks, streaks, tasks, missions, rewards, achievements, history, and mood check-ins — run entirely on your device and never communicate with any server. Two features are *opt-in* network integrations: Todoist sync and the AI Coach (Google Gemini). Neither runs unless you explicitly add your own API key/token in Settings.
+
+2. Data Stored Locally on Your Device
 - Reward points earned and spent
 - Daily mood feedback
 - Achievement records
-- Mission completion history
+- Mission and task completion history
+- Stat values, rank, streak, and decay logs
+- Your username (only what you type into Settings)
+- Your preferences (hexagon style, animation toggles, haptics, etc.)
+- Your Todoist API token, if you connect Todoist (stored encrypted via AES-256-GCM in `EncryptedSharedPreferences`)
+- Your Google Gemini API key, if you connect the AI Coach (stored encrypted via AES-256-GCM in `EncryptedSharedPreferences`)
+- Your AI Coach conversation history is **not** written to the database. It lives only in the in-memory `AgentViewModel` for the lifetime of the app process; it is discarded when the OS kills the process or when you full-reset the app. Switching tabs does not on its own erase the transcript (the ViewModel is retained as long as the activity lives), but nothing is ever persisted to disk.
 
-2. Data Usage
-All data is stored locally on your device using encrypted storage. We do not collect, transmit, or share any personal information with third parties.
+3. Optional Network Features
+3a. Todoist Sync (opt-in)
+- Triggered only if you enter your Todoist API token in Settings.
+- The app contacts `api.todoist.com` to fetch your active and completed tasks, on app open and every 15 minutes in the background.
+- Your token is sent only to Todoist, encrypted in transit (HTTPS). No other server receives it.
+- You can disconnect any time in Settings → Integrations → Todoist.
 
-3. Data Retention
-Data remains on your device until you:
-- Clear the app's history manually
-- Uninstall the application
-- Clear app data through device settings
+3b. AI Coach (opt-in, Google Gemini)
+- Triggered only if you enter a Google Gemini API key in Settings and open the Agent tab.
+- When you send a message, the app contacts `generativelanguage.googleapis.com` (Google's Generative Language API) and sends:
+  - your typed message
+  - a short snapshot of your current player state: name, rank, streak counter, six stat values, total points earned, your last 8 earn transactions, and up to 6 active missions (used to ground the coach's replies in your data)
+- Replies come back from Google. Google's data-handling for this API is governed by Google's own privacy policy at https://policies.google.com/privacy. Google's terms for AI APIs are at https://ai.google.dev/terms.
+- Your API key is sent only to Google, encrypted in transit (HTTPS).
+- You can disconnect any time in Settings → Integrations → AI Agent.
 
-4. Security
-We use Android's encrypted SharedPreferences to protect your data locally. No data is transmitted over the internet.
+4. What We Do NOT Do
+- No accounts, no sign-up, no cloud sync of your data.
+- No analytics, telemetry, crash reporting, or fingerprinting.
+- No advertising and no ad SDKs.
+- No tracking IDs, no third-party SDKs other than the open-source libraries used to talk to Todoist and Gemini when you opt in.
+- We (the app developer) do not operate any server and do not receive any of your data.
 
-5. Children's Privacy
-This app is suitable for users of all ages and does not collect any personal information from children or adults.
+5. Data Retention
+On-device data persists until you:
+- Use the "Full Reset" button in Settings → Danger Zone, which wipes the database and preferences.
+- Clear app data through your device's system settings.
+- Uninstall the app.
 
-6. Changes to Privacy Policy
-We may update this privacy policy from time to time. Users will be notified of any changes through app updates.
+For data sent to Todoist or Google: those services retain it according to their own policies. The app cannot delete data on their servers; use their respective settings to manage your data there.
 
-7. Contact Information
-For questions about this privacy policy, please contact: support@rewardpoints.app
+6. Security
+- All locally stored secrets (Todoist token, Gemini API key) use AndroidX Security's `EncryptedSharedPreferences` (AES-256-GCM, master key in Android Keystore).
+- Other on-device data is stored in a plain Room SQLite database — protected by Android's per-app sandboxing but not separately encrypted at rest.
+- All network traffic uses HTTPS.
 
-This app complies with:
-- Samsung Galaxy Store policies
+7. Children's Privacy
+This app is suitable for users of all ages. The app itself does not collect personal information. If the AI Coach is enabled, please review Google's age and consent policies for their Generative Language API.
+
+8. Changes to This Policy
+We may update this policy as features change (in particular, if more optional network integrations are added). Material changes will be reflected in the app's release notes.
+
+9. Contact
+For questions about this privacy policy or the app: support@rewardpoints.app
+
+10. Compliance
+This app is designed to comply with:
 - Google Play Store policies
-- GDPR requirements for local data processing
-- COPPA requirements (no data collection)
+- Samsung Galaxy Store policies
+- GDPR (data subject rights — the app stores data only locally; subject access / deletion is achieved via the in-app Full Reset)
+- COPPA (no personal information is collected by the app itself; the AI Coach should not be enabled for children without parental review of Google's policies)

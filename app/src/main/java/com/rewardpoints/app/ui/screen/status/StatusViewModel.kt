@@ -3,6 +3,7 @@ package com.rewardpoints.app.ui.screen.status
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rewardpoints.app.data.local.datastore.UserPreferences
+import com.rewardpoints.app.data.local.db.dao.TransactionDao
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.domain.model.PlayerStats
@@ -12,6 +13,7 @@ import com.rewardpoints.app.domain.model.TransactionSource
 import com.rewardpoints.app.domain.model.TransactionType
 import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.rpg.RankCalculator
+import com.rewardpoints.app.rpg.StatsEngine
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -22,7 +24,8 @@ class StatusViewModel(
     private val pointsRepository: PointsRepository,
     private val rankCalculator: RankCalculator,
     private val achievementTracker: AchievementTracker,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val transactionDao: TransactionDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatusUiState())
@@ -68,21 +71,33 @@ class StatusViewModel(
         viewModelScope.launch {
             loadCurrentBalance()
         }
+
+        viewModelScope.launch {
+            observeMoodCheckedInToday()
+        }
     }
 
-    private suspend fun loadTodayPoints() {
-        val todayStart = LocalDate.now()
+    private suspend fun observeMoodCheckedInToday() {
+        val (start, end) = todayMillisRange()
+        transactionDao.countBySourceInRange(TransactionSource.MOOD.name, start, end)
+            .collect { count ->
+                _uiState.update { it.copy(hasCheckedInMoodToday = count > 0) }
+            }
+    }
+
+    private fun todayMillisRange(): Pair<Long, Long> {
+        val start = LocalDate.now()
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
-        val todayEnd = todayStart + 86400000 // 24 hours
+        return start to (start + 86_400_000L)
+    }
 
-        pointsRepository.transactions.collect { transactions ->
-            val todayPoints = transactions
-                .filter { it.createdAt >= todayStart && it.createdAt < todayEnd }
-                .filter { it.type == TransactionType.EARN }
-                .sumOf { it.points }
-
+    private suspend fun loadTodayPoints() {
+        val (start, end) = todayMillisRange()
+        // SQL-side SUM — was filtering the entire transactions list in memory on every emission,
+        // which scaled O(N) with history. Now O(1) DB-side aggregate.
+        transactionDao.observeEarnedInRange(start, end).collect { todayPoints ->
             _uiState.update { it.copy(todayPoints = todayPoints) }
         }
     }
@@ -94,9 +109,16 @@ class StatusViewModel(
     }
 
     fun checkInMood(mood: String) {
+        // Guard: only one mood check-in per local day.
+        if (_uiState.value.hasCheckedInMoodToday) return
         viewModelScope.launch {
+            // Re-check inside the coroutine to close a race against a concurrent first-tap.
+            val (start, end) = todayMillisRange()
+            val alreadyToday = transactionDao.countBySourceInRange(TransactionSource.MOOD.name, start, end).first() > 0
+            if (alreadyToday) return@launch
+
             pointsRepository.addPoints(
-                points = 2,
+                points = StatsEngine.MOOD_POINTS,
                 type = TransactionType.EARN,
                 source = TransactionSource.MOOD,
                 description = "Mood check-in: $mood",
@@ -135,6 +157,7 @@ data class StatusUiState(
     val todayPoints: Int = 0,
     val currentBalance: Int = 0,
     val hexagonStyle: String = "simple",
+    val hasCheckedInMoodToday: Boolean = false,
     val isLoading: Boolean = true,
     val error: String? = null
 )

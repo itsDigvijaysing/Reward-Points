@@ -5,16 +5,32 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
+/**
+ * App preferences. Plain values live in DataStore; secrets (API tokens) are routed
+ * through [SecretStorage] (AES-256-GCM encrypted). The first read of a secret
+ * migrates any legacy plain-text value out of DataStore and into encrypted storage.
+ */
 class UserPreferences(private val context: Context) {
+
+    private val secretStorage = SecretStorage(context)
+
+    // In-memory cached secrets for cheap Flow access. Loaded lazily via [loadSecretsIfNeeded].
+    private val todoistTokenFlow = MutableStateFlow<String?>(null)
+    private val geminiApiKeyFlow = MutableStateFlow<String?>(null)
+    @Volatile private var secretsLoaded = false
 
     private object Keys {
         val USERNAME = stringPreferencesKey("username")
-        val TODOIST_TOKEN = stringPreferencesKey("todoist_token")
-        val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
+        // Legacy keys — read once by migrateLegacySecret(), then deleted from DataStore.
+        val TODOIST_TOKEN_LEGACY = stringPreferencesKey("todoist_token")
+        val GEMINI_API_KEY_LEGACY = stringPreferencesKey("gemini_api_key")
         val DEFAULT_STAT = stringPreferencesKey("default_stat")
         val SYNC_INTERVAL_MINUTES = intPreferencesKey("sync_interval_minutes")
         val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
@@ -22,11 +38,13 @@ class UserPreferences(private val context: Context) {
         val HAPTIC_FEEDBACK = booleanPreferencesKey("haptic_feedback")
         val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
         val HEXAGON_STYLE = stringPreferencesKey("hexagon_style")
+        // Local-date string (yyyy-MM-dd) of the most recent successful DecayEngine run.
+        // Guards against double-application when WorkManager retries, runNow() fires,
+        // or scheduling overlaps the next tick.
+        val LAST_DECAY_DAY = stringPreferencesKey("last_decay_day")
     }
 
     val username: Flow<String> = context.dataStore.data.map { it[Keys.USERNAME] ?: "Player" }
-    val todoistToken: Flow<String?> = context.dataStore.data.map { it[Keys.TODOIST_TOKEN] }
-    val geminiApiKey: Flow<String?> = context.dataStore.data.map { it[Keys.GEMINI_API_KEY] }
     val defaultStat: Flow<String> = context.dataStore.data.map { it[Keys.DEFAULT_STAT] ?: "INT" }
     val syncIntervalMinutes: Flow<Int> = context.dataStore.data.map { it[Keys.SYNC_INTERVAL_MINUTES] ?: 15 }
     val lastSyncTime: Flow<Long> = context.dataStore.data.map { it[Keys.LAST_SYNC_TIME] ?: 0L }
@@ -34,23 +52,61 @@ class UserPreferences(private val context: Context) {
     val hapticFeedback: Flow<Boolean> = context.dataStore.data.map { it[Keys.HAPTIC_FEEDBACK] ?: true }
     val onboardingComplete: Flow<Boolean> = context.dataStore.data.map { it[Keys.ONBOARDING_COMPLETE] ?: false }
     val hexagonStyle: Flow<String> = context.dataStore.data.map { it[Keys.HEXAGON_STYLE] ?: "simple" }
+    val lastDecayDay: Flow<String?> = context.dataStore.data.map { it[Keys.LAST_DECAY_DAY] }
+
+    // ---- Secrets (encrypted) ----
+    // These StateFlows start as null. [loadSecretsIfNeeded] (called from StatUpApp init)
+    // populates them with values from EncryptedSharedPreferences. Suspend callers should
+    // prefer [getTodoistToken] / [getGeminiApiKey], which guarantee the load has completed.
+
+    val todoistToken: Flow<String?> = todoistTokenFlow.asStateFlow()
+    val geminiApiKey: Flow<String?> = geminiApiKeyFlow.asStateFlow()
+
+    /** Eagerly populates the secret flows; safe to call multiple times. */
+    suspend fun loadSecretsIfNeeded() {
+        if (secretsLoaded) return
+        val token = secretStorage.getString(SecretStorage.KEY_TODOIST_TOKEN)
+            ?: migrateLegacySecret(Keys.TODOIST_TOKEN_LEGACY, SecretStorage.KEY_TODOIST_TOKEN)
+        val gemini = secretStorage.getString(SecretStorage.KEY_GEMINI_API_KEY)
+            ?: migrateLegacySecret(Keys.GEMINI_API_KEY_LEGACY, SecretStorage.KEY_GEMINI_API_KEY)
+        todoistTokenFlow.value = token
+        geminiApiKeyFlow.value = gemini
+        secretsLoaded = true
+    }
+
+    /** Suspend accessor that ensures secrets are loaded before returning. */
+    suspend fun getTodoistToken(): String? {
+        loadSecretsIfNeeded()
+        return todoistTokenFlow.value
+    }
+
+    suspend fun getGeminiApiKey(): String? {
+        loadSecretsIfNeeded()
+        return geminiApiKeyFlow.value
+    }
+
+    private suspend fun migrateLegacySecret(legacyKey: Preferences.Key<String>, secretKey: String): String? {
+        // Read first (DataStore Flow), then edit to remove. Two-step to avoid the
+        // captured-var-smart-cast pitfall when reading values written inside edit{}.
+        val legacy = context.dataStore.data.first()[legacyKey]
+        if (legacy.isNullOrBlank()) return null
+        context.dataStore.edit { it.remove(legacyKey) }
+        secretStorage.putString(secretKey, legacy)
+        return legacy
+    }
 
     suspend fun setUsername(username: String) {
         context.dataStore.edit { it[Keys.USERNAME] = username }
     }
 
     suspend fun setTodoistToken(token: String?) {
-        context.dataStore.edit {
-            if (token != null) it[Keys.TODOIST_TOKEN] = token
-            else it.remove(Keys.TODOIST_TOKEN)
-        }
+        secretStorage.putString(SecretStorage.KEY_TODOIST_TOKEN, token)
+        todoistTokenFlow.value = token
     }
 
     suspend fun setGeminiApiKey(key: String?) {
-        context.dataStore.edit {
-            if (key != null) it[Keys.GEMINI_API_KEY] = key
-            else it.remove(Keys.GEMINI_API_KEY)
-        }
+        secretStorage.putString(SecretStorage.KEY_GEMINI_API_KEY, key)
+        geminiApiKeyFlow.value = key
     }
 
     suspend fun setDefaultStat(stat: String) {
@@ -81,7 +137,16 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { it[Keys.HEXAGON_STYLE] = style }
     }
 
+    suspend fun getLastDecayDay(): String? = context.dataStore.data.first()[Keys.LAST_DECAY_DAY]
+
+    suspend fun setLastDecayDay(day: String) {
+        context.dataStore.edit { it[Keys.LAST_DECAY_DAY] = day }
+    }
+
     suspend fun clearAll() {
         context.dataStore.edit { it.clear() }
+        secretStorage.clear()
+        todoistTokenFlow.value = null
+        geminiApiKeyFlow.value = null
     }
 }

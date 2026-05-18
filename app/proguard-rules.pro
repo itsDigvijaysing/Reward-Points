@@ -47,6 +47,15 @@
 -keep class io.ktor.** { *; }
 -keep class kotlinx.coroutines.** { *; }
 
+# WorkManager — workers are instantiated reflectively by the default WorkerFactory
+-keep class com.rewardpoints.app.sync.DecayWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
+-keep class com.rewardpoints.app.sync.TodoistSyncWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
+
+# Security Crypto / Tink (EncryptedSharedPreferences)
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
+-keep class androidx.security.crypto.** { *; }
+
 # Koin
 -keepnames class androidx.lifecycle.ViewModel
 -keepclassmembers class * extends androidx.lifecycle.ViewModel {

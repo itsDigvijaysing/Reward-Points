@@ -1,18 +1,17 @@
 package com.rewardpoints.app.data.repository
 
+import androidx.room.withTransaction
+import com.rewardpoints.app.data.local.db.AppDatabase
 import com.rewardpoints.app.data.local.db.dao.RewardDao
-import com.rewardpoints.app.data.local.db.dao.TransactionDao
 import com.rewardpoints.app.data.local.db.entity.RewardEntity
-import com.rewardpoints.app.data.local.db.entity.TransactionEntity
 import com.rewardpoints.app.domain.model.Reward
-import com.rewardpoints.app.domain.model.TransactionSource
-import com.rewardpoints.app.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RewardRepository(
+    private val database: AppDatabase,
     private val rewardDao: RewardDao,
-    private val transactionDao: TransactionDao
+    private val pointsRepository: PointsRepository
 ) {
     val activeRewards: Flow<List<Reward>> = rewardDao.getAllActive().map { list ->
         list.map { it.toDomain() }
@@ -36,24 +35,30 @@ class RewardRepository(
         rewardDao.deleteById(id)
     }
 
-    suspend fun redeemReward(reward: Reward, currentBalance: Int): Result<Unit> {
-        if (currentBalance < reward.pointsCost) {
-            return Result.failure(InsufficientPointsException(reward.pointsCost, currentBalance))
+    /**
+     * Redeem a reward atomically:
+     *   - re-reads the live balance from SQL (ignores the ViewModel snapshot that may be stale)
+     *   - inserts the redeem transaction
+     *   - increments the reward's redeem counter
+     * All inside a single Room transaction, so double-taps and concurrent redemptions
+     * can't overspend the player's balance.
+     *
+     * Goes through [PointsRepository.redeemPoints] so the widget gets refreshed for free.
+     */
+    suspend fun redeemReward(reward: Reward): Result<Unit> = database.withTransaction {
+        val liveBalance = pointsRepository.getCurrentBalance()
+        if (liveBalance < reward.pointsCost) {
+            return@withTransaction Result.failure(
+                InsufficientPointsException(reward.pointsCost, liveBalance)
+            )
         }
-
-        val transaction = TransactionEntity(
-            type = TransactionType.REDEEM.name,
-            source = TransactionSource.REWARD.name,
-            description = "Redeemed: ${reward.name}",
+        pointsRepository.redeemPoints(
             points = reward.pointsCost,
-            statType = null,
-            relatedId = reward.id.toString(),
-            createdAt = System.currentTimeMillis()
+            description = "Redeemed: ${reward.name}",
+            relatedId = reward.id.toString()
         )
-        transactionDao.insert(transaction)
         rewardDao.incrementRedeemed(reward.id)
-
-        return Result.success(Unit)
+        Result.success(Unit)
     }
 
     private fun RewardEntity.toDomain(): Reward = Reward(

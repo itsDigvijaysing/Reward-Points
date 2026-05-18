@@ -51,10 +51,6 @@ class PlayerRepository(
         playerStatsDao.updateRankUpCounter(counter)
     }
 
-    suspend fun updateRankDownCounter(counter: Int) {
-        playerStatsDao.updateRankDownCounter(counter)
-    }
-
     suspend fun addTotalPoints(points: Int) {
         playerStatsDao.addPoints(points)
     }

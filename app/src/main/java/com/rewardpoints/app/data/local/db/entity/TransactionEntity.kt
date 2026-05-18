@@ -1,9 +1,16 @@
 package com.rewardpoints.app.data.local.db.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "transactions")
+@Entity(
+    tableName = "transactions",
+    // Unique on externalId so concurrent Todoist syncs (background worker + manual button)
+    // can't insert the same completed task twice. SQLite's UNIQUE allows multiple NULLs,
+    // so manual transactions (externalId = null) are unaffected.
+    indices = [Index(value = ["externalId"], unique = true)]
+)
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

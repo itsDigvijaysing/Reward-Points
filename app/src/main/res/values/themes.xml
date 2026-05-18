@@ -1,9 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Minimal theme for Compose - theming handled in Compose -->
+    <!-- Main theme — Compose handles colors; this just kills the action bar and forces dark system bars. -->
     <style name="Theme.StatUp" parent="android:Theme.Material.NoActionBar">
         <item name="android:colorBackground">#0A0A0F</item>
         <item name="android:statusBarColor">#0A0A0F</item>
         <item name="android:navigationBarColor">#0A0A0F</item>
         <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Splash theme — applied at activity launch via android:theme, swapped out post-splash by
+         installSplashScreen() in MainActivity. Uses the same hexagon foreground as the launcher icon
+         so the transition into the app is seamless. -->
+    <style name="Theme.StatUp.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0A0A0F</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.StatUp</item>
     </style>
 </resources>

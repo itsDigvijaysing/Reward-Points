@@ -24,6 +24,5 @@ enum class Rank(
     companion object {
         fun fromString(value: String): Rank = entries.find { it.name == value } ?: E
         const val STREAK_DAYS_TO_RANK_UP = 5
-        const val BREAKS_TO_RANK_DOWN = 5
     }
 }

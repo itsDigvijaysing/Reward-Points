@@ -9,6 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import com.rewardpoints.app.ui.components.AmbientBackground
 import com.rewardpoints.app.ui.components.glass.BottomNavItem
 import com.rewardpoints.app.ui.components.glass.GlassBottomBar
+import com.rewardpoints.app.ui.components.glass.LocalHazeState
+import com.rewardpoints.app.ui.components.glass.hazeSourceOrFallback
+import dev.chrisbanes.haze.rememberHazeState
 import com.rewardpoints.app.ui.screen.achievements.AchievementsScreen
 import com.rewardpoints.app.ui.screen.agent.AgentScreen
 import com.rewardpoints.app.ui.screen.history.HistoryScreen
@@ -45,6 +49,11 @@ fun AppNavigation(
         Routes.STATUS, Routes.TASKS, Routes.REWARDS, Routes.AGENT, Routes.SETTINGS
     )
 
+    // Single HazeState shared across the whole shell — content is the "source", glass
+    // primitives (cards, bottom bar) are "effects" that sample the source at blur time.
+    val hazeState = rememberHazeState()
+
+    CompositionLocalProvider(LocalHazeState provides hazeState) {
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground()
 
@@ -71,7 +80,9 @@ fun AppNavigation(
             NavHost(
                 navController = navController,
                 startDestination = Routes.STATUS,
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .hazeSourceOrFallback()
             ) {
                 composable(Routes.STATUS) {
                     StatusScreen(navController = navController)
@@ -100,4 +111,5 @@ fun AppNavigation(
             }
         }
     }
+    }  // CompositionLocalProvider
 }

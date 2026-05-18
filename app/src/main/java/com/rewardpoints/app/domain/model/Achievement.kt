@@ -37,30 +37,45 @@ enum class AchievementCategory(val displayName: String, val color: Color, val em
 }
 
 object Achievements {
+    // IDs here must stay in sync with the ones AchievementTracker checks — when the tracker
+    // calls `updateProgress(id, …)` for an id that isn't seeded, the call is a silent no-op.
     val ALL = listOf(
         // Streak
-        Achievement("streak_7", "Week Warrior", "Maintain a 7-day streak", "🔥", AchievementCategory.STREAK, 7),
-        Achievement("streak_30", "Monthly Master", "Maintain a 30-day streak", "🔥", AchievementCategory.STREAK, 30),
+        Achievement("streak_3", "Three in a Row", "Maintain a 3-day streak", "🔥", AchievementCategory.STREAK, 3, rewardPoints = 10),
+        Achievement("streak_7", "Week Warrior", "Maintain a 7-day streak", "🔥", AchievementCategory.STREAK, 7, rewardPoints = 20),
+        Achievement("streak_14", "Two Weeks Strong", "Maintain a 14-day streak", "🔥", AchievementCategory.STREAK, 14, rewardPoints = 35),
+        Achievement("streak_30", "Monthly Master", "Maintain a 30-day streak", "🔥", AchievementCategory.STREAK, 30, rewardPoints = 50),
+        Achievement("streak_100", "Centurion of Days", "Maintain a 100-day streak", "🔥", AchievementCategory.STREAK, 100, rewardPoints = 200),
 
         // Points
-        Achievement("points_100", "First Steps", "Earn 100 total points", "✨", AchievementCategory.POINTS, 100),
-        Achievement("points_1000", "Thousand Club", "Earn 1,000 total points", "💰", AchievementCategory.POINTS, 1000),
+        Achievement("points_100", "First Steps", "Earn 100 total points", "✨", AchievementCategory.POINTS, 100, rewardPoints = 10),
+        Achievement("points_500", "Half a Thousand", "Earn 500 total points", "✨", AchievementCategory.POINTS, 500, rewardPoints = 25),
+        Achievement("points_1000", "Thousand Club", "Earn 1,000 total points", "💰", AchievementCategory.POINTS, 1000, rewardPoints = 50),
+        Achievement("points_5000", "Point Collector", "Earn 5,000 total points", "💎", AchievementCategory.POINTS, 5000, rewardPoints = 150),
 
         // Stats
-        Achievement("stat_50", "Half Century", "Raise any stat to 50", "📊", AchievementCategory.STATS, 50),
-        Achievement("stat_max", "Maxed Out", "Raise any stat to 100", "🌟", AchievementCategory.STATS, 100),
+        Achievement("stat_20", "Apprentice Stat", "Raise any stat to 20", "📊", AchievementCategory.STATS, 20, rewardPoints = 15),
+        Achievement("stat_50", "Half Century", "Raise any stat to 50", "📊", AchievementCategory.STATS, 50, rewardPoints = 30),
+        Achievement("stat_max", "Maxed Out", "Raise any stat to 100", "🌟", AchievementCategory.STATS, 100, rewardPoints = 100),
+        Achievement("balanced", "Balanced", "Raise every stat to 25", "⚖️", AchievementCategory.STATS, 25, rewardPoints = 40),
 
         // Tasks
-        Achievement("tasks_10", "Task Beginner", "Complete 10 tasks", "✅", AchievementCategory.TASKS, 10),
-        Achievement("tasks_100", "Task Centurion", "Complete 100 tasks", "🎯", AchievementCategory.TASKS, 100),
+        Achievement("tasks_10", "Task Beginner", "Complete 10 tasks", "✅", AchievementCategory.TASKS, 10, rewardPoints = 10),
+        Achievement("tasks_50", "Task Veteran", "Complete 50 tasks", "✅", AchievementCategory.TASKS, 50, rewardPoints = 30),
+        Achievement("tasks_100", "Task Centurion", "Complete 100 tasks", "🎯", AchievementCategory.TASKS, 100, rewardPoints = 50),
+        Achievement("tasks_500", "Task Crusher", "Complete 500 tasks", "🎯", AchievementCategory.TASKS, 500, rewardPoints = 150),
 
         // Rank
-        Achievement("rank_b", "B-Rank Hunter", "Reach B Rank", "⭐", AchievementCategory.RANK, 3),
-        Achievement("rank_s", "S-Rank Hunter", "Reach S Rank", "👑", AchievementCategory.RANK, 5),
+        Achievement("rank_d", "D-Rank Hunter", "Reach D Rank", "⭐", AchievementCategory.RANK, 1, rewardPoints = 15),
+        Achievement("rank_c", "C-Rank Hunter", "Reach C Rank", "⭐", AchievementCategory.RANK, 2, rewardPoints = 25),
+        Achievement("rank_b", "B-Rank Hunter", "Reach B Rank", "⭐", AchievementCategory.RANK, 3, rewardPoints = 40),
+        Achievement("rank_a", "A-Rank Hunter", "Reach A Rank", "⭐", AchievementCategory.RANK, 4, rewardPoints = 75),
+        Achievement("rank_s", "S-Rank Hunter", "Reach S Rank", "👑", AchievementCategory.RANK, 5, rewardPoints = 150),
 
         // Special
-        Achievement("first_reward", "Treat Yourself", "Redeem your first reward", "🎁", AchievementCategory.SPECIAL, 1),
-        Achievement("todoist_connect", "Connected", "Connect to Todoist", "📋", AchievementCategory.SPECIAL, 1)
+        Achievement("first_reward", "Treat Yourself", "Redeem your first reward", "🎁", AchievementCategory.SPECIAL, 1, rewardPoints = 10),
+        Achievement("todoist_connect", "Connected", "Connect to Todoist", "📋", AchievementCategory.SPECIAL, 1, rewardPoints = 10),
+        Achievement("mood_7", "Reflective", "Check in your mood for 7 days", "🧘", AchievementCategory.SPECIAL, 7, rewardPoints = 25)
     )
 
     fun getById(id: String): Achievement? = ALL.find { it.id == id }

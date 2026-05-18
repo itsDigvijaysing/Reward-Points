@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
@@ -86,11 +87,12 @@ fun StatusScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             QuickActionCard(
-                emoji = "😊",
+                emoji = if (uiState.hasCheckedInMoodToday) "✅" else "😊",
                 label = "Mood",
-                sublabel = "+2 pts",
+                sublabel = if (uiState.hasCheckedInMoodToday) "Done today" else "+2 pts",
                 modifier = Modifier.weight(1f),
-                onClick = { showMoodDialog = true }
+                enabled = !uiState.hasCheckedInMoodToday,
+                onClick = { if (!uiState.hasCheckedInMoodToday) showMoodDialog = true }
             )
             QuickActionCard(
                 emoji = "➕",
@@ -161,11 +163,13 @@ private fun QuickActionCard(
     label: String,
     sublabel: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    val cardAlpha = if (enabled) 1f else 0.55f
     GlassCard(
-        modifier = modifier,
-        onClick = onClick
+        modifier = modifier.alpha(cardAlpha),
+        onClick = if (enabled) onClick else null
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),

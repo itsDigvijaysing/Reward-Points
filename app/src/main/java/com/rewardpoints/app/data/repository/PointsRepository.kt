@@ -1,31 +1,32 @@
 package com.rewardpoints.app.data.repository
 
+import androidx.room.withTransaction
+import com.rewardpoints.app.data.local.db.AppDatabase
 import com.rewardpoints.app.data.local.db.dao.PlayerStatsDao
 import com.rewardpoints.app.data.local.db.dao.StatMappingDao
 import com.rewardpoints.app.data.local.db.dao.TransactionDao
-import com.rewardpoints.app.data.local.db.entity.PlayerStatsEntity
+import com.rewardpoints.app.data.local.db.entity.StatMappingEntity
 import com.rewardpoints.app.data.local.db.entity.TransactionEntity
 import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.domain.model.*
+import com.rewardpoints.app.widget.StatsWidgetUpdater
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class PointsRepository(
+    private val database: AppDatabase,
     private val transactionDao: TransactionDao,
     private val playerStatsDao: PlayerStatsDao,
     private val statMappingDao: StatMappingDao,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val widgetUpdater: StatsWidgetUpdater? = null
 ) {
     val transactions: Flow<List<Transaction>> = transactionDao.getAll().map { list ->
         list.map { it.toDomain() }
     }
 
-    val balanceFlow: Flow<Int> = transactionDao.getAll().map { list ->
-        val earned = list.filter { it.type == TransactionType.EARN.name }.sumOf { it.points }
-        val redeemed = list.filter { it.type == TransactionType.REDEEM.name }.sumOf { it.points }
-        earned - redeemed
-    }
+    val balanceFlow: Flow<Int> = transactionDao.getBalance()
 
     fun getRecentTransactions(limit: Int): Flow<List<Transaction>> =
         transactionDao.getRecent(limit).map { list -> list.map { it.toDomain() } }
@@ -35,6 +36,11 @@ class PointsRepository(
     suspend fun getCurrentBalance(): Int = getTotalEarned() - getTotalRedeemed()
     suspend fun getTaskTransactionCount(): Int = transactionDao.getTaskTransactionCount()
 
+    /**
+     * Insert the transaction, increment totals + stat accumulator. All DB writes happen
+     * inside a single Room transaction so concurrent earns can't tear a stat update
+     * apart from its accumulator/total counterpart.
+     */
     suspend fun addPoints(
         points: Int,
         type: TransactionType,
@@ -43,7 +49,7 @@ class PointsRepository(
         statType: StatType? = null,
         relatedId: String? = null,
         externalId: String? = null
-    ): Transaction {
+    ): Transaction = database.withTransaction {
         val transaction = TransactionEntity(
             type = type.name,
             source = source.name,
@@ -63,7 +69,8 @@ class PointsRepository(
             }
         }
 
-        return transaction.copy(id = id).toDomain()
+        widgetUpdater?.refresh()
+        transaction.copy(id = id).toDomain()
     }
 
     suspend fun earnPoints(
@@ -77,11 +84,47 @@ class PointsRepository(
         return addPoints(points, TransactionType.EARN, source, description, statType, relatedId, externalId)
     }
 
+    /**
+     * Idempotent earn keyed by [externalId] — used by Todoist sync. Returns the new
+     * transaction on first call, or null if a transaction with the same externalId
+     * already exists (race winner / prior sync run). The unique index on
+     * `transactions.externalId` plus `OnConflictStrategy.IGNORE` makes the check race-safe
+     * even when two sync runs overlap.
+     */
+    suspend fun tryEarnExternalPoints(
+        externalId: String,
+        points: Int,
+        statType: StatType? = null,
+        source: TransactionSource,
+        description: String? = null,
+        relatedId: String? = externalId
+    ): Transaction? = database.withTransaction {
+        val transaction = TransactionEntity(
+            type = TransactionType.EARN.name,
+            source = source.name,
+            description = description,
+            points = points,
+            statType = statType?.name,
+            relatedId = relatedId,
+            externalId = externalId,
+            createdAt = System.currentTimeMillis()
+        )
+        val id = transactionDao.insertIgnore(transaction)
+        if (id == -1L) return@withTransaction null
+
+        playerStatsDao.addPoints(points)
+        if (statType != null) {
+            updateStatAccumulator(statType, points)
+        }
+        widgetUpdater?.refresh()
+        transaction.copy(id = id).toDomain()
+    }
+
     suspend fun redeemPoints(
         points: Int,
         description: String? = null,
         relatedId: String? = null
-    ): Transaction {
+    ): Transaction = database.withTransaction {
         val transaction = TransactionEntity(
             type = TransactionType.REDEEM.name,
             source = TransactionSource.REWARD.name,
@@ -92,7 +135,8 @@ class PointsRepository(
             createdAt = System.currentTimeMillis()
         )
         val id = transactionDao.insert(transaction)
-        return transaction.copy(id = id).toDomain()
+        widgetUpdater?.refresh()
+        transaction.copy(id = id).toDomain()
     }
 
     private suspend fun updateStatAccumulator(statType: StatType, points: Int) {
@@ -137,7 +181,14 @@ class PointsRepository(
     }
 
     suspend fun routeToStat(labels: List<String>): StatType {
-        val mappings = statMappingDao.getAllOnce()
+        return routeToStatCached(labels, statMappingDao.getAllOnce())
+    }
+
+    /** Snapshot of stat mappings, suitable for reuse across a sync run. */
+    suspend fun loadStatMappings(): List<StatMappingEntity> = statMappingDao.getAllOnce()
+
+    /** Routing variant that reuses a pre-loaded mappings list to avoid N DB round trips. */
+    suspend fun routeToStatCached(labels: List<String>, mappings: List<StatMappingEntity>): StatType {
         for (label in labels) {
             val mapping = mappings.find { it.sourceName.equals(label, ignoreCase = true) }
             if (mapping != null) {

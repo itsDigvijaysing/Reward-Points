@@ -285,10 +285,14 @@ private fun CreateRewardDialog(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var cost by remember { mutableStateOf("10") }
+    var customCost by remember { mutableStateOf("") }
     var selectedEmoji by remember { mutableStateOf("🎁") }
 
     val emojis = listOf("🎁", "🍕", "🎮", "☕", "🎬", "🛍️", "🍦", "📱", "🎧", "✈️", "💆", "🍫")
-    val costs = listOf("5", "10", "20", "50", "100")
+    val presetCosts = listOf("5", "10", "20", "50", "100", "200", "500")
+
+    // Effective cost: custom field overrides preset when filled with a positive int.
+    val effectiveCost = customCost.toIntOrNull()?.takeIf { it > 0 } ?: cost.toIntOrNull() ?: 10
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -376,7 +380,7 @@ private fun CreateRewardDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Cost selector - 2 rows
+                    // Cost selector — presets + custom input
                     Text(
                         text = "Cost (points):",
                         color = TextSecondary,
@@ -384,37 +388,44 @@ private fun CreateRewardDialog(
                         fontFamily = Inter
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            listOf("5", "10", "20").forEach { c ->
-                                GlassButtonSmall(
-                                    text = c,
-                                    onClick = { cost = c },
-                                    primary = cost == c,
-                                    modifier = Modifier.weight(1f)
-                                )
+                        // Preset chips, 4 per row
+                        presetCosts.chunked(4).forEach { row ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                row.forEach { c ->
+                                    GlassButtonSmall(
+                                        text = c,
+                                        onClick = {
+                                            cost = c
+                                            customCost = "" // clear custom override when picking a preset
+                                        },
+                                        primary = customCost.isBlank() && cost == c,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                // Pad short rows so chips don't stretch
+                                repeat(4 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                             }
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            listOf("50", "100").forEach { c ->
-                                GlassButtonSmall(
-                                    text = c,
-                                    onClick = { cost = c },
-                                    primary = cost == c,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            // Empty space to balance
-                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Custom cost input — overrides presets when filled
+                    GlassTextField(
+                        value = customCost,
+                        onValueChange = { input ->
+                            // Only digits, max 6 chars (up to 999,999 pts)
+                            customCost = input.filter { it.isDigit() }.take(6)
+                        },
+                        label = "Or custom amount",
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -432,17 +443,17 @@ private fun CreateRewardDialog(
                         GlassButton(
                             text = "Create",
                             onClick = {
-                                if (name.isNotBlank()) {
+                                if (name.isNotBlank() && effectiveCost > 0) {
                                     onCreate(
                                         name,
                                         description.takeIf { it.isNotBlank() },
-                                        cost.toIntOrNull() ?: 10,
+                                        effectiveCost,
                                         selectedEmoji,
                                         null
                                     )
                                 }
                             },
-                            enabled = name.isNotBlank(),
+                            enabled = name.isNotBlank() && effectiveCost > 0,
                             modifier = Modifier.weight(1f)
                         )
                     }

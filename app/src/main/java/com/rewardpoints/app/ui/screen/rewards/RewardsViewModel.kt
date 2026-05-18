@@ -56,7 +56,7 @@ class RewardsViewModel(
 
     fun redeemReward(reward: Reward) {
         viewModelScope.launch {
-            val result = rewardRepository.redeemReward(reward, _uiState.value.currentBalance)
+            val result = rewardRepository.redeemReward(reward)
             result.onSuccess {
                 achievementTracker.onRewardRedeemed()
                 _uiState.update {

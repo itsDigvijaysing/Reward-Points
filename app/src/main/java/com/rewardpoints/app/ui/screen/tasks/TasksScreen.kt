@@ -24,7 +24,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,9 +57,18 @@ fun TasksScreen(
     viewModel: TasksViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        viewModel.resetDailyMissions()
+    // Re-run on every tab re-entry (not just initial composition).
+    // - resetDailyMissions: catches midnight rollover while app stays open
+    // - loadTodoistTasks: gives user fresh active-task list every time they open the tab
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.resetDailyMissions()
+            if (uiState.todoistConnected) {
+                viewModel.loadTodoistTasks()
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -98,78 +112,16 @@ fun TasksScreen(
                     CircularProgressIndicator(color = AccentPrimary)
                 }
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 100.dp)
-                ) {
-                    // Todoist section (unified)
-                    if (uiState.todoistConnected) {
-                        item {
-                            TodoistSection(
-                                tasks = uiState.todoistTasks,
-                                isLoading = uiState.todoistTasksLoading,
-                                error = uiState.todoistTasksError,
-                                isExpanded = uiState.showTodoistTasks,
-                                onToggle = { viewModel.toggleTodoistTasks() },
-                                onRefresh = { viewModel.loadTodoistTasks() },
-                                lastSync = uiState.todoistLastSync,
-                                isSyncing = uiState.todoistSyncing,
-                                syncLog = uiState.todoistSyncLog,
-                                onSync = { viewModel.syncTodoist() }
-                            )
-                        }
-                    }
-
-                    // Active missions
-                    val activeMissions = uiState.missions.filter { !it.isCompletedToday }
-                    val completedMissions = uiState.missions.filter { it.isCompletedToday }
-
-                    if (activeMissions.isNotEmpty()) {
-                        item {
-                            Text(
-                                text = "Active (${activeMissions.size})",
-                                color = TextSecondary,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                fontFamily = Inter
-                            )
-                        }
-                        items(activeMissions, key = { it.id }) { mission ->
-                            MissionCard(
-                                mission = mission,
-                                onComplete = { viewModel.completeMission(mission) },
-                                onDelete = { viewModel.deleteMission(mission) }
-                            )
-                        }
-                    }
-
-                    if (completedMissions.isNotEmpty()) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Completed Today (${completedMissions.size})",
-                                color = TextTertiary,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                fontFamily = Inter
-                            )
-                        }
-                        items(completedMissions, key = { it.id }) { mission ->
-                            MissionCard(
-                                mission = mission,
-                                onComplete = { },
-                                onDelete = { viewModel.deleteMission(mission) },
-                                isCompleted = true
-                            )
-                        }
-                    }
-
-                    if (uiState.missions.isEmpty() && !uiState.todoistConnected) {
-                        item {
-                            EmptyTasksState(onCreateClick = { viewModel.showCreateDialog() })
-                        }
-                    }
-                }
+                TasksList(
+                    uiState = uiState,
+                    onCompleteMission = { viewModel.completeMission(it) },
+                    onDeleteMission = { viewModel.deleteMission(it) },
+                    onCreateMission = { viewModel.showCreateDialog() },
+                    onToggleTodoist = { viewModel.toggleTodoistTasks() },
+                    onRefreshTodoist = { viewModel.loadTodoistTasks() },
+                    onSyncTodoist = { viewModel.syncTodoist() },
+                    onPullRefresh = { viewModel.refreshAll() }
+                )
             }
         }
 
@@ -181,6 +133,103 @@ fun TasksScreen(
                     viewModel.createMission(name, desc, points, stat, isDaily)
                 }
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TasksList(
+    uiState: TasksUiState,
+    onCompleteMission: (MissionEntity) -> Unit,
+    onDeleteMission: (MissionEntity) -> Unit,
+    onCreateMission: () -> Unit,
+    onToggleTodoist: () -> Unit,
+    onRefreshTodoist: () -> Unit,
+    onSyncTodoist: () -> Unit,
+    onPullRefresh: () -> Unit
+) {
+    val activeMissions = uiState.missions.filter { !it.isCompletedToday }
+    val completedMissions = uiState.missions.filter { it.isCompletedToday }
+
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = onPullRefresh,
+        state = rememberPullToRefreshState(),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 100.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 1. Active missions first — the primary surface
+            if (activeMissions.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Active (${activeMissions.size})",
+                        color = TextSecondary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Inter
+                    )
+                }
+                items(activeMissions, key = { it.id }) { mission ->
+                    MissionCard(
+                        mission = mission,
+                        onComplete = { onCompleteMission(mission) },
+                        onDelete = { onDeleteMission(mission) }
+                    )
+                }
+            }
+
+            // 2. Completed today
+            if (completedMissions.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Completed Today (${completedMissions.size})",
+                        color = TextTertiary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Inter
+                    )
+                }
+                items(completedMissions, key = { it.id }) { mission ->
+                    MissionCard(
+                        mission = mission,
+                        onComplete = { },
+                        onDelete = { onDeleteMission(mission) },
+                        isCompleted = true
+                    )
+                }
+            }
+
+            // 3. Empty state if both lists empty AND no Todoist
+            if (uiState.missions.isEmpty() && !uiState.todoistConnected) {
+                item {
+                    EmptyTasksState(onCreateClick = onCreateMission)
+                }
+            }
+
+            // 4. Todoist section — at the bottom, collapsed by default
+            if (uiState.todoistConnected) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TodoistSection(
+                        tasks = uiState.todoistTasks,
+                        isLoading = uiState.todoistTasksLoading,
+                        error = uiState.todoistTasksError,
+                        isExpanded = uiState.showTodoistTasks,
+                        onToggle = onToggleTodoist,
+                        onRefresh = onRefreshTodoist,
+                        lastSync = uiState.todoistLastSync,
+                        isSyncing = uiState.todoistSyncing,
+                        syncLog = uiState.todoistSyncLog,
+                        onSync = onSyncTodoist
+                    )
+                }
+            }
         }
     }
 }

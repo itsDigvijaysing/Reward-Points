@@ -41,6 +41,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var usernameInput by remember(uiState.username) { mutableStateOf(uiState.username) }
     var showTodoistDialog by remember { mutableStateOf(false) }
+    var showGeminiDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -114,7 +115,10 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { showGeminiDialog = true }
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -126,19 +130,24 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "AI Agent",
+                            text = "AI Agent (Gemini)",
                             color = TextPrimary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = Inter
                         )
                         Text(
-                            text = "Coming in v4.0",
-                            color = TextTertiary,
+                            text = if (uiState.geminiConnected) "✅ Connected - Tap to change" else "Tap to connect (free API)",
+                            color = if (uiState.geminiConnected) AccentSuccess else TextSecondary,
                             fontSize = 12.sp,
                             fontFamily = Inter
                         )
                     }
+                    Icon(
+                        imageVector = if (uiState.geminiConnected) Icons.Default.Check else Icons.Default.Close,
+                        contentDescription = null,
+                        tint = if (uiState.geminiConnected) AccentSuccess else TextTertiary
+                    )
                 }
             }
         }
@@ -279,6 +288,22 @@ fun SettingsScreen(
             },
             onConnected = {
                 showTodoistDialog = false
+            }
+        )
+    }
+
+    // Gemini Connection Dialog
+    if (showGeminiDialog) {
+        GeminiConnectionDialog(
+            isConnected = uiState.geminiConnected,
+            onDismiss = { showGeminiDialog = false },
+            onSave = { key ->
+                viewModel.setGeminiApiKey(key)
+                showGeminiDialog = false
+            },
+            onDisconnect = {
+                viewModel.setGeminiApiKey(null)
+                showGeminiDialog = false
             }
         )
     }
@@ -504,6 +529,167 @@ private fun TodoistConnectionDialog(
                                 },
                                 modifier = Modifier.weight(1f),
                                 enabled = !isValidating
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GeminiConnectionDialog(
+    isConnected: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+    onDisconnect: () -> Unit
+) {
+    var keyInput by remember { mutableStateOf("") }
+    var showKey by remember { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundBase.copy(alpha = 0.92f))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            GlassCard(modifier = Modifier.fillMaxWidth(), elevated = true) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🤖", fontSize = 32.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "AI Agent",
+                                color = TextPrimary,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Inter
+                            )
+                            Text(
+                                text = if (isConnected) "Connected to Gemini" else "Not connected",
+                                color = if (isConnected) AccentSuccess else TextSecondary,
+                                fontSize = 14.sp,
+                                fontFamily = Inter
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    if (isConnected) {
+                        Text(
+                            text = "Your Gemini API key is stored encrypted on this device. Disconnect to remove it.",
+                            color = TextSecondary,
+                            fontSize = 14.sp,
+                            fontFamily = Inter
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            GlassButton(
+                                text = "Cancel",
+                                onClick = onDismiss,
+                                primary = false,
+                                modifier = Modifier.weight(1f)
+                            )
+                            GlassButton(
+                                text = "Disconnect",
+                                onClick = onDisconnect,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Powered by Google Gemini. Free tier: 15 requests/min, 1,500 requests/day.",
+                            color = TextSecondary,
+                            fontSize = 14.sp,
+                            fontFamily = Inter
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Get a free key at aistudio.google.com/apikey, then paste it below.",
+                            color = TextTertiary,
+                            fontSize = 12.sp,
+                            fontFamily = Inter
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = keyInput,
+                            onValueChange = { keyInput = it },
+                            label = { Text("API Key", color = TextSecondary) },
+                            placeholder = { Text("Paste your Gemini API key", color = TextTertiary) },
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = TextPrimary,
+                                unfocusedTextColor = TextPrimary,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                cursorColor = AccentPrimary,
+                                focusedBorderColor = AccentPrimary,
+                                unfocusedBorderColor = GlassBorder
+                            ),
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = {
+                                        clipboardManager.getText()?.let { keyInput = it.text }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.ContentPaste,
+                                            contentDescription = "Paste",
+                                            tint = TextSecondary
+                                        )
+                                    }
+                                    IconButton(onClick = { showKey = !showKey }) {
+                                        Icon(
+                                            imageVector = if (showKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = if (showKey) "Hide" else "Show",
+                                            tint = TextSecondary
+                                        )
+                                    }
+                                }
+                            },
+                            singleLine = true
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            GlassButton(
+                                text = "Cancel",
+                                onClick = onDismiss,
+                                primary = false,
+                                modifier = Modifier.weight(1f)
+                            )
+                            GlassButton(
+                                text = "Save",
+                                onClick = { if (keyInput.isNotBlank()) onSave(keyInput) },
+                                enabled = keyInput.isNotBlank(),
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }

@@ -3,6 +3,7 @@ package com.rewardpoints.app.sync
 import android.content.Context
 import android.util.Log
 import androidx.work.*
+import com.rewardpoints.app.notifications.Notifier
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.IOException
@@ -14,20 +15,24 @@ class TodoistSyncWorker(
 ) : CoroutineWorker(context, params), KoinComponent {
 
     private val syncManager: TodoistSyncManager by inject()
+    private val notifier: Notifier by inject()
 
     override suspend fun doWork(): Result {
         return try {
             when (val result = syncManager.syncCompletedTasks()) {
                 is SyncResult.Success -> {
-                    // Log success if needed
+                    notifier.showSyncResult(result.tasksProcessed, result.pointsEarned)
                     Result.success()
                 }
-                is SyncResult.NotConnected -> {
-                    // No token, don't retry
+                is SyncResult.NotConnected -> Result.success()
+                is SyncResult.AuthFailed -> {
+                    // Token is invalid/expired — retrying won't help until user re-enters it.
+                    Log.w(TAG, "Auth failed during sync: ${result.message}")
+                    notifier.showSyncAuthFailure()
                     Result.success()
                 }
                 is SyncResult.Error -> {
-                    // Retry on error
+                    Log.w(TAG, "Sync error (will retry): ${result.message}")
                     Result.retry()
                 }
             }

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.data.local.db.AppDatabase
+import com.rewardpoints.app.data.local.db.StatMappingSeeder
+import com.rewardpoints.app.data.local.db.dao.StatMappingDao
 import com.rewardpoints.app.data.repository.AchievementRepository
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.rpg.AchievementTracker
@@ -19,7 +21,8 @@ class SettingsViewModel(
     private val achievementTracker: AchievementTracker,
     private val playerRepository: PlayerRepository,
     private val todoistApi: TodoistApi,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val statMappingDao: StatMappingDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -30,6 +33,7 @@ class SettingsViewModel(
             combine(
                 userPreferences.username,
                 userPreferences.todoistToken,
+                userPreferences.geminiApiKey,
                 userPreferences.defaultStat,
                 userPreferences.showDecayAnimations,
                 userPreferences.hapticFeedback,
@@ -38,10 +42,11 @@ class SettingsViewModel(
                 SettingsUiState(
                     username = values[0] as String,
                     todoistConnected = !(values[1] as String?).isNullOrBlank(),
-                    defaultStat = values[2] as String,
-                    showDecayAnimations = values[3] as Boolean,
-                    hapticFeedback = values[4] as Boolean,
-                    hexagonStyle = values[5] as String,
+                    geminiConnected = !(values[2] as String?).isNullOrBlank(),
+                    defaultStat = values[3] as String,
+                    showDecayAnimations = values[4] as Boolean,
+                    hapticFeedback = values[5] as Boolean,
+                    hexagonStyle = values[6] as String,
                     isLoading = false
                 )
             }.collect { state ->
@@ -90,6 +95,17 @@ class SettingsViewModel(
     }
 
     /**
+     * Save Gemini API key. Pass null/blank to disconnect.
+     * No validation here — the agent surfaces auth errors when the user first chats.
+     * (Gemini doesn't have a cheap ping endpoint; we don't want to burn a quota call on save.)
+     */
+    fun setGeminiApiKey(key: String?) {
+        viewModelScope.launch {
+            userPreferences.setGeminiApiKey(key?.takeIf { it.isNotBlank() })
+        }
+    }
+
+    /**
      * Validates Todoist API token before saving.
      * Returns Result with success=true if valid, or failure with error message.
      */
@@ -121,9 +137,12 @@ class SettingsViewModel(
             // Clear all preferences and reset to defaults
             userPreferences.clearAll()
 
-            // Re-initialize so app doesn't crash (stats at base 5, achievements seeded)
+            // Re-initialize so app doesn't crash (stats at base 5, achievements + label
+            // mappings seeded). Without re-seeding mappings here, Todoist label routing
+            // would silently fall back to the default stat until next process start.
             playerRepository.initializeStats()
             achievementRepository.initializeAchievements()
+            StatMappingSeeder.seed(statMappingDao)
         }
     }
 }
@@ -131,6 +150,7 @@ class SettingsViewModel(
 data class SettingsUiState(
     val username: String = "Player",
     val todoistConnected: Boolean = false,
+    val geminiConnected: Boolean = false,
     val defaultStat: String = "INT",
     val showDecayAnimations: Boolean = true,
     val hapticFeedback: Boolean = true,

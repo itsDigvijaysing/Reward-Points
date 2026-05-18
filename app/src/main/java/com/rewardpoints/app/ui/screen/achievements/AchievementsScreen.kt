@@ -3,6 +3,7 @@ package com.rewardpoints.app.ui.screen.achievements
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -419,6 +420,32 @@ private fun CreateAchievementDialog(
                         label = "Description (optional)",
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Category picker — was previously unbound (custom achievements always
+                    // ended up as SPECIAL despite the data class supporting all 6 categories).
+                    Text(
+                        text = "Category:",
+                        color = TextSecondary,
+                        fontSize = 14.sp,
+                        fontFamily = Inter
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        AchievementCategory.entries.forEach { cat ->
+                            GlassButtonSmall(
+                                text = "${cat.emoji} ${cat.displayName}",
+                                onClick = { selectedCategory = cat },
+                                primary = selectedCategory == cat
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 

@@ -1,32 +1,21 @@
 package com.rewardpoints.app.sync
 
 import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.dao.TransactionDao
 import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.domain.model.TransactionSource
 import com.rewardpoints.app.rpg.AchievementTracker
+import com.rewardpoints.app.rpg.StatsEngine
 import kotlinx.coroutines.flow.first
 
 class TodoistSyncManager(
     private val todoistApi: TodoistApi,
     private val userPreferences: UserPreferences,
-    private val transactionDao: TransactionDao,
     private val pointsRepository: PointsRepository,
     private val achievementTracker: AchievementTracker
 ) {
-    companion object {
-        fun todoistPriorityToPoints(todoistPriority: Int): Int {
-            return when (todoistPriority) {
-                4 -> 4
-                3 -> 3
-                2 -> 2
-                else -> 1
-            }
-        }
-    }
 
     suspend fun syncCompletedTasks(): SyncResult {
-        val token = userPreferences.todoistToken.first()
+        val token = userPreferences.getTodoistToken()
         if (token.isNullOrBlank()) {
             return SyncResult.NotConnected
         }
@@ -40,6 +29,8 @@ class TodoistSyncManager(
 
             result.fold(
                 onSuccess = { tasks ->
+                    // Cache stat mappings once per sync (avoid N round trips for N tasks)
+                    val mappingsCache = pointsRepository.loadStatMappings()
                     var pointsEarned = 0
                     var tasksProcessed = 0
 
@@ -47,30 +38,27 @@ class TodoistSyncManager(
                         val externalId = completedTask.stableId
                         if (externalId.isBlank()) return@forEach
 
-                        val existingTransaction = transactionDao.getByExternalId(externalId)
-                        if (existingTransaction == null) {
-                            val points = todoistPriorityToPoints(completedTask.priority)
-                            val labels = completedTask.labels
+                        val points = StatsEngine.calculateTaskPoints(completedTask.priority)
+                        val labels = completedTask.labels
+                        val statType = if (labels.isNotEmpty()) {
+                            pointsRepository.routeToStatCached(labels, mappingsCache)
+                        } else {
+                            null
+                        }
 
-                            // If labels exist, route to stat via mapping. Otherwise just award points (no stat).
-                            val statType = if (labels.isNotEmpty()) {
-                                pointsRepository.routeToStat(labels)
-                            } else {
-                                null
-                            }
+                        // tryEarnExternalPoints handles dedup atomically via the unique index
+                        // on transactions.externalId — returns null if this task was already synced.
+                        val tx = pointsRepository.tryEarnExternalPoints(
+                            externalId = externalId,
+                            points = points,
+                            statType = statType,
+                            source = TransactionSource.TODOIST,
+                            description = "Todoist: ${completedTask.content}"
+                        )
 
-                            pointsRepository.earnPoints(
-                                points = points,
-                                statType = statType,
-                                source = TransactionSource.TODOIST,
-                                description = "Todoist: ${completedTask.content}",
-                                relatedId = externalId,
-                                externalId = externalId
-                            )
-
+                        if (tx != null) {
                             pointsEarned += points
                             tasksProcessed++
-
                             achievementTracker.onPointsEarned(TransactionSource.TODOIST)
                         }
                     }
@@ -80,16 +68,22 @@ class TodoistSyncManager(
                     SyncResult.Success(tasksProcessed, pointsEarned)
                 },
                 onFailure = { error ->
-                    SyncResult.Error(error.message ?: "Unknown error")
+                    if (error is TodoistAuthException) {
+                        SyncResult.AuthFailed(error.message ?: "Invalid token")
+                    } else {
+                        SyncResult.Error(error.message ?: "Unknown error")
+                    }
                 }
             )
+        } catch (e: TodoistAuthException) {
+            SyncResult.AuthFailed(e.message ?: "Invalid token")
         } catch (e: Exception) {
             SyncResult.Error(e.message ?: "Sync failed")
         }
     }
 
     suspend fun getActiveTasks(): Result<List<TodoistTask>> {
-        val token = userPreferences.todoistToken.first()
+        val token = userPreferences.getTodoistToken()
         if (token.isNullOrBlank()) {
             return Result.failure(Exception("Not connected to Todoist"))
         }
@@ -101,4 +95,6 @@ sealed class SyncResult {
     data object NotConnected : SyncResult()
     data class Success(val tasksProcessed: Int, val pointsEarned: Int) : SyncResult()
     data class Error(val message: String) : SyncResult()
+    /** Token invalid/expired — do not retry until user re-enters token. */
+    data class AuthFailed(val message: String) : SyncResult()
 }

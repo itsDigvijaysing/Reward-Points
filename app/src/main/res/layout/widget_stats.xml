@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Stat Up widget — 4x2 read-only.
+
+    RemoteViews limitations:
+      - Only a fixed set of widgets allowed (LinearLayout/FrameLayout/TextView/ImageView/etc.).
+      - No custom views, no Compose.
+      - No selectors/dynamic theming pre-API 31; we use a static dark palette that matches the app.
+    Click target is the whole root — opens MainActivity.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_background"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+
+    <!-- Rank badge -->
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/widget_rank_badge">
+        <TextView
+            android:id="@+id/widget_rank"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="E"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif" />
+    </FrameLayout>
+
+    <!-- Rest -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="16dp">
+
+        <TextView
+            android:id="@+id/widget_rank_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Novice"
+            android:textColor="#A0A0B8"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif" />
+
+        <TextView
+            android:id="@+id/widget_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✨ 0"
+            android:textColor="#FFD740"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="2dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/widget_streak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥 0d"
+                android:textColor="#FF9800"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="  ·  "
+                android:textColor="#A0A0B8"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/widget_today"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+0 today"
+                android:textColor="#7C4DFF"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

@@ -47,12 +47,14 @@ fun GlassBottomBar(
             .fillMaxWidth()
             .height(GlassTokens.BottomBarHeight)
             .clip(shape)
+            // Backdrop blur of scrolling content underneath. Falls back to tinted scrim on API < 31.
+            .hazeEffectOrFallback(elevated = true)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        GlassFill.copy(alpha = 0.15f),
-                        GlassFill.copy(alpha = 0.1f),
-                        GlassFill.copy(alpha = 0.08f)
+                        GlassFill.copy(alpha = 0.10f),
+                        GlassFill.copy(alpha = 0.06f),
+                        GlassFill.copy(alpha = 0.04f)
                     )
                 )
             )

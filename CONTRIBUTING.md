@@ -20,24 +20,24 @@ Thank you for your interest in contributing to Stat Up! This document provides g
 
 ### Project Principles
 - **Privacy First** - No tracking, analytics, or data collection
-- **Offline Only** - App must work completely offline
+- **Offline First** - Core gamification works fully offline. Two network surfaces exist, both opt-in: Todoist sync (user-supplied API token) and the Gemini AI Coach (user-supplied API key). The app makes no network calls until the user adds credentials in Settings.
 - **FOSS Dependencies** - Only use Free and Open Source libraries
-- **API 21+ Support** - Maintain compatibility with Android 5.0+
-- **Material Design** - Follow Google's Material Design principles
+- **API 26+ Support** - Maintain compatibility with Android 8.0+
+- **Material 3 / Compose** - Jetpack Compose with Material 3 design system
 
 ## 🚀 Getting Started
 
 ### 1. Fork and Clone
 ```bash
 # Fork the repository on GitHub
-git clone https://github.com/yourusername/Reward-Points.git
-cd Reward-Points
+git clone https://github.com/yourusername/Stat-Up.git
+cd Stat-Up
 ```
 
 ### 2. Set Up Development Environment
-- **Android Studio** - Arctic Fox or newer
-- **JDK** - Version 8 or newer
-- **Android SDK** - API levels 21-34
+- **Android Studio** - Iguana or newer (Compose + Kotlin 2.1 support); or just Gradle + the Android cmdline tools.
+- **JDK** - Version 17 (Gradle 8.13 will not run on JDK 24+)
+- **Android SDK** - minSdk 26, targetSdk 35, **compileSdk 36** (install `platforms;android-35`, `platforms;android-36`, `build-tools;35.0.0`, `build-tools;36.0.0`, and `platform-tools` via `sdkmanager`)
 - **Git** - For version control
 
 ### 3. Build the Project
@@ -62,17 +62,16 @@ cd Reward-Points
 - Use proper Android lifecycle methods
 
 ### Architecture Guidelines
-- Follow MVVM pattern where applicable
-- Use AndroidX libraries consistently
-- Implement proper error handling
-- Avoid memory leaks with weak references
-- Use efficient RecyclerView patterns
+- Follow MVVM (Screen → ViewModel → Repository → Room/DataStore/Ktor)
+- All wiring goes through Koin in `di/AppModule.kt`
+- Use Compose state holders; avoid leaking ViewModel scopes into composables
+- Keep RPG logic (point math, decay, rank transitions) inside the engines in `rpg/`
 
 ### Testing Requirements
-- Test on multiple Android versions (API 21+)
+- Test on Android 8.0+ (API 26+)
 - Test on different screen sizes
-- Verify offline functionality
-- Check data persistence and recovery
+- Verify offline functionality (toggle airplane mode)
+- Check data persistence across reboots
 - Validate UI responsiveness
 
 ## 🔧 Submitting Changes
@@ -188,10 +187,10 @@ How does this maintain offline/privacy principles?
 
 ## 🔒 Security Considerations
 
-- Never add network permissions or internet access
-- Avoid logging sensitive user data
-- Use AndroidX Security for encryption
-- Follow secure coding practices
+- The `INTERNET` permission exists for the two opt-in integrations: Todoist sync and the Gemini AI Coach. Do not add new network calls without discussion.
+- Never log sensitive user data (Todoist tokens, Gemini API keys, chat transcripts, future API keys).
+- Use AndroidX Security (`EncryptedSharedPreferences` / Tink) via `SecretStorage` for any new secret storage. The existing `KEY_TODOIST_TOKEN` and `KEY_GEMINI_API_KEY` are the model — never store secrets in plain DataStore.
+- Follow secure coding practices.
 - Report security issues privately (see SECURITY.md)
 
 ## 📞 Getting Help

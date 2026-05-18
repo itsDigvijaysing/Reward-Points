@@ -7,25 +7,28 @@ FEATURES:
 • Hexagon radar chart with tap-to-expand stat details
 • Rank system — progress from E → S based on streak consistency
 • Create custom tasks with priority and stat assignment
-• Todoist integration with label-to-stat routing
 • Custom rewards to redeem with earned points
 • Achievement system with built-in and custom achievements
 • Streak calendar with month navigation
-• Completely offline core - no internet required
-• No ads, no tracking, no data collection
-• Premium liquid glass UI
+• Home-screen widget — rank, balance, streak, and today's earned points at a glance
+• Real GPU backdrop blur on Android 12+ (auto-falls-back on older devices)
+• No ads, no tracking, no built-in data collection
+
+OPTIONAL INTEGRATIONS (your data stays yours, opt-in only):
+• Todoist — connect your account to earn points for completing tasks; supports label-to-stat routing
+• AI Coach — bring your own Google Gemini API key for a private chat coach that talks to you about your stats and progress (chat history is not stored)
 
 PRIVACY:
-• 100% offline operation
-• All data stored locally on your device
-• No network permissions required
-• No analytics or crash reporting
-• Open source and transparent
+• Offline-first core — stats, tasks, rewards, achievements, history, and mood check-ins never leave your device
+• Local-only storage by default; Todoist and Gemini run only if you provide your own credentials
+• API tokens and keys stored encrypted on-device (AES-256-GCM)
+• No analytics, crash reporting, advertising IDs, or third-party tracking
+• Open source — review the code yourself
 
 PERFECT FOR:
 • Personal motivation and goal tracking
 • Habit building and daily routines
 • Gamifying personal achievements
-• Privacy-conscious users who want local data storage
+• Privacy-conscious users who want local-by-default data storage
 
-This app is completely free and open source (FOSS). Source code available for review and contributions.
+This app is completely free and open source (GPL-3.0). Source code available for review and contributions.

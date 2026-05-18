@@ -10,6 +10,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 
+class TodoistAuthException(message: String) : Exception(message)
+
 class TodoistApi(private val httpClient: HttpClient) {
 
     companion object {
@@ -30,6 +32,10 @@ class TodoistApi(private val httpClient: HttpClient) {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
 
+            if (response.status == HttpStatusCode.Unauthorized || response.status == HttpStatusCode.Forbidden) {
+                return Result.failure(TodoistAuthException("Invalid or expired Todoist token (HTTP ${response.status.value})"))
+            }
+
             val syncResponse: SyncResponse = response.body()
             val tasks = syncResponse.items.filter { !it.isCompleted }
             Result.success(tasks)
@@ -39,17 +45,21 @@ class TodoistApi(private val httpClient: HttpClient) {
     }
 
     /**
-     * Fetch completed tasks. Tries Sync v9 endpoint (well-documented).
-     * Returns raw response preview in the exception message for debugging.
+     * Fetch completed tasks via Todoist Sync v1 API.
+     * `annotate_items=true` returns each entry with an `item_object` containing priority & labels.
+     * Returns newest first. The response is parsed manually because Todoist sometimes nests results
+     * differently on edge cases; we accept any object with an `items` array.
      */
     suspend fun getCompletedTasks(token: String, limit: Int = 30): Result<List<CompletedTask>> {
         return try {
-            // v1 API: GET /api/v1/tasks/completed (returns newest first)
-            // annotate_items=true gives us item_object with priority & labels
             val response = httpClient.get("$BASE_URL/tasks/completed") {
                 header(HttpHeaders.Authorization, "Bearer $token")
                 parameter("limit", limit.toString())
                 parameter("annotate_items", "true")
+            }
+
+            if (response.status == HttpStatusCode.Unauthorized || response.status == HttpStatusCode.Forbidden) {
+                return Result.failure(TodoistAuthException("Invalid or expired Todoist token (HTTP ${response.status.value})"))
             }
 
             val responseText: String = response.bodyAsText()

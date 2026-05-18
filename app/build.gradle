@@ -6,9 +6,18 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
+// Load release signing config from keystore.properties if present (gitignored).
+// Falls back to debug signing so unconfigured machines can still build.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+def hasReleaseKeystore = keystoreProperties.getProperty('storeFile') != null
+
 android {
     namespace 'com.rewardpoints.app'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.rewardpoints.app"
@@ -36,11 +45,13 @@ android {
             keyAlias "androiddebugkey"
             keyPassword "android"
         }
-        release {
-            storeFile file("debug.keystore")
-            storePassword "android"
-            keyAlias "androiddebugkey"
-            keyPassword "android"
+        if (hasReleaseKeystore) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
         }
     }
 
@@ -52,7 +63,7 @@ android {
             applicationIdSuffix ".debug"
         }
         release {
-            signingConfig signingConfigs.release
+            signingConfig hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -98,8 +109,10 @@ dependencies {
 
     // Core Android
     implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.core:core-splashscreen:1.0.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.9.0'
     implementation 'androidx.activity:activity-compose:1.10.1'
 
     // Navigation
@@ -113,6 +126,19 @@ dependencies {
     // DataStore
     implementation 'androidx.datastore:datastore-preferences:1.1.4'
 
+    // Encrypted storage for API tokens
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
+    // Backdrop blur (glass effect on cards + bottom bar).
+    // Real GPU blur on API 31+; auto-falls-back to a translucent scrim on older devices.
+    implementation 'dev.chrisbanes.haze:haze:1.7.2'
+    implementation 'dev.chrisbanes.haze:haze-materials:1.7.2'
+
+    // Markdown rendering for AI chat bubbles. Backed by Markwon (View-interop), so it does
+    // not bring its own Compose UI version and is safe with Compose BOM 2025.03.01.
+    // Published on JitPack — see settings.gradle for the repo entry.
+    implementation 'com.github.jeziellago:compose-markdown:0.7.2'
+
     // Koin DI
     implementation 'io.insert-koin:koin-android:3.5.6'
     implementation 'io.insert-koin:koin-androidx-compose:3.5.6'
@@ -122,7 +148,6 @@ dependencies {
     implementation 'io.ktor:ktor-client-android:3.1.2'
     implementation 'io.ktor:ktor-client-content-negotiation:3.1.2'
     implementation 'io.ktor:ktor-serialization-kotlinx-json:3.1.2'
-    implementation 'io.ktor:ktor-client-logging:3.1.2'
 
     // Kotlinx Serialization
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1'

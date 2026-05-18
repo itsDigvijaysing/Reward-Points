@@ -53,17 +53,22 @@ fun GlassCard(
         modifier = modifier
             .scale(scale)
             .clip(shape)
+            // Real backdrop blur via Haze (when LocalHazeState is provided + API 31+).
+            // Replaces the previous static gradient fill. On older devices Haze auto-falls-back
+            // to a translucent scrim, so the card stays readable.
+            .hazeEffectOrFallback(elevated = elevated)
+            // A subtle tint sits on top of the blur — keeps brand color visible without losing readability.
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        actualFill.copy(alpha = actualFill.alpha * 1.2f),
-                        actualFill,
-                        actualFill.copy(alpha = actualFill.alpha * 0.9f)
+                        actualFill.copy(alpha = actualFill.alpha * 0.6f),
+                        actualFill.copy(alpha = actualFill.alpha * 0.4f),
+                        actualFill.copy(alpha = actualFill.alpha * 0.5f)
                     )
                 )
             )
             .drawBehind {
-                // Inner glow effect
+                // Inner glow effect — keep the soft highlight for "lit from above" feel
                 drawRect(
                     brush = Brush.radialGradient(
                         colors = listOf(
@@ -116,12 +121,13 @@ fun GlassCardWithHighlight(
         modifier = modifier
             .scale(scale)
             .clip(shape)
+            .hazeEffectOrFallback(elevated = elevated)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        GlassHighlight.copy(alpha = 0.12f),
-                        actualFill,
-                        actualFill.copy(alpha = actualFill.alpha * 0.85f)
+                        GlassHighlight.copy(alpha = 0.10f),
+                        actualFill.copy(alpha = actualFill.alpha * 0.45f),
+                        actualFill.copy(alpha = actualFill.alpha * 0.5f)
                     )
                 )
             )

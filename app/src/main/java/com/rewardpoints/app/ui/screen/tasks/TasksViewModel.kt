@@ -36,7 +36,8 @@ data class TasksUiState(
     val todoistTasks: List<TodoistTask> = emptyList(),
     val todoistTasksLoading: Boolean = false,
     val todoistTasksError: String? = null,
-    val showTodoistTasks: Boolean = true
+    val showTodoistTasks: Boolean = false,
+    val isRefreshing: Boolean = false
 )
 
 class TasksViewModel(
@@ -58,7 +59,7 @@ class TasksViewModel(
 
     private fun loadTodoistStatus() {
         viewModelScope.launch {
-            val token = userPreferences.todoistToken.first()
+            val token = userPreferences.getTodoistToken()
             val lastSync = userPreferences.lastSyncTime.first()
             val lastSyncStr = if (lastSync > 0) {
                 SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(lastSync))
@@ -79,39 +80,51 @@ class TasksViewModel(
     }
 
     fun loadTodoistTasks() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(todoistTasksLoading = true, todoistTasksError = null) }
-            
-            val result = todoistSyncManager.getActiveTasks()
-            result.fold(
-                onSuccess = { tasks ->
-                    // Sort by priority (high to low) then by due date
-                    val sortedTasks = tasks.sortedWith(
-                        compareByDescending<TodoistTask> { it.priority }
-                            .thenBy { it.due?.date ?: "9999-99-99" }
+        viewModelScope.launch { loadTodoistTasksSuspend() }
+    }
+
+    private suspend fun loadTodoistTasksSuspend() {
+        _uiState.update { it.copy(todoistTasksLoading = true, todoistTasksError = null) }
+        val result = todoistSyncManager.getActiveTasks()
+        result.fold(
+            onSuccess = { tasks ->
+                val sortedTasks = tasks.sortedWith(
+                    compareByDescending<TodoistTask> { it.priority }
+                        .thenBy { it.due?.date ?: "9999-99-99" }
+                )
+                _uiState.update {
+                    it.copy(
+                        todoistTasks = sortedTasks,
+                        todoistTasksLoading = false,
+                        todoistTasksError = null
                     )
-                    _uiState.update {
-                        it.copy(
-                            todoistTasks = sortedTasks,
-                            todoistTasksLoading = false,
-                            todoistTasksError = null
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _uiState.update {
-                        it.copy(
-                            todoistTasksLoading = false,
-                            todoistTasksError = error.message ?: "Failed to load tasks"
-                        )
-                    }
                 }
-            )
-        }
+            },
+            onFailure = { error ->
+                _uiState.update {
+                    it.copy(
+                        todoistTasksLoading = false,
+                        todoistTasksError = error.message ?: "Failed to load tasks"
+                    )
+                }
+            }
+        )
     }
 
     fun toggleTodoistTasks() {
         _uiState.update { it.copy(showTodoistTasks = !it.showTodoistTasks) }
+    }
+
+    /** Pull-to-refresh handler: re-fetches Todoist + resets daily missions. Awaits completion. */
+    fun refreshAll() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            resetDailyMissionsSuspend()
+            if (_uiState.value.todoistConnected) {
+                loadTodoistTasksSuspend()
+            }
+            _uiState.update { it.copy(isRefreshing = false) }
+        }
     }
 
     fun syncTodoist() {
@@ -127,6 +140,9 @@ class TasksViewModel(
                 }
                 is SyncResult.NotConnected -> {
                     log.add(0, "[$timestamp] Not connected - add token in Settings")
+                }
+                is SyncResult.AuthFailed -> {
+                    log.add(0, "[$timestamp] Token rejected - reconnect in Settings")
                 }
                 is SyncResult.Error -> {
                     log.add(0, "[$timestamp] Error: ${result.message}")
@@ -194,40 +210,38 @@ class TasksViewModel(
 
     fun completeMission(mission: MissionEntity) {
         viewModelScope.launch {
+            // Re-fetch the live row inside the coroutine to close the double-tap race:
+            // the snapshot on the UI side may still say `isCompletedToday=false` while a
+            // concurrent tap is already mid-award.
+            val current = missionDao.getById(mission.id) ?: return@launch
+            if (current.isDaily && current.isCompletedToday) return@launch
+
             val statType = try {
-                StatType.valueOf(mission.statType)
+                StatType.valueOf(current.statType)
             } catch (e: Exception) {
                 StatType.STR
             }
 
-            // Award points
-            pointsRepository.addPoints(
-                points = mission.pointsReward,
-                type = TransactionType.EARN,
-                source = TransactionSource.MISSION,
-                description = "Completed: ${mission.name}",
-                statType = statType,
-                relatedId = mission.id.toString()
-            )
-
-            // Track achievements
-            achievementTracker.onPointsEarned(TransactionSource.MISSION)
-
-            // Update mission completion status
-            val todayStart = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-
+            // Mark complete FIRST so a second tap that races past the guard above still
+            // sees `isCompletedToday=true` before awarding. addPoints is the expensive op.
             missionDao.update(
-                mission.copy(
+                current.copy(
                     isCompletedToday = true,
                     lastCompletedAt = System.currentTimeMillis(),
-                    streak = mission.streak + 1
+                    streak = current.streak + 1
                 )
             )
+
+            pointsRepository.addPoints(
+                points = current.pointsReward,
+                type = TransactionType.EARN,
+                source = TransactionSource.MISSION,
+                description = "Completed: ${current.name}",
+                statType = statType,
+                relatedId = current.id.toString()
+            )
+
+            achievementTracker.onPointsEarned(TransactionSource.MISSION)
         }
     }
 
@@ -238,21 +252,23 @@ class TasksViewModel(
     }
 
     fun resetDailyMissions() {
-        viewModelScope.launch {
-            val todayStart = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
+        viewModelScope.launch { resetDailyMissionsSuspend() }
+    }
 
-            // Reset missions that were completed before today
-            _uiState.value.missions
-                .filter { it.isDaily && it.isCompletedToday }
-                .filter { (it.lastCompletedAt ?: 0) < todayStart }
-                .forEach { mission ->
-                    missionDao.update(mission.copy(isCompletedToday = false))
-                }
-        }
+    private suspend fun resetDailyMissionsSuspend() {
+        val todayStart = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        // Reset missions that were completed before today.
+        _uiState.value.missions
+            .filter { it.isDaily && it.isCompletedToday }
+            .filter { (it.lastCompletedAt ?: 0) < todayStart }
+            .forEach { mission ->
+                missionDao.update(mission.copy(isCompletedToday = false))
+            }
     }
 }

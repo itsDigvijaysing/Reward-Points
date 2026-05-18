@@ -5,11 +5,19 @@ import com.rewardpoints.app.data.local.db.entity.TitleEntity
 import com.rewardpoints.app.domain.model.Achievement
 import com.rewardpoints.app.domain.model.AchievementCategory
 import com.rewardpoints.app.domain.model.Achievements
+import com.rewardpoints.app.domain.model.TransactionSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class AchievementRepository(
-    private val titleDao: TitleDao
+    private val titleDao: TitleDao,
+    /**
+     * Optional points-award hook. Provided lazily as a suspend lambda to avoid a circular
+     * Koin dependency (AchievementTracker → AchievementRepository → PointsRepository →
+     * AchievementTracker). When non-null, [updateProgress] awards `rewardPoints` on first
+     * unlock.
+     */
+    private val pointsAwarder: suspend (id: String, points: Int) -> Unit = { _, _ -> }
 ) {
     val achievements: Flow<List<Achievement>> = titleDao.getAll().map { entities ->
         entities.map { entity ->
@@ -38,7 +46,8 @@ class AchievementRepository(
                         isUnlocked = false,
                         unlockedAt = null,
                         progress = 0,
-                        target = achievement.target
+                        target = achievement.target,
+                        rewardPoints = achievement.rewardPoints
                     )
                 )
             }
@@ -53,6 +62,11 @@ class AchievementRepository(
 
         if (progress >= achievement.target) {
             titleDao.unlock(achievementId)
+            val awardPoints = if (achievement.rewardPoints > 0) achievement.rewardPoints
+                else Achievements.getById(achievementId)?.displayRewardPoints ?: 0
+            if (awardPoints > 0) {
+                pointsAwarder(achievementId, awardPoints)
+            }
         }
     }
 

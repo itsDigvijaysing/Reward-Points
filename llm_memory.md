@@ -5,22 +5,23 @@
 ## Identity
 - **App**: Stat Up — anime-inspired RPG Status Window for real life
 - **User**: King — Android developer, values premium UI, wants simple but effective gamification
-- **Repo**: /home/king/Documents/Projects/Reward-Points
-- **License**: GPL-3.0 | **Package**: com.rewardpoints.app
+- **Repo**: /home/king/Documents/Projects/Stat-Up
+- **License**: GPL-3.0 | **Package**: com.rewardpoints.app (historical name; matches DB/DataStore identity)
 
-## Current State (as of 2026-04-01)
-- **Status**: v3.1.2 (versionCode 10) — production ready
-- **Stack**: Kotlin, Compose, Room, Ktor, Koin, DataStore, WorkManager
-- **DB version**: 3 (migration 2→3 adds rewardPoints to titles table)
-- **76 Kotlin files**, app builds and runs on Waydroid
+## Current State (as of 2026-05-14)
+- **Status**: v3.1.2 (versionCode 10). v4.0 feature work is merged into the tree **and verified building** locally on this machine — debug APK is `app/build/outputs/apk/debug/app-debug.apk` (25 MB). All 13 unit tests pass.
+- **Stack**: Kotlin 2.1.20, Compose BOM 2025.03.01, Room 2.7.1, Ktor 3.1.2, Koin 3.5.6, DataStore 1.1.4, WorkManager 2.10.1, Haze 1.7.2 (backdrop blur), AndroidX Security 1.1.0-alpha06 (encrypted prefs).
+- **Android targets**: minSdk 26, targetSdk 35, **compileSdk 36** (bumped 2026-05-14 — transitive `androidx.activity:1.12.2` and `navigationevent:1.0.1` require API 36 at compile time; runtime target unchanged).
+- **Local build env (2026-05-14)**: JDK 17.0.18 GA (apt `openjdk-17-jdk`, alongside an unusable JDK 25 EA), Android SDK at `~/Android/Sdk` with `cmdline-tools/latest`, platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools r37. `local.properties` points `sdk.dir` at `~/Android/Sdk`.
+- **DB version**: 3 (migration 2→3 adds rewardPoints to titles table). The `AiConversationEntity` table stays dormant — agent transcript lives in-memory only by design (user opted out of conversation persistence).
 
 ## What Works
 - ✅ Glass UI (cards, buttons, bottom bar, ambient background, no click rectangles)
 - ✅ Status screen — player name + total pts (no rank title), hexagon chart, rank info popup on tap
 - ✅ Manual task/mission creation with stat assignment
-- ✅ Rewards create/redeem/delete, points card → History navigation
+- ✅ Rewards create/redeem/delete, points card → History navigation (custom cost input + preset chips up to 500)
 - ✅ History with streak calendar (full month view with navigation, color coded)
-- ✅ Mood check-in (+2 WIS)
+- ✅ Mood check-in (+2 WIS, limited to once per local day)
 - ✅ Manual points addition with stat selection
 - ✅ Settings with full reset (reinitializes stats + achievements), hexagon style
 - ✅ Decay worker (midnight check for activity → streak/decay)
@@ -31,13 +32,14 @@
 - ✅ Calendar with month navigation (green=done, red=missed, today highlight)
 - ✅ Todoist sync — flexible JSON parsing, token validation, active tasks display
 - ✅ Todoist completed tasks → points (with labels → stat routing, without labels → points only)
-- ✅ App initialization: stats + achievements seeded in Application.onCreate()
+- ✅ App initialization: stats + achievements seeded in Application.onCreate() (SupervisorJob + CoroutineExceptionHandler)
+- ✅ Adaptive app icon (hexagon vector with 6 stat-color vertex dots + upward chevron)
 
-## What's Remaining (v4.0)
-- ❌ AI Agent (provider TBD — not locked to any provider)
-- ❌ Real backdrop blur glass effect (bottom bar + cards)
-- ❌ Push notifications for sync
-- ❌ Widget support
+## v4.0 (status as of 2026-05-14)
+- ✅ AI Agent — Gemini-backed (`gemini-2.0-flash`, free tier). System instruction = persona + fresh player-state snapshot per send. Ephemeral chat (no DB persistence). Settings dialog stores the API key encrypted via SecretStorage.
+- ✅ Real backdrop blur — Haze 1.7.2; single `HazeState` provided via `LocalHazeState` in `AppNavigation`; cards/bottom bar are effects, NavHost is the source. Auto-falls-back to a scrim on < API 31.
+- ✅ Push notifications — `Notifier` channels (sync + reminders), POST_NOTIFICATIONS permission requested in MainActivity, wired into TodoistSyncWorker (sync result + auth failure). Decay/rank notifications still TODO.
+- ✅ Widget — 4×2 read-only home-screen widget (rank, balance, streak, today). Registered in AndroidManifest. `StatsWidgetUpdater` pushes refreshes from PointsRepository (earn/redeem), DecayEngine (daily tick), and StatUpApp.onCreate (app start).
 
 ## Points & Stats
 - **Reward points**: p1=4, p2=3, p3=2, p4=1
@@ -56,17 +58,20 @@
 - Visual: ★★★☆☆ shows 3/5 lines progress
 
 ## Architecture
-MVVM: Screen→ViewModel→Repository→(Room|Ktor)
-5 tabs: Status | Tasks | Rewards | Agent(placeholder) | Settings
+MVVM: Screen→ViewModel→Repository→(Room|Ktor|EncryptedSharedPreferences|Gemini-via-Ktor)
+5 tabs: Status | Tasks | Rewards | **Agent (Gemini chat)** | Settings
+Hidden routes (deep nav, no bottom-bar entry): History, FullStats, Achievements.
 
 ## Todoist Integration
 - **Base URL**: `https://api.todoist.com/api/v1`
 - **Active tasks**: POST `$BASE_URL/sync` with `resource_types=["items"]` (Sync API, submitForm)
-- **Completed tasks**: GET `$BASE_URL/tasks/completed/by_completion_date` (v1 REST)
-- **Flexible parsing**: response parsed as JsonElement, handles `items`, `results`, or raw array
-- **No tags → points only** (no stat allocated), **with labels → routed to stat via StatMapping**
+- **Completed tasks**: GET `$BASE_URL/tasks/completed?limit=N&annotate_items=true` (Sync v1 REST)
+- **Parsing**: response parsed as JsonElement, requires object with `items` array
+- **No tags → points only** (no stat allocated), **with labels → routed to stat via StatMapping (cached per sync run)**
 - **Token validation**: `testConnection()` via Sync API user resource
+- **Auth failures (401/403)** → `TodoistAuthException` → `SyncResult.AuthFailed` → worker returns Success (no retry)
 - Background sync: TodoistSyncWorker every 15 min
+- Token stored encrypted in `SecretStorage` (AES-256-GCM via AndroidX Security)
 
 ## Background Workers
 - **DecayWorker**: Runs at midnight, checks if earned points yesterday
@@ -87,24 +92,34 @@ MVVM: Screen→ViewModel→Repository→(Room|Ktor)
 - `ui/screen/tasks/TasksViewModel.kt` - Manages missions + Todoist tasks/sync
 - `ui/screen/stats/StatsScreen.kt` - Detailed stat breakdown
 - `ui/screen/achievements/AchievementsScreen.kt` - Achievement badges
-- `ui/screen/settings/SettingsScreen.kt` - Todoist connection + preferences
+- `ui/screen/settings/SettingsScreen.kt` - Todoist + Gemini connection dialogs + preferences
 - `ui/screen/settings/SettingsViewModel.kt` - Token validation + preferences
+- `ui/screen/agent/AgentScreen.kt` - Gemini chat surface (gated on `isConfigured`)
+- `ui/screen/agent/AgentViewModel.kt` - In-memory transcript + send-flow + typed-error handling
+- `ai/GeminiAgentApi.kt` - Ktor client to `generativelanguage.googleapis.com` (gemini-2.0-flash)
+- `ai/AgentRepository.kt` + `ai/AgentContextBuilder.kt` - System instruction = persona + fresh player state
 - `ui/components/rpg/StatusWindow.kt` - Character sheet with collapsible stats
 - `ui/components/rpg/HexagonRadarChart.kt` - Stats visualization (Simple/Glow)
-- `rpg/DecayEngine.kt` - Stat decay & streak logic
+- `ui/components/glass/HazeWiring.kt` - `LocalHazeState` + `hazeSourceOrFallback` / `hazeEffectOrFallback`
+- `rpg/DecayEngine.kt` - Stat decay & streak logic (calls `StatsWidgetUpdater.refresh()`)
 - `sync/TodoistApi.kt` - Todoist API client (flexible JSON parsing)
 - `sync/TodoistSyncManager.kt` - Sync logic + active tasks fetch
-- `StatUpApp.kt` - App initialization (stats + achievements seeding)
-- `di/AppModule.kt` - All Koin DI wiring (includes 15s HTTP timeout)
+- `data/local/datastore/SecretStorage.kt` - AES-256-GCM encrypted prefs for Todoist + Gemini keys
+- `notifications/Notifier.kt` - Notification channels + sync result + auth-failure flows
+- `widget/StatsWidgetProvider.kt` + `widget/StatsWidgetUpdater.kt` - Home-screen widget + push-refresher
+- `StatUpApp.kt` - App initialization (stats + achievements seeding, Notifier channels, widget refresh)
+- `di/AppModule.kt` - All Koin DI wiring (15s HTTP timeout, Notifier + StatsWidgetUpdater singletons)
 
-## Testing
-Waydroid multi-window mode: `waydroid prop set persist.waydroid.multi_windows true`
-Build debug: `./gradlew assembleDebug`
-Build release: `./gradlew assembleRelease`
-Install: `waydroid app install app/build/outputs/apk/release/app-release.apk`
+## Build / Test / Install
+- Prereqs: JDK 17 (Gradle 8.13 won't run on JDK 24+), Android SDK with platforms `android-35`+`android-36` and build-tools 35.0.0+36.0.0 (env: `ANDROID_HOME=~/Android/Sdk`, also put `local.properties` `sdk.dir=...` in the project root).
+- Build debug APK: `./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
+- Build release APK: `./gradlew assembleRelease` (falls back to debug signing if `keystore.properties` is absent)
+- Unit tests: `./gradlew :app:testDebugUnitTest` (current: 13/13 passing — `StatsEngineTest`, `RankCalculatorTest`, `PlayerStatsTest`)
+- Waydroid multi-window: `waydroid prop set persist.waydroid.multi_windows true && systemctl restart waydroid-container`
+- Waydroid install/launch: `waydroid app install app/build/outputs/apk/debug/app-debug.apk && waydroid app launch com.rewardpoints.app.debug` (note the `.debug` applicationId suffix on debug variant).
 
 ## Rules
-- Dark-only, minSdk 26, targetSdk 35
+- Dark-only, minSdk 26, targetSdk 35, compileSdk 36
 - Keep things simple (no multipliers, no label bonuses)
-- App works standalone without Todoist
-- AI Agent deferred to v4.0
+- App works standalone without Todoist and without Gemini
+- v4.0 features (AI Agent, Widget, Notifications, Backdrop blur) are complete and verified building

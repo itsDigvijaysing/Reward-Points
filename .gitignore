@@ -14,3 +14,18 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signing
+keystore.properties
+*.jks
+*.keystore
+!app/debug.keystore
+
+# Local secrets (Gemini / Todoist API keys for scripts/verify_gemini_key.sh and similar)
+.env
+.env.*
+!.env.example
+.claude
+.vscode
+.kotlin
+graphify-out
