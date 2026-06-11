@@ -19,8 +19,10 @@ import static org.junit.Assert.*;
 public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() {
-        // Context of the app under test.
+        // Context of the app under test. The debug variant adds a ".debug" applicationId
+        // suffix, so assert the base id as a prefix rather than an exact match (an exact
+        // match made connectedDebugAndroidTest fail on every debug build).
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.rewardpoints.app", appContext.getPackageName());
+        assertTrue(appContext.getPackageName().startsWith("com.rewardpoints.app"));
     }
 }
