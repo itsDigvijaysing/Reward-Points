@@ -19,6 +19,7 @@ data class PlayerStats(
     val longestStreak: Int = 0,
     val rankUpStreakCounter: Int = 0,
     val rankDownBreakCounter: Int = 0,
+    val streakShields: Int = 0,
     val lastActivityAt: Long? = null,
     val updatedAt: Long = System.currentTimeMillis()
 ) {
@@ -47,5 +48,11 @@ data class PlayerStats(
         const val MAX_STAT = 100
         const val BASE_STAT = 5
         const val POINTS_PER_STAT = 10
+
+        // Streak Freeze Shield: bought with points, consumed automatically on an idle day.
+        // A consumed shield turns the idle day into a "rest day" — no stat decay, star-line
+        // counter and streak untouched. Capped so decay stays a real threat (no hoarding).
+        const val SHIELD_COST = 30
+        const val MAX_SHIELDS = 3
     }
 }

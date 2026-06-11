@@ -8,12 +8,12 @@
 - **Repo**: /home/king/Documents/Projects/Stat-Up
 - **License**: GPL-3.0 | **Package**: com.rewardpoints.app (historical name; matches DB/DataStore identity)
 
-## Current State (as of 2026-05-14)
-- **Status**: v3.1.2 (versionCode 10). v4.0 feature work is merged into the tree **and verified building** locally on this machine — debug APK is `app/build/outputs/apk/debug/app-debug.apk` (25 MB). All 13 unit tests pass.
-- **Stack**: Kotlin 2.1.20, Compose BOM 2025.03.01, Room 2.7.1, Ktor 3.1.2, Koin 3.5.6, DataStore 1.1.4, WorkManager 2.10.1, Haze 1.7.2 (backdrop blur), AndroidX Security 1.1.0-alpha06 (encrypted prefs).
-- **Android targets**: minSdk 26, targetSdk 35, **compileSdk 36** (bumped 2026-05-14 — transitive `androidx.activity:1.12.2` and `navigationevent:1.0.1` require API 36 at compile time; runtime target unchanged).
+## Current State (as of 2026-06-10)
+- **Status**: v3.1.2 (versionCode 10). v4.0 feature work is merged into the tree **and verified building** locally on this machine — debug APK is `app/build/outputs/apk/debug/app-debug.apk` (~29 MB). All 31 JVM unit tests pass.
+- **Stack**: Kotlin 2.1.20, Compose BOM 2025.03.01, Room 2.7.1, Ktor 3.1.2, Koin 3.5.6, DataStore 1.1.4, WorkManager 2.10.1, Haze 1.7.2 (backdrop blur), AndroidX Security 1.1.0 (encrypted prefs — stable release deprecates the `EncryptedSharedPreferences` API; still functional, kept until a storage migration is planned).
+- **Android targets**: minSdk 26, **targetSdk 36** (bumped 2026-06-10 — Play requires 36 for updates after Aug 31, 2026), **compileSdk 36**.
 - **Local build env (2026-05-14)**: JDK 17.0.18 GA (apt `openjdk-17-jdk`, alongside an unusable JDK 25 EA), Android SDK at `~/Android/Sdk` with `cmdline-tools/latest`, platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools r37. `local.properties` points `sdk.dir` at `~/Android/Sdk`.
-- **DB version**: 3 (migration 2→3 adds rewardPoints to titles table). The `AiConversationEntity` table stays dormant — agent transcript lives in-memory only by design (user opted out of conversation persistence).
+- **DB version**: 5 (`DB_VERSION` in `AppDatabase.kt`; migrations 1→2 no-op, 2→3 adds `titles.rewardPoints`, 3→4 dedupes `transactions.externalId` + unique index, 4→5 adds `player_stats.streakShields`). Builder uses `fallbackToDestructiveMigrationOnDowngrade(false)` — a forgotten upgrade migration **throws** instead of wiping user data; instrumented `MigrationTest` validates every migration path against `app/schemas/*.json`. The `AiConversationEntity` table stays dormant — agent transcript lives in-memory only by design (user opted out of conversation persistence).
 
 ## What Works
 - ✅ Glass UI (cards, buttons, bottom bar, ambient background, no click rectangles)
@@ -34,12 +34,27 @@
 - ✅ Todoist completed tasks → points (with labels → stat routing, without labels → points only)
 - ✅ App initialization: stats + achievements seeded in Application.onCreate() (SupervisorJob + CoroutineExceptionHandler)
 - ✅ Adaptive app icon (hexagon vector with 6 stat-color vertex dots + upward chevron)
+- ✅ Daily Quote card on Status (sources: offline pack default / Animechan anime / ZenQuotes motivation / mixed; once-a-day cache; offline fallback; Settings selector)
+- ✅ Streak Freeze Shield (30 pts, max 3) — idle day consumes a shield instead of decaying stats/streak/star-lines; 🛡️ card + dialog on Status (DB v5)
+- ✅ Equippable achievement titles under the player name (DataStore pref, picker dialog on Status)
+- ✅ Todoist connection status is reactive (connect in Settings → sync UI appears immediately on Tasks)
+- ✅ Bottom bar no longer shifts on tab tap (fixed-size indicator slot + constant label weight)
 
 ## v4.0 (status as of 2026-05-14)
-- ✅ AI Agent — Gemini-backed (`gemini-2.0-flash`, free tier). System instruction = persona + fresh player-state snapshot per send. Ephemeral chat (no DB persistence). Settings dialog stores the API key encrypted via SecretStorage.
+- ✅ AI Agent — Gemini-backed (`gemini-2.5-flash`, free tier; bumped from the retired `gemini-2.0-flash` on 2026-05-17). System instruction = persona + fresh player-state snapshot per send (via the narrow `PlayerStateProvider` interface). Ephemeral chat (no DB persistence). Settings dialog stores the API key encrypted via SecretStorage.
 - ✅ Real backdrop blur — Haze 1.7.2; single `HazeState` provided via `LocalHazeState` in `AppNavigation`; cards/bottom bar are effects, NavHost is the source. Auto-falls-back to a scrim on < API 31.
 - ✅ Push notifications — `Notifier` channels (sync + reminders), POST_NOTIFICATIONS permission requested in MainActivity, wired into TodoistSyncWorker (sync result + auth failure). Decay/rank notifications still TODO.
 - ✅ Widget — 4×2 read-only home-screen widget (rank, balance, streak, today). Registered in AndroidManifest. `StatsWidgetUpdater` pushes refreshes from PointsRepository (earn/redeem), DecayEngine (daily tick), and StatUpApp.onCreate (app start).
+
+## Hardening pass (2026-06)
+- Rank transitions extracted to pure `rpg/RankLogic.kt` (full truth table in `RankLogicTest`); `DecayEngine` delegates and fails fast on impossible transitions
+- `RankUpNotifier` (Channel-backed, exactly-once) replaces the SharedFlow rank-up event — rank-ups while Status tab is off-screen are no longer dropped
+- `SecretStorage.openWithRecovery`: transient Keystore failure → plain retry (no wipe); persistent failure → wipe once + recreate. `secret_prefs.xml` excluded from auto-backup/device-transfer (master key is device-bound, blobs undecryptable after restore)
+- Stat accumulator freezes at `MAX_STAT` (post-cap earns no longer silently leak progress)
+- `HistoryViewModel`/`StatsViewModel` aggregation off-Main; lost-update race on filter taps fixed (atomic `_uiState.update {}` everywhere)
+- Rewards snackbar keyed on a monotonic redemption id (same-reward double-redeem re-fires)
+- `Notifier.notify()` is the single permission-gated funnel (`@SuppressLint("MissingPermission")` with the runtime guard — lint can't see through the helper)
+- Release builds without `keystore.properties` print a loud debug-keystore warning
 
 ## Points & Stats
 - **Reward points**: p1=4, p2=3, p3=2, p4=1
@@ -96,12 +111,12 @@ Hidden routes (deep nav, no bottom-bar entry): History, FullStats, Achievements.
 - `ui/screen/settings/SettingsViewModel.kt` - Token validation + preferences
 - `ui/screen/agent/AgentScreen.kt` - Gemini chat surface (gated on `isConfigured`)
 - `ui/screen/agent/AgentViewModel.kt` - In-memory transcript + send-flow + typed-error handling
-- `ai/GeminiAgentApi.kt` - Ktor client to `generativelanguage.googleapis.com` (gemini-2.0-flash)
-- `ai/AgentRepository.kt` + `ai/AgentContextBuilder.kt` - System instruction = persona + fresh player state
+- `ai/GeminiAgentApi.kt` - Ktor client to `generativelanguage.googleapis.com` (gemini-2.5-flash)
+- `ai/AgentRepository.kt` + `ai/AgentContextBuilder.kt` - System instruction = persona + fresh player state (via `PlayerStateProvider`)
 - `ui/components/rpg/StatusWindow.kt` - Character sheet with collapsible stats
 - `ui/components/rpg/HexagonRadarChart.kt` - Stats visualization (Simple/Glow)
 - `ui/components/glass/HazeWiring.kt` - `LocalHazeState` + `hazeSourceOrFallback` / `hazeEffectOrFallback`
-- `rpg/DecayEngine.kt` - Stat decay & streak logic (calls `StatsWidgetUpdater.refresh()`)
+- `rpg/DecayEngine.kt` - Stat decay & streak logic (calls `StatsWidgetUpdater.refresh()`); rank transitions delegated to pure `rpg/RankLogic.kt`
 - `sync/TodoistApi.kt` - Todoist API client (flexible JSON parsing)
 - `sync/TodoistSyncManager.kt` - Sync logic + active tasks fetch
 - `data/local/datastore/SecretStorage.kt` - AES-256-GCM encrypted prefs for Todoist + Gemini keys
@@ -114,12 +129,13 @@ Hidden routes (deep nav, no bottom-bar entry): History, FullStats, Achievements.
 - Prereqs: JDK 17 (Gradle 8.13 won't run on JDK 24+), Android SDK with platforms `android-35`+`android-36` and build-tools 35.0.0+36.0.0 (env: `ANDROID_HOME=~/Android/Sdk`, also put `local.properties` `sdk.dir=...` in the project root).
 - Build debug APK: `./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
 - Build release APK: `./gradlew assembleRelease` (falls back to debug signing if `keystore.properties` is absent)
-- Unit tests: `./gradlew :app:testDebugUnitTest` (current: 13/13 passing — `StatsEngineTest`, `RankCalculatorTest`, `PlayerStatsTest`)
-- Waydroid multi-window: `waydroid prop set persist.waydroid.multi_windows true && systemctl restart waydroid-container`
+- Unit tests: `./gradlew :app:testDebugUnitTest` (current: 31/31 passing — `RankLogicTest`, `StatsEngineTest`, `RankCalculatorTest`, `PlayerStatsTest`, `SecretStorageRecoveryTest`, `RankUpNotifierTest`, `AgentContextBuilderTest`, `HistoryViewModelTest`, `QuoteRepositoryTest`)
+- Instrumented migration guard: `./gradlew connectedDebugAndroidTest` (`MigrationTest` — run after every DB version bump)
+- Waydroid multi-window: `waydroid prop set persist.waydroid.multi_windows true && waydroid session stop && waydroid session start` (no sudo needed)
 - Waydroid install/launch: `waydroid app install app/build/outputs/apk/debug/app-debug.apk && waydroid app launch com.rewardpoints.app.debug` (note the `.debug` applicationId suffix on debug variant).
 
 ## Rules
-- Dark-only, minSdk 26, targetSdk 35, compileSdk 36
+- Dark-only, minSdk 26, targetSdk 36, compileSdk 36
 - Keep things simple (no multipliers, no label bonuses)
 - App works standalone without Todoist and without Gemini
 - v4.0 features (AI Agent, Widget, Notifications, Backdrop blur) are complete and verified building

@@ -34,6 +34,8 @@ fun StatusWindow(
     availablePoints: Int = 0,
     hexagonStyle: HexagonStyle = HexagonStyle.SIMPLE,
     modifier: Modifier = Modifier,
+    equippedTitle: String? = null,
+    onTitleClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {}
 ) {
     val shape = RoundedCornerShape(24.dp)
@@ -81,6 +83,23 @@ fun StatusWindow(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = Inter
+        )
+
+        // Equipped achievement title — tap to change. Shows a subtle hint when none is
+        // equipped so the feature is discoverable without cluttering the sheet.
+        Text(
+            text = equippedTitle?.let { "« $it »" } ?: "+ set title",
+            color = if (equippedTitle != null) PointsGold else TextTertiary,
+            fontSize = if (equippedTitle != null) 13.sp else 11.sp,
+            fontWeight = if (equippedTitle != null) FontWeight.SemiBold else FontWeight.Normal,
+            fontFamily = Inter,
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onTitleClick
+                )
+                .padding(top = 2.dp)
         )
 
         Spacer(modifier = Modifier.height(4.dp))

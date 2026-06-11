@@ -1,6 +1,7 @@
 package com.rewardpoints.app.notifications
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -68,7 +69,6 @@ class Notifier(private val context: Context) {
     }
 
     fun showSyncResult(tasksProcessed: Int, pointsEarned: Int) {
-        if (!arePermissionsGranted()) return
         if (tasksProcessed == 0) return // No new tasks — don't bother the user
         notify(
             id = NOTIF_SYNC_RESULT,
@@ -79,7 +79,6 @@ class Notifier(private val context: Context) {
     }
 
     fun showSyncAuthFailure() {
-        if (!arePermissionsGranted()) return
         notify(
             id = NOTIF_SYNC_AUTH,
             channel = CHANNEL_SYNC,
@@ -88,7 +87,18 @@ class Notifier(private val context: Context) {
         )
     }
 
+    /**
+     * Single funnel for all notifications. Bails early if POST_NOTIFICATIONS is denied
+     * (Android 13+) or notifications are globally muted (pre-13). Centralising the gate
+     * here defends against future callers forgetting the check.
+     *
+     * Lint can't see through the [arePermissionsGranted] helper call (it only recognises
+     * an inline `checkSelfPermission`), so MissingPermission is suppressed — the runtime
+     * guard on the first line is the real protection.
+     */
+    @SuppressLint("MissingPermission")
     private fun notify(id: Int, channel: String, title: String, body: String) {
+        if (!arePermissionsGranted()) return
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }

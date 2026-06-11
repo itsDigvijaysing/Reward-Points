@@ -1,15 +1,17 @@
 package com.rewardpoints.app.data.repository
 
+import androidx.room.withTransaction
+import com.rewardpoints.app.data.local.db.AppDatabase
 import com.rewardpoints.app.data.local.db.dao.TitleDao
 import com.rewardpoints.app.data.local.db.entity.TitleEntity
 import com.rewardpoints.app.domain.model.Achievement
 import com.rewardpoints.app.domain.model.AchievementCategory
 import com.rewardpoints.app.domain.model.Achievements
-import com.rewardpoints.app.domain.model.TransactionSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class AchievementRepository(
+    private val database: AppDatabase,
     private val titleDao: TitleDao,
     /**
      * Optional points-award hook. Provided lazily as a suspend lambda to avoid a circular
@@ -54,19 +56,33 @@ class AchievementRepository(
         }
     }
 
+    /**
+     * Update progress for [achievementId]. If the new progress crosses the target the
+     * achievement is unlocked and its `rewardPoints` are awarded via [pointsAwarder].
+     *
+     * The read-then-unlock-then-award sequence runs inside `database.withTransaction` so
+     * two concurrent earns that both cross the threshold (e.g. Todoist sync + a manual
+     * action in the same instant) can't both observe `isUnlocked=false` and double-award
+     * the reward. The award call itself happens outside the transaction — `pointsAwarder`
+     * goes through `PointsRepository.addPoints` which opens its own transaction; nested
+     * Room transactions are safe but holding ours open across an unrelated insert is not
+     * worth it.
+     */
     suspend fun updateProgress(achievementId: String, progress: Int) {
-        val achievement = titleDao.getById(achievementId) ?: return
-        if (achievement.isUnlocked) return
+        val unlockedNow: Int = database.withTransaction {
+            val achievement = titleDao.getById(achievementId) ?: return@withTransaction 0
+            if (achievement.isUnlocked) return@withTransaction 0
 
-        titleDao.updateProgress(achievementId, progress)
+            titleDao.updateProgress(achievementId, progress)
 
-        if (progress >= achievement.target) {
-            titleDao.unlock(achievementId)
-            val awardPoints = if (achievement.rewardPoints > 0) achievement.rewardPoints
-                else Achievements.getById(achievementId)?.displayRewardPoints ?: 0
-            if (awardPoints > 0) {
-                pointsAwarder(achievementId, awardPoints)
-            }
+            if (progress >= achievement.target) {
+                titleDao.unlock(achievementId)
+                if (achievement.rewardPoints > 0) achievement.rewardPoints
+                    else Achievements.getById(achievementId)?.displayRewardPoints ?: 0
+            } else 0
+        }
+        if (unlockedNow > 0) {
+            pointsAwarder(achievementId, unlockedNow)
         }
     }
 
@@ -81,8 +97,22 @@ class AchievementRepository(
         return false
     }
 
+    /**
+     * Unlock [achievementId] directly (e.g. user taps "mark complete"). Awards its
+     * `rewardPoints` on first unlock, consistent with [updateProgress]; the in-transaction
+     * `isUnlocked` guard prevents a double-award if called again.
+     */
     suspend fun unlockDirectly(achievementId: String) {
-        titleDao.unlock(achievementId)
+        val awardPoints: Int = database.withTransaction {
+            val achievement = titleDao.getById(achievementId) ?: return@withTransaction 0
+            if (achievement.isUnlocked) return@withTransaction 0
+            titleDao.unlock(achievementId)
+            if (achievement.rewardPoints > 0) achievement.rewardPoints
+                else Achievements.getById(achievementId)?.displayRewardPoints ?: 0
+        }
+        if (awardPoints > 0) {
+            pointsAwarder(achievementId, awardPoints)
+        }
     }
 
     suspend fun createCustomAchievement(

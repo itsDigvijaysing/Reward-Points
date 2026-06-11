@@ -41,7 +41,12 @@ object RankLogic {
         return if (next >= Rank.STREAK_DAYS_TO_RANK_UP && nextRank != null) {
             Transition.RankUp(nextRank)
         } else {
-            Transition.CounterUpdated(next)
+            // At rank S (nextRank == null) the counter has nowhere to promote to. Cap it
+            // at the threshold so it doesn't grow unbounded across years of S-tier play.
+            val capped = if (nextRank == null) {
+                next.coerceAtMost(Rank.STREAK_DAYS_TO_RANK_UP)
+            } else next
+            Transition.CounterUpdated(capped)
         }
     }
 

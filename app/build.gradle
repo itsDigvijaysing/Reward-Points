@@ -22,7 +22,10 @@ android {
     defaultConfig {
         applicationId "com.rewardpoints.app"
         minSdk 26
-        targetSdk 35
+        // Play requires targetSdk 36 for new app updates from Aug 31, 2026. Bumped from 35
+        // on 2026-06-10: no edge-to-edge opt-outs, no orientation locks, no custom back
+        // handling in this app, so the API-36 behavior changes are no-ops here.
+        targetSdk 36
         versionCode 10
         versionName "3.1.2"
 
@@ -89,6 +92,29 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+
+    // Expose the exported Room schemas to instrumented tests so MigrationTest can validate
+    // every migration path (catches a forgotten migration before it ships and wipes data).
+    sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas")
+    }
+}
+
+// Loud guard: a release build with no keystore.properties is signed with the SHARED Android
+// debug key. Such an artifact must never be published/distributed — and once users install a
+// build signed with one key, every later update must use the SAME key or Android refuses to
+// update (forcing an uninstall + data loss). Warn only when a release task is actually run.
+if (!hasReleaseKeystore) {
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.allTasks.any { it.path.toLowerCase().contains("release") }) {
+            logger.warn(
+                "\n⚠️  Stat Up: RELEASE build is using the DEBUG keystore (no keystore.properties).\n" +
+                "    Do NOT publish or share this APK/AAB. Create keystore.properties from\n" +
+                "    keystore.properties.template with your own upload key, and keep that key\n" +
+                "    forever — switching keys later forces users to uninstall to update.\n"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -126,8 +152,11 @@ dependencies {
     // DataStore
     implementation 'androidx.datastore:datastore-preferences:1.1.4'
 
-    // Encrypted storage for API tokens
-    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    // Encrypted storage for API tokens. NOTE: 1.1.0 stable deprecates the whole
+    // EncryptedSharedPreferences/MasterKey API (Jetpack Security crypto is in maintenance
+    // mode). It still works and the on-disk format is unchanged from the alphas; moving off
+    // it would need a data-migration plan for the existing secret_prefs file.
+    implementation 'androidx.security:security-crypto:1.1.0'
 
     // Backdrop blur (glass effect on cards + bottom bar).
     // Real GPU blur on API 31+; auto-falls-back to a translucent scrim on older devices.
@@ -160,7 +189,12 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
+    // Coroutine/Flow unit-test support (runTest, TestDispatcher, Dispatchers.setMain).
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    // Validates every Room migration path against the exported schemas so a forgotten
+    // migration (which would wipe user data on update) is caught before shipping.
+    androidTestImplementation 'androidx.room:room-testing:2.7.1'
 }

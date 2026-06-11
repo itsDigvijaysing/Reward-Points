@@ -11,6 +11,11 @@ import com.rewardpoints.app.ai.AgentContextBuilder
 import com.rewardpoints.app.ai.AgentRepository
 import com.rewardpoints.app.ai.GeminiAgentApi
 import com.rewardpoints.app.notifications.Notifier
+import com.rewardpoints.app.quotes.AnimechanApi
+import com.rewardpoints.app.quotes.OfflineQuotePack
+import com.rewardpoints.app.quotes.QuotePack
+import com.rewardpoints.app.quotes.QuoteRepository
+import com.rewardpoints.app.quotes.ZenQuotesApi
 import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.rpg.DecayEngine
 import com.rewardpoints.app.rpg.RankCalculator
@@ -78,6 +83,17 @@ val appModule = module {
     single { TodoistApi(get()) }
     single { TodoistSyncManager(get(), get(), get(), get()) }
 
+    // Daily Quote — UserPreferences implements the DailyQuoteStore slice.
+    single<QuotePack> { OfflineQuotePack(androidContext()) }
+    single {
+        QuoteRepository(
+            store = get<UserPreferences>(),
+            animeApi = AnimechanApi(get()),
+            motivationApi = ZenQuotesApi(get()),
+            offlinePack = get()
+        )
+    }
+
     // AI Agent (Gemini)
     // GeminiAgentApi resolves the API key on-demand via a suspending lambda so it always
     // reads the latest value from encrypted storage — no need to recreate the singleton when
@@ -89,7 +105,7 @@ val appModule = module {
             apiKeyProvider = { userPreferences.getGeminiApiKey() }
         )
     }
-    single { AgentContextBuilder(get(), get(), get()) }
+    single { AgentContextBuilder(get<PlayerRepository>(), get(), get()) }
     single { AgentRepository(get(), get()) }
 
     // Repositories
@@ -97,9 +113,10 @@ val appModule = module {
     single { PointsRepository(get(), get(), get(), get(), get(), get()) }
     // AchievementRepository takes an optional points-award lambda. We resolve PointsRepository
     // lazily through the Koin container so we don't introduce a circular dependency
-    // (PointsRepository → AchievementTracker → AchievementRepository).
+    // (AchievementTracker → AchievementRepository → PointsRepository → AchievementTracker).
     single {
         AchievementRepository(
+            database = get(),
             titleDao = get(),
             pointsAwarder = { achievementId, points ->
                 get<PointsRepository>().addPoints(
@@ -114,17 +131,17 @@ val appModule = module {
     single { RewardRepository(get(), get(), get()) }
 
     // RPG Engines
-    single { StatsEngine(get()) }
+    single { StatsEngine() }
     single { RankCalculator() }
     single { DecayEngine(get(), get(), get(), get(), get(), get()) }
     single { AchievementTracker(get(), get(), get()) }
 
     // ViewModels
-    viewModel { StatusViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { StatusViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { RewardsViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { TasksViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { HistoryViewModel(get()) }
+    viewModel { HistoryViewModel(get<PointsRepository>().transactions) }
     viewModel { AchievementsViewModel(get()) }
     viewModel { StatsViewModel(get(), get()) }
     viewModel { AgentViewModel(get(), get()) }

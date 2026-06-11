@@ -24,7 +24,10 @@ interface TitleDao {
     @Update
     suspend fun update(title: TitleEntity)
 
-    @Query("UPDATE titles SET progress = :progress WHERE id = :id")
+    // MAX(...) keeps progress monotonic (high-water mark). Some trackers report a value that
+    // can drop after stat decay (e.g. a "balanced stats" minStat); without MAX the progress
+    // bar would visibly regress.
+    @Query("UPDATE titles SET progress = MAX(progress, :progress) WHERE id = :id")
     suspend fun updateProgress(id: String, progress: Int)
 
     @Query("UPDATE titles SET isUnlocked = 1, unlockedAt = :unlockedAt WHERE id = :id")

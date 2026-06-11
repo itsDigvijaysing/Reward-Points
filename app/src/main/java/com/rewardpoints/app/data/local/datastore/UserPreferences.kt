@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.rewardpoints.app.quotes.DailyQuoteStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,8 +17,11 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "us
  * App preferences. Plain values live in DataStore; secrets (API tokens) are routed
  * through [SecretStorage] (AES-256-GCM encrypted). The first read of a secret
  * migrates any legacy plain-text value out of DataStore and into encrypted storage.
+ *
+ * Implements [DailyQuoteStore] — the narrow slice QuoteRepository needs (source setting +
+ * day-keyed quote cache) — so the repository stays unit-testable without a Context.
  */
-class UserPreferences(private val context: Context) {
+class UserPreferences(private val context: Context) : DailyQuoteStore {
 
     private val secretStorage = SecretStorage(context)
 
@@ -42,6 +46,15 @@ class UserPreferences(private val context: Context) {
         // Guards against double-application when WorkManager retries, runNow() fires,
         // or scheduling overlaps the next tick.
         val LAST_DECAY_DAY = stringPreferencesKey("last_decay_day")
+        // Achievement title the user chose to display under their name on the status
+        // window. Display preference only (the unlock state lives in the titles table).
+        val EQUIPPED_TITLE_ID = stringPreferencesKey("equipped_title_id")
+        // Daily Quote feature: chosen source (QuoteSource enum name; default OFFLINE) and
+        // the day's cached quote (date + source it was resolved for + the quote as JSON).
+        val QUOTE_SOURCE = stringPreferencesKey("quote_source")
+        val DAILY_QUOTE_DATE = stringPreferencesKey("daily_quote_date")
+        val DAILY_QUOTE_SRC = stringPreferencesKey("daily_quote_src")
+        val DAILY_QUOTE_JSON = stringPreferencesKey("daily_quote_json")
     }
 
     val username: Flow<String> = context.dataStore.data.map { it[Keys.USERNAME] ?: "Player" }
@@ -53,6 +66,8 @@ class UserPreferences(private val context: Context) {
     val onboardingComplete: Flow<Boolean> = context.dataStore.data.map { it[Keys.ONBOARDING_COMPLETE] ?: false }
     val hexagonStyle: Flow<String> = context.dataStore.data.map { it[Keys.HEXAGON_STYLE] ?: "simple" }
     val lastDecayDay: Flow<String?> = context.dataStore.data.map { it[Keys.LAST_DECAY_DAY] }
+    val quoteSource: Flow<String> = context.dataStore.data.map { it[Keys.QUOTE_SOURCE] ?: "OFFLINE" }
+    val equippedTitleId: Flow<String?> = context.dataStore.data.map { it[Keys.EQUIPPED_TITLE_ID] }
 
     // ---- Secrets (encrypted) ----
     // These StateFlows start as null. [loadSecretsIfNeeded] (called from StatUpApp init)
@@ -141,6 +156,36 @@ class UserPreferences(private val context: Context) {
 
     suspend fun setLastDecayDay(day: String) {
         context.dataStore.edit { it[Keys.LAST_DECAY_DAY] = day }
+    }
+
+    suspend fun setQuoteSource(source: String) {
+        context.dataStore.edit { it[Keys.QUOTE_SOURCE] = source }
+    }
+
+    suspend fun setEquippedTitleId(id: String?) {
+        context.dataStore.edit {
+            if (id == null) it.remove(Keys.EQUIPPED_TITLE_ID) else it[Keys.EQUIPPED_TITLE_ID] = id
+        }
+    }
+
+    // ---- DailyQuoteStore ----
+
+    override suspend fun getQuoteSource(): String =
+        context.dataStore.data.first()[Keys.QUOTE_SOURCE] ?: "OFFLINE"
+
+    override suspend fun getCachedQuote(date: String, source: String): String? {
+        val prefs = context.dataStore.data.first()
+        return prefs[Keys.DAILY_QUOTE_JSON]?.takeIf {
+            prefs[Keys.DAILY_QUOTE_DATE] == date && prefs[Keys.DAILY_QUOTE_SRC] == source
+        }
+    }
+
+    override suspend fun setCachedQuote(date: String, source: String, quoteJson: String) {
+        context.dataStore.edit {
+            it[Keys.DAILY_QUOTE_DATE] = date
+            it[Keys.DAILY_QUOTE_SRC] = source
+            it[Keys.DAILY_QUOTE_JSON] = quoteJson
+        }
     }
 
     suspend fun clearAll() {

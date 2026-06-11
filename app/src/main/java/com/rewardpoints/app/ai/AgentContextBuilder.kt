@@ -2,7 +2,7 @@ package com.rewardpoints.app.ai
 
 import com.rewardpoints.app.data.local.db.dao.MissionDao
 import com.rewardpoints.app.data.local.db.dao.TransactionDao
-import com.rewardpoints.app.data.repository.PlayerRepository
+import com.rewardpoints.app.data.repository.PlayerStateProvider
 import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.Rank
 import kotlinx.coroutines.flow.first
@@ -17,22 +17,22 @@ import kotlinx.coroutines.flow.first
  * agent always sees fresh data.
  */
 class AgentContextBuilder(
-    private val playerRepository: PlayerRepository,
+    private val playerState: PlayerStateProvider,
     private val transactionDao: TransactionDao,
     private val missionDao: MissionDao
 ) {
-    private val username get() = playerRepository.username
+    private val username get() = playerState.username
 
     suspend fun build(): String {
-        val stats = playerRepository.getStatsOnce() ?: return EMPTY_STATE_FALLBACK
+        val stats = playerState.getStatsOnce() ?: return EMPTY_STATE_FALLBACK
         val userName = username.first()
-        // Cap to 5 earns (was 8) — anything older is noise for "how am I doing" framing.
+        // 5 most-recent EARN rows, filtered + limited in SQL. Filtering by type in the query
+        // (rather than fetching the recent N of any type and filtering in memory) ensures the
+        // earns block is never starved by a run of redemptions/non-earn rows.
         // Truncate descriptions to 40 chars so long Todoist task titles don't blow the budget.
         // Drop dates — the AI rarely reasons about specific calendar days and they cost tokens.
-        val recent = transactionDao.getRecent(12).first()
+        val recent = transactionDao.getRecentByType("EARN", 5).first()
             .asSequence()
-            .filter { it.type == "EARN" }
-            .take(5)
             .joinToString("\n") {
                 val label = (it.description ?: it.source).take(40)
                 val stat = it.statType ?: "—"

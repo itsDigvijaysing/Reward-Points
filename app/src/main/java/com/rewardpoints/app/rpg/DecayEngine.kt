@@ -57,11 +57,24 @@ class DecayEngine(
                 else -> DailyDecayResult.ActiveDay(0)
             }
         } else {
-            // User was idle, apply decay
-            when (val result = applyDecay("daily_idle")) {
-                is DecayResult.DecayWithRankDown -> DailyDecayResult.IdleWithRankDown(result.newRank)
-                is DecayResult.DecayApplied -> DailyDecayResult.IdleDay(result.statsLost)
-                else -> DailyDecayResult.IdleDay(0)
+            // User was idle. A Streak Freeze Shield (if owned) absorbs the idle day as a
+            // "rest day": consume one shield, leave stats / streak / star-line counter
+            // untouched. Otherwise decay applies as usual.
+            val stats = playerRepository.getStatsOnce()
+            if (stats != null && stats.streakShields > 0) {
+                playerRepository.updateStats(
+                    stats.copy(
+                        streakShields = stats.streakShields - 1,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+                DailyDecayResult.ShieldConsumed(shieldsLeft = stats.streakShields - 1)
+            } else {
+                when (val result = applyDecay("daily_idle")) {
+                    is DecayResult.DecayWithRankDown -> DailyDecayResult.IdleWithRankDown(result.newRank)
+                    is DecayResult.DecayApplied -> DailyDecayResult.IdleDay(result.statsLost)
+                    else -> DailyDecayResult.IdleDay(0)
+                }
             }
         }
 
@@ -78,67 +91,32 @@ class DecayEngine(
     suspend fun applyDecay(reason: String = "daily_idle"): DecayResult {
         val stats = playerRepository.getStatsOnce() ?: return DecayResult.NoStats
 
-        // Calculate stat loss (1 point from each stat above BASE_STAT)
+        // Stat loss: 1 point from each stat above BASE_STAT, floored there.
         val strLost = if (stats.strStat > PlayerStats.BASE_STAT) 1 else 0
         val intLost = if (stats.intStat > PlayerStats.BASE_STAT) 1 else 0
         val wisLost = if (stats.wisStat > PlayerStats.BASE_STAT) 1 else 0
         val dexLost = if (stats.dexStat > PlayerStats.BASE_STAT) 1 else 0
         val chaLost = if (stats.chaStat > PlayerStats.BASE_STAT) 1 else 0
         val vitLost = if (stats.vitStat > PlayerStats.BASE_STAT) 1 else 0
-
         val totalLost = strLost + intLost + wisLost + dexLost + chaLost + vitLost
 
-        // Star-line counter: each idle day removes one.
-        //
-        // Up:   5 consecutive active days needed (counter climbs 0 → +5 → rank up, reset to 0).
-        // Down: dropping below 0 demotes immediately. No grace period after promotion — slack
-        //       off the day after rank-up and you fall straight back.
-        // After demotion the counter resets to +5 at the lower rank: one active day there
-        // (counter +5 → +6 ≥ 5) bounces you back up, so the lower rank feels like a "near miss"
-        // rather than a hard reset. This asymmetry is intentional (game design).
-        // At rank E the counter clamps at 0 (no rank below E to fall to).
-        val newRankUpCounter = stats.rankUpStreakCounter - 1
+        // Rank-state transition: delegate to RankLogic so the threshold/reset rules are
+        // owned by a single tested module. See RankLogicTest for the full truth table.
+        val transition = RankLogic.applyIdleDay(stats.rankUpStreakCounter, stats.rank)
 
-        val previousRank = stats.rank.previousRank()
-        if (newRankUpCounter < 0 && previousRank != null) {
-            val newRank = previousRank
-
-            val updatedStats = stats.copy(
-                strStat = stats.strStat - strLost,
-                intStat = stats.intStat - intLost,
-                wisStat = stats.wisStat - wisLost,
-                dexStat = stats.dexStat - dexLost,
-                chaStat = stats.chaStat - chaLost,
-                vitStat = stats.vitStat - vitLost,
-                streak = 0,
-                rankUpStreakCounter = Rank.STREAK_DAYS_TO_RANK_UP, // +5 cushion at the lower rank
-                rank = newRank,
-                updatedAt = System.currentTimeMillis()
-            )
-            playerRepository.updateStats(updatedStats)
-
-            if (totalLost > 0) {
-                decayLogDao.insert(
-                    DecayLogEntity(
-                        strLost = strLost, intLost = intLost, wisLost = wisLost,
-                        dexLost = dexLost, chaLost = chaLost, vitLost = vitLost,
-                        idleHours = null, reason = reason,
-                        createdAt = System.currentTimeMillis()
-                    )
-                )
-            }
-
-            return DecayResult.DecayWithRankDown(
-                statsLost = totalLost,
-                newRank = newRank,
-                breakCounter = Rank.STREAK_DAYS_TO_RANK_UP
-            )
+        val newRank = when (transition) {
+            is RankLogic.Transition.RankDown -> transition.newRank
+            else -> stats.rank
+        }
+        val newCounter = when (transition) {
+            is RankLogic.Transition.RankDown -> transition.newCounter
+            is RankLogic.Transition.CounterUpdated -> transition.newCounter
+            // applyIdleDay can only return RankDown or CounterUpdated — fail fast if that
+            // invariant ever breaks rather than silently keeping a stale counter.
+            is RankLogic.Transition.RankUp ->
+                error("RankLogic.applyIdleDay returned RankUp — impossible on the idle-day path")
         }
 
-        // At rank E (no previousRank): clamp counter at 0 so idle days don't accumulate negative.
-        val clampedCounter = newRankUpCounter.coerceAtLeast(0)
-
-        // Update stats
         val updatedStats = stats.copy(
             strStat = stats.strStat - strLost,
             intStat = stats.intStat - intLost,
@@ -147,13 +125,12 @@ class DecayEngine(
             chaStat = stats.chaStat - chaLost,
             vitStat = stats.vitStat - vitLost,
             streak = 0,
-            rankUpStreakCounter = clampedCounter,
+            rankUpStreakCounter = newCounter,
+            rank = newRank,
             updatedAt = System.currentTimeMillis()
         )
-
         playerRepository.updateStats(updatedStats)
 
-        // Log decay
         if (totalLost > 0) {
             decayLogDao.insert(
                 DecayLogEntity(
@@ -165,19 +142,24 @@ class DecayEngine(
             )
         }
 
-        return if (totalLost > 0) {
-            // breaksToRankDown = how many more idle days until counter drops below 0.
-            // After a normal decay the counter just got -=1; one more idle day at counter 0
-            // would demote (0 → -1). At counter >0 (e.g. just-promoted at 0 then active days),
-            // we still have clampedCounter+1 idle days of buffer.
-            val daysToDemote = clampedCounter + 1
-            DecayResult.DecayApplied(
-                statsLost = totalLost,
-                breakCounter = clampedCounter,
-                breaksToRankDown = daysToDemote
-            )
-        } else {
-            DecayResult.NoDecay
+        return when (transition) {
+            is RankLogic.Transition.RankDown ->
+                DecayResult.DecayWithRankDown(
+                    statsLost = totalLost,
+                    newRank = newRank,
+                    breakCounter = newCounter
+                )
+            is RankLogic.Transition.CounterUpdated -> if (totalLost > 0) {
+                // breaksToRankDown = how many more idle days until counter drops below 0.
+                DecayResult.DecayApplied(
+                    statsLost = totalLost,
+                    breakCounter = newCounter,
+                    breaksToRankDown = newCounter + 1
+                )
+            } else DecayResult.NoDecay
+            // Unreachable — the `newCounter` when above already failed fast on RankUp.
+            is RankLogic.Transition.RankUp ->
+                error("RankLogic.applyIdleDay returned RankUp — impossible on the idle-day path")
         }
     }
 
@@ -185,26 +167,32 @@ class DecayEngine(
         val stats = playerRepository.getStatsOnce() ?: return StreakResult.NoStats
 
         val newStreak = stats.streak + 1
-        val newRankUpCounter = stats.rankUpStreakCounter + 1
-
         playerRepository.updateStreak(newStreak)
-        playerRepository.updateRankUpCounter(newRankUpCounter)
 
-        // Check for rank up (5 star lines = rank up). `updateRank` resets the counter to 0
-        // as part of its SQL, so no separate `updateRankUpCounter(0)` call is needed.
-        val nextRank = stats.rank.nextRank()
-        if (newRankUpCounter >= Rank.STREAK_DAYS_TO_RANK_UP && nextRank != null) {
-            playerRepository.updateRank(nextRank)
-            return StreakResult.StreakWithRankUp(
-                newStreak = newStreak,
-                newRank = nextRank
-            )
+        // Delegate rank decision to RankLogic.
+        val transition = RankLogic.applyActiveDay(stats.rankUpStreakCounter, stats.rank)
+        return when (transition) {
+            is RankLogic.Transition.RankUp -> {
+                // updateRank resets rankUpStreakCounter to 0 in its SQL.
+                playerRepository.updateRank(transition.newRank)
+                StreakResult.StreakWithRankUp(
+                    newStreak = newStreak,
+                    newRank = transition.newRank
+                )
+            }
+            is RankLogic.Transition.CounterUpdated -> {
+                playerRepository.updateRankUpCounter(transition.newCounter)
+                StreakResult.StreakContinued(
+                    newStreak = newStreak,
+                    daysToRankUp = (Rank.STREAK_DAYS_TO_RANK_UP - transition.newCounter)
+                        .coerceAtLeast(0)
+                )
+            }
+            // applyActiveDay can only return RankUp or CounterUpdated — fail fast rather
+            // than masking a broken invariant behind a misleading NoStats.
+            is RankLogic.Transition.RankDown ->
+                error("RankLogic.applyActiveDay returned RankDown — impossible on the active-day path")
         }
-
-        return StreakResult.StreakContinued(
-            newStreak = newStreak,
-            daysToRankUp = Rank.STREAK_DAYS_TO_RANK_UP - newRankUpCounter
-        )
     }
 }
 
@@ -213,6 +201,8 @@ sealed class DailyDecayResult {
     data class ActiveWithRankUp(val newRank: Rank) : DailyDecayResult()
     data class IdleDay(val statsLost: Int) : DailyDecayResult()
     data class IdleWithRankDown(val newRank: Rank) : DailyDecayResult()
+    /** An idle day absorbed by a Streak Freeze Shield — no decay, streak/counter intact. */
+    data class ShieldConsumed(val shieldsLeft: Int) : DailyDecayResult()
     /** Today's window was already processed — current call is a no-op (idempotency guard). */
     data object AlreadyApplied : DailyDecayResult()
 }

@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.map
 class PlayerRepository(
     private val playerStatsDao: PlayerStatsDao,
     private val userPreferences: UserPreferences
-) {
-    val username: Flow<String> = userPreferences.username
+) : PlayerStateProvider {
+    override val username: Flow<String> = userPreferences.username
 
     val playerStats: Flow<PlayerStats?> = playerStatsDao.getStats().map { entity ->
         entity?.toDomain()
     }
 
-    suspend fun getStatsOnce(): PlayerStats? {
+    override suspend fun getStatsOnce(): PlayerStats? {
         return playerStatsDao.getStatsOnce()?.toDomain()
     }
 
@@ -78,6 +78,7 @@ class PlayerRepository(
         longestStreak = longestStreak,
         rankUpStreakCounter = rankUpStreakCounter,
         rankDownBreakCounter = rankDownBreakCounter,
+        streakShields = streakShields,
         lastActivityAt = lastActivityAt,
         updatedAt = updatedAt
     )
@@ -102,6 +103,7 @@ class PlayerRepository(
         longestStreak = longestStreak,
         rankUpStreakCounter = rankUpStreakCounter,
         rankDownBreakCounter = rankDownBreakCounter,
+        streakShields = streakShields,
         lastActivityAt = lastActivityAt,
         updatedAt = updatedAt
     )

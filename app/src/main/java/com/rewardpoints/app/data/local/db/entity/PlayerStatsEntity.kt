@@ -26,6 +26,8 @@ data class PlayerStatsEntity(
     val longestStreak: Int = 0,
     val rankUpStreakCounter: Int = 0,
     val rankDownBreakCounter: Int = 0,
+    // Streak Freeze Shields owned (v5). Consumed automatically on idle days.
+    val streakShields: Int = 0,
     val lastActivityAt: Long?,
     val updatedAt: Long
 )

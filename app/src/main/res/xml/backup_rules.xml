@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
     <exclude domain="file" path="datastore"/>
+    <!-- EncryptedSharedPreferences are sealed by the AndroidKeyStore master key, which is
+         device-bound and never backed up. Backing up the encrypted blobs would leave them
+         undecryptable after a restore to another device, so exclude them. -->
+    <exclude domain="sharedpref" path="secret_prefs.xml"/>
 </full-backup-content>

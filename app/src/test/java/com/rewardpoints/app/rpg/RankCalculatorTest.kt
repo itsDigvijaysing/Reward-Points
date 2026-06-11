@@ -3,37 +3,21 @@ package com.rewardpoints.app.rpg
 import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.Rank
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * The full rank transition state machine is tested in [RankLogicTest]. This file only
+ * covers the small `getStreakDaysToNextRank` helper used by `StatusViewModel`.
+ */
 class RankCalculatorTest {
     private val calc = RankCalculator()
 
-    @Test fun `checkRankUp returns Progress when below threshold`() {
+    @Test fun `getStreakDaysToNextRank reports remaining days`() {
         val stats = PlayerStats(rank = Rank.D, rankUpStreakCounter = 2)
-        val result = calc.checkRankUp(stats)
-        assertTrue(result is RankResult.Progress)
-        val progress = result as RankResult.Progress
-        // After this active day, counter would be 3, so 2 days remaining
-        assertEquals(2, progress.daysToRankUp)
-        assertEquals(3, progress.currentStreakCounter)
+        assertEquals(3, calc.getStreakDaysToNextRank(stats))
     }
 
-    @Test fun `checkRankUp returns RankUp when hitting threshold`() {
-        val stats = PlayerStats(rank = Rank.D, rankUpStreakCounter = Rank.STREAK_DAYS_TO_RANK_UP - 1)
-        val result = calc.checkRankUp(stats)
-        assertTrue(result is RankResult.RankUp)
-        assertEquals(Rank.C, (result as RankResult.RankUp).newRank)
-    }
-
-    @Test fun `checkRankUp at S rank returns Progress (no next rank)`() {
-        val stats = PlayerStats(rank = Rank.S, rankUpStreakCounter = Rank.STREAK_DAYS_TO_RANK_UP - 1)
-        val result = calc.checkRankUp(stats)
-        // At S, nextRank() is null so we get Progress, not RankUp
-        assertTrue(result is RankResult.Progress)
-    }
-
-    @Test fun `getStreakDaysToNextRank clamps at zero`() {
+    @Test fun `getStreakDaysToNextRank clamps at zero when over threshold`() {
         val stats = PlayerStats(rankUpStreakCounter = Rank.STREAK_DAYS_TO_RANK_UP + 5)
         assertEquals(0, calc.getStreakDaysToNextRank(stats))
     }

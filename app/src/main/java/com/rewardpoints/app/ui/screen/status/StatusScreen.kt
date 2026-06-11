@@ -27,6 +27,7 @@ import androidx.navigation.NavController
 import com.rewardpoints.app.domain.model.Rank
 import com.rewardpoints.app.domain.model.StatType
 import com.rewardpoints.app.ui.components.glass.*
+import com.rewardpoints.app.ui.components.rpg.DailyQuoteCard
 import com.rewardpoints.app.ui.components.rpg.RankUpAnimation
 import com.rewardpoints.app.ui.components.rpg.StatusWindow
 import com.rewardpoints.app.ui.navigation.Routes
@@ -41,6 +42,8 @@ fun StatusScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showMoodDialog by remember { mutableStateOf(false) }
     var showAddPointsDialog by remember { mutableStateOf(false) }
+    var showTitlePicker by remember { mutableStateOf(false) }
+    var showShieldDialog by remember { mutableStateOf(false) }
     var showRankUpAnimation by remember { mutableStateOf<Rank?>(null) }
 
     // Listen for rank-up events
@@ -76,10 +79,19 @@ fun StatusScreen(
             stats = uiState.stats,
             availablePoints = uiState.currentBalance,
             hexagonStyle = hexStyle,
+            equippedTitle = uiState.equippedTitle,
+            onTitleClick = { showTitlePicker = true },
             onHistoryClick = { navController.navigate(Routes.HISTORY) }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Daily quote — "system message of the day" under the character sheet. Hidden
+        // until resolved; source configurable in Settings (offline pack by default).
+        uiState.dailyQuote?.let { quote ->
+            DailyQuoteCard(quote = quote)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Quick Actions
         Row(
@@ -131,6 +143,13 @@ fun StatusScreen(
                 modifier = Modifier.weight(1f),
                 onClick = { navController.navigate(Routes.ACHIEVEMENTS) }
             )
+            QuickActionCard(
+                emoji = "🛡️",
+                label = "Shield",
+                sublabel = "x${uiState.stats.streakShields} held",
+                modifier = Modifier.weight(1f),
+                onClick = { showShieldDialog = true }
+            )
         }
     }
 
@@ -154,6 +173,205 @@ fun StatusScreen(
                 showAddPointsDialog = false
             }
         )
+    }
+
+    // Streak Shield Dialog — explain + buy.
+    if (showShieldDialog) {
+        ShieldDialog(
+            shieldsHeld = uiState.stats.streakShields,
+            balance = uiState.currentBalance,
+            message = uiState.shieldMessage,
+            onBuy = { viewModel.buyShield() },
+            onDismiss = {
+                viewModel.dismissShieldMessage()
+                showShieldDialog = false
+            }
+        )
+    }
+
+    // Title Picker Dialog — equip an unlocked achievement title (or none).
+    if (showTitlePicker) {
+        TitlePickerDialog(
+            titles = uiState.unlockedTitles,
+            equippedTitle = uiState.equippedTitle,
+            onDismiss = { showTitlePicker = false },
+            onSelect = { titleId ->
+                viewModel.equipTitle(titleId)
+                showTitlePicker = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun ShieldDialog(
+    shieldsHeld: Int,
+    balance: Int,
+    message: String?,
+    onBuy: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val maxShields = com.rewardpoints.app.domain.model.PlayerStats.MAX_SHIELDS
+    val cost = com.rewardpoints.app.domain.model.PlayerStats.SHIELD_COST
+    val atMax = shieldsHeld >= maxShields
+
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties()) {
+        GlassCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = "🛡️ Streak Freeze Shield",
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Inter
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "An idle day consumes one shield instead of hurting you: " +
+                        "no stat decay, your streak and star lines stay untouched. " +
+                        "Consumed automatically at the daily tick.",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    fontFamily = Inter,
+                    lineHeight = 18.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Held: $shieldsHeld / $maxShields   ·   Cost: $cost pts   ·   Balance: $balance pts",
+                    color = TextTertiary,
+                    fontSize = 12.sp,
+                    fontFamily = Inter
+                )
+
+                message?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = it,
+                        color = PointsGold,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Inter
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    GlassButton(
+                        text = "Close",
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                    )
+                    GlassButton(
+                        text = if (atMax) "Max held" else "Buy ($cost pts)",
+                        onClick = onBuy,
+                        enabled = !atMax && balance >= cost,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TitlePickerDialog(
+    titles: List<com.rewardpoints.app.data.local.db.entity.TitleEntity>,
+    equippedTitle: String?,
+    onDismiss: () -> Unit,
+    onSelect: (String?) -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties()) {
+        GlassCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = "Equip a Title",
+                    color = TextPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Inter
+                )
+                Text(
+                    text = if (titles.isEmpty())
+                        "Unlock achievements to earn titles"
+                    else "Displayed under your name on the status window",
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    fontFamily = Inter
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // "No title" entry
+                    TitlePickerRow(
+                        label = "No title",
+                        sublabel = "Keep it clean",
+                        selected = equippedTitle == null,
+                        onClick = { onSelect(null) }
+                    )
+                    titles.forEach { title ->
+                        TitlePickerRow(
+                            label = listOfNotNull(title.emoji, title.name).joinToString(" "),
+                            sublabel = title.description,
+                            selected = equippedTitle != null &&
+                                equippedTitle == listOfNotNull(title.emoji, title.name).joinToString(" "),
+                            onClick = { onSelect(title.id) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TitlePickerRow(
+    label: String,
+    sublabel: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    GlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    color = if (selected) PointsGold else TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = Inter
+                )
+                Text(
+                    text = sublabel,
+                    color = TextTertiary,
+                    fontSize = 11.sp,
+                    fontFamily = Inter
+                )
+            }
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Equipped",
+                    tint = PointsGold
+                )
+            }
+        }
     }
 }
 

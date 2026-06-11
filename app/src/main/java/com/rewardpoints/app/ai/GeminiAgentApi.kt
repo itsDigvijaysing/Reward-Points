@@ -36,6 +36,13 @@ class GeminiAgentApi(
     companion object {
         private const val MODEL = "gemini-2.5-flash"
         private const val BASE = "https://generativelanguage.googleapis.com/v1beta/models"
+
+        // STOP = normal completion; MAX_TOKENS = hit our maxOutputTokens cap but the
+        // partial reply is still valid (don't error). Everything else in Gemini's v1beta
+        // finish-reason taxonomy (SAFETY, RECITATION, BLOCKLIST, PROHIBITED_CONTENT,
+        // SPII, OTHER, MALFORMED_FUNCTION_CALL …) means the response was blocked or
+        // scrubbed — surface as AgentSafetyException.
+        private val BENIGN_FINISH_REASONS = setOf("STOP", "MAX_TOKENS")
     }
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
@@ -76,11 +83,17 @@ class GeminiAgentApi(
                 setBody(body)
             }
 
-            when (response.status) {
-                HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden ->
+            when {
+                response.status == HttpStatusCode.Unauthorized ||
+                    response.status == HttpStatusCode.Forbidden ->
                     throw AgentAuthException("Gemini rejected the API key (HTTP ${response.status.value}).")
-                HttpStatusCode.TooManyRequests ->
+                response.status == HttpStatusCode.TooManyRequests ->
                     throw AgentRateLimitException("Gemini rate limit reached. Wait a minute and try again.")
+                // 5xx (overloaded / temporary outage) — surface as rate-limit so the UI
+                // shows the same friendly "try again later" copy and the user isn't
+                // confronted with a raw HTTP code.
+                response.status.value in 500..599 ->
+                    throw AgentRateLimitException("Gemini is temporarily unavailable (HTTP ${response.status.value}). Try again shortly.")
             }
             if (!response.status.isSuccess()) {
                 val text = response.bodyAsText().take(300)
@@ -91,9 +104,12 @@ class GeminiAgentApi(
             val candidate = parsed.candidates.firstOrNull()
                 ?: throw Exception("Gemini returned no candidates.")
 
-            // Safety-filter or other non-STOP finish reasons → surface as typed error.
-            if (candidate.finishReason == "SAFETY" || candidate.finishReason == "RECITATION") {
-                throw AgentSafetyException("Gemini blocked the response (${candidate.finishReason}).")
+            // Any non-STOP / non-MAX_TOKENS finish reason from Gemini's v1beta safety
+            // taxonomy means the response was blocked or scrubbed. MAX_TOKENS is benign
+            // (just a truncated reply) and should fall through to the normal text path.
+            val finish = candidate.finishReason
+            if (finish != null && finish !in BENIGN_FINISH_REASONS) {
+                throw AgentSafetyException("Gemini blocked the response ($finish).")
             }
 
             val text = candidate.content?.parts?.firstOrNull()?.text

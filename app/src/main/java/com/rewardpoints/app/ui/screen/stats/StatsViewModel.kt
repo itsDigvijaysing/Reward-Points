@@ -8,12 +8,12 @@ import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.StatType
 import com.rewardpoints.app.domain.model.Transaction
 import com.rewardpoints.app.domain.model.TransactionType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.Instant
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 
 class StatsViewModel(
     private val playerRepository: PlayerRepository,
@@ -32,23 +32,36 @@ class StatsViewModel(
 
         viewModelScope.launch {
             pointsRepository.transactions.collect { transactions ->
-                val earnTransactions = transactions.filter { it.type == TransactionType.EARN }
-                val statBreakdown = calculateStatBreakdown(earnTransactions)
-                val weeklyData = calculateWeeklyData(earnTransactions)
-                val topSources = calculateTopSources(earnTransactions)
-
+                // Three full-list scans + groupBy on every emission. With long history
+                // this jank-frames on Main. Offload to Default.
+                val computed = withContext(Dispatchers.Default) {
+                    val earnTransactions = transactions.filter { it.type == TransactionType.EARN }
+                    Aggregates(
+                        statBreakdown = calculateStatBreakdown(earnTransactions),
+                        weeklyData = calculateWeeklyData(earnTransactions),
+                        topSources = calculateTopSources(earnTransactions),
+                        earnCount = earnTransactions.size
+                    )
+                }
                 _uiState.update {
                     it.copy(
-                        statBreakdown = statBreakdown,
-                        weeklyData = weeklyData,
-                        topSources = topSources,
-                        totalTransactions = earnTransactions.size,
+                        statBreakdown = computed.statBreakdown,
+                        weeklyData = computed.weeklyData,
+                        topSources = computed.topSources,
+                        totalTransactions = computed.earnCount,
                         isLoading = false
                     )
                 }
             }
         }
     }
+
+    private data class Aggregates(
+        val statBreakdown: Map<StatType, StatBreakdown>,
+        val weeklyData: List<DayData>,
+        val topSources: List<SourceData>,
+        val earnCount: Int
+    )
 
     private fun calculateStatBreakdown(transactions: List<Transaction>): Map<StatType, StatBreakdown> {
         return StatType.entries.associateWith { statType ->

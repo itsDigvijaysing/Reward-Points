@@ -37,7 +37,8 @@ class SettingsViewModel(
                 userPreferences.defaultStat,
                 userPreferences.showDecayAnimations,
                 userPreferences.hapticFeedback,
-                userPreferences.hexagonStyle
+                userPreferences.hexagonStyle,
+                userPreferences.quoteSource
             ) { values: Array<Any?> ->
                 SettingsUiState(
                     username = values[0] as String,
@@ -47,6 +48,7 @@ class SettingsViewModel(
                     showDecayAnimations = values[4] as Boolean,
                     hapticFeedback = values[5] as Boolean,
                     hexagonStyle = values[6] as String,
+                    quoteSource = values[7] as String,
                     isLoading = false
                 )
             }.collect { state ->
@@ -82,6 +84,12 @@ class SettingsViewModel(
     fun updateHexagonStyle(style: String) {
         viewModelScope.launch {
             userPreferences.setHexagonStyle(style)
+        }
+    }
+
+    fun updateQuoteSource(source: String) {
+        viewModelScope.launch {
+            userPreferences.setQuoteSource(source)
         }
     }
 
@@ -142,7 +150,7 @@ class SettingsViewModel(
             // would silently fall back to the default stat until next process start.
             playerRepository.initializeStats()
             achievementRepository.initializeAchievements()
-            StatMappingSeeder.seed(statMappingDao)
+            StatMappingSeeder.seed(database, statMappingDao)
         }
     }
 }
@@ -155,5 +163,6 @@ data class SettingsUiState(
     val showDecayAnimations: Boolean = true,
     val hapticFeedback: Boolean = true,
     val hexagonStyle: String = "simple",
+    val quoteSource: String = "OFFLINE",
     val isLoading: Boolean = true
 )

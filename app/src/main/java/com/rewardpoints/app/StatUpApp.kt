@@ -49,6 +49,7 @@ class StatUpApp : Application() {
         val playerRepository: PlayerRepository by inject()
         val achievementRepository: AchievementRepository by inject()
         val statMappingDao: StatMappingDao by inject()
+        val database: com.rewardpoints.app.data.local.db.AppDatabase by inject()
         val userPreferences: UserPreferences by inject()
         // Eagerly resolve Notifier so its channels are created before any worker tries to notify.
         // (`by inject()` would defer construction until first access.)
@@ -56,7 +57,7 @@ class StatUpApp : Application() {
 
         appScope.launch { playerRepository.initializeStats() }
         appScope.launch { achievementRepository.initializeAchievements() }
-        appScope.launch { StatMappingSeeder.seedIfEmpty(statMappingDao) }
+        appScope.launch { StatMappingSeeder.seedIfEmpty(database, statMappingDao) }
         appScope.launch { userPreferences.loadSecretsIfNeeded() }
 
         // Refresh any installed home-screen widget with the current DB state. The system also

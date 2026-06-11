@@ -17,7 +17,7 @@ import com.rewardpoints.app.sync.TodoistTask
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -59,22 +59,34 @@ class TasksViewModel(
 
     private fun loadTodoistStatus() {
         viewModelScope.launch {
-            val token = userPreferences.getTodoistToken()
-            val lastSync = userPreferences.lastSyncTime.first()
-            val lastSyncStr = if (lastSync > 0) {
-                SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(lastSync))
-            } else null
-            val isConnected = !token.isNullOrBlank()
-            _uiState.update {
-                it.copy(
-                    todoistConnected = isConnected,
-                    todoistLastSync = lastSyncStr
-                )
-            }
-            
-            // Load active tasks if connected
-            if (isConnected) {
-                loadTodoistTasks()
+            // Hydrate the encrypted-secret cache first — the token flow starts as null even
+            // when a token is saved, and this ViewModel can win the race against
+            // StatUpApp.loadSecretsIfNeeded() on cold start.
+            userPreferences.getTodoistToken()
+            // REACTIVE: collect the token + last-sync flows instead of reading once. This
+            // ViewModel survives bottom-tab switches, so a one-shot read meant connecting
+            // Todoist in Settings never revealed the sync UI until the app was restarted.
+            var wasConnected = false
+            combine(
+                userPreferences.todoistToken,
+                userPreferences.lastSyncTime
+            ) { token, lastSync ->
+                !token.isNullOrBlank() to lastSync
+            }.collect { (isConnected, lastSync) ->
+                val lastSyncStr = if (lastSync > 0) {
+                    SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(lastSync))
+                } else null
+                _uiState.update {
+                    it.copy(
+                        todoistConnected = isConnected,
+                        todoistLastSync = lastSyncStr
+                    )
+                }
+                // Fetch active tasks when the connection first appears (or re-appears).
+                if (isConnected && !wasConnected) {
+                    loadTodoistTasks()
+                }
+                wasConnected = isConnected
             }
         }
     }
@@ -149,15 +161,11 @@ class TasksViewModel(
                 }
             }
 
-            val lastSync = userPreferences.lastSyncTime.first()
-            val lastSyncStr = if (lastSync > 0) {
-                SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(lastSync))
-            } else null
-
+            // todoistLastSync updates reactively via the lastSyncTime flow in
+            // loadTodoistStatus() — no manual re-read needed here.
             _uiState.update {
                 it.copy(
                     todoistSyncing = false,
-                    todoistLastSync = lastSyncStr,
                     todoistSyncLog = log.take(10)
                 )
             }
@@ -170,20 +178,22 @@ class TasksViewModel(
     private fun loadMissions() {
         viewModelScope.launch {
             missionDao.getAllMissions().collect { missions ->
-                _uiState.value = _uiState.value.copy(
-                    missions = missions,
-                    isLoading = false
-                )
+                _uiState.update {
+                    it.copy(
+                        missions = missions,
+                        isLoading = false
+                    )
+                }
             }
         }
     }
 
     fun showCreateDialog() {
-        _uiState.value = _uiState.value.copy(showCreateDialog = true)
+        _uiState.update { it.copy(showCreateDialog = true) }
     }
 
     fun hideCreateDialog() {
-        _uiState.value = _uiState.value.copy(showCreateDialog = false)
+        _uiState.update { it.copy(showCreateDialog = false) }
     }
 
     fun createMission(

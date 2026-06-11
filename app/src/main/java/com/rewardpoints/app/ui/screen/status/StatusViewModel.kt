@@ -3,17 +3,22 @@ package com.rewardpoints.app.ui.screen.status
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rewardpoints.app.data.local.datastore.UserPreferences
+import com.rewardpoints.app.data.local.db.dao.TitleDao
 import com.rewardpoints.app.data.local.db.dao.TransactionDao
+import com.rewardpoints.app.data.local.db.entity.TitleEntity
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.domain.model.PlayerStats
+import com.rewardpoints.app.domain.model.Quote
 import com.rewardpoints.app.domain.model.Rank
 import com.rewardpoints.app.domain.model.StatType
 import com.rewardpoints.app.domain.model.TransactionSource
 import com.rewardpoints.app.domain.model.TransactionType
+import com.rewardpoints.app.quotes.QuoteRepository
 import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.rpg.RankCalculator
 import com.rewardpoints.app.rpg.StatsEngine
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -25,16 +30,41 @@ class StatusViewModel(
     private val rankCalculator: RankCalculator,
     private val achievementTracker: AchievementTracker,
     private val userPreferences: UserPreferences,
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
+    private val quoteRepository: QuoteRepository,
+    private val titleDao: TitleDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatusUiState())
     val uiState: StateFlow<StatusUiState> = _uiState.asStateFlow()
 
-    private val _rankUpEvent = MutableSharedFlow<Rank>()
-    val rankUpEvent: SharedFlow<Rank> = _rankUpEvent.asSharedFlow()
+    // One-time rank-up events survive a no-collector gap (Status tab off-composition) via a
+    // buffered Channel and are delivered exactly once — see RankUpNotifier.
+    private val rankUpNotifier = RankUpNotifier()
+    val rankUpEvent: Flow<Rank> = rankUpNotifier.events
 
     private var previousRank: Rank? = null
+
+    /**
+     * Emits the local-midnight epoch (ms) for the current day, re-emitting once the day
+     * rolls over. Probes every 60s; `distinctUntilChanged` filters out the per-minute
+     * heartbeat so downstream `flatMapLatest` only re-issues on actual day boundaries.
+     * Shared (`shareIn`) so the mood flag and today's-points collectors ride a single
+     * ticker instead of each running their own.
+     */
+    private val dayStartFlow: Flow<Long> = flow {
+        while (true) {
+            emit(
+                LocalDate.now()
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            )
+            delay(60_000L)
+        }
+    }
+        .distinctUntilChanged()
+        .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
     init {
         viewModelScope.launch {
@@ -47,7 +77,7 @@ class StatusViewModel(
                 stats?.let {
                     previousRank?.let { prev ->
                         if (it.rank.order > prev.order) {
-                            _rankUpEvent.emit(it.rank)
+                            rankUpNotifier.notify(it.rank)
                         }
                     }
                     previousRank = it.rank
@@ -75,11 +105,89 @@ class StatusViewModel(
         viewModelScope.launch {
             observeMoodCheckedInToday()
         }
+
+        viewModelScope.launch {
+            loadDailyQuote()
+        }
+
+        viewModelScope.launch {
+            observeEquippedTitle()
+        }
+    }
+
+    /**
+     * Resolve the equipped title against the live unlocked list, so un-equipping,
+     * achievement deletion, or a full reset all degrade gracefully (title disappears
+     * rather than pointing at a stale id). Also feeds the picker dialog's options.
+     */
+    private suspend fun observeEquippedTitle() {
+        combine(
+            userPreferences.equippedTitleId,
+            titleDao.getUnlocked()
+        ) { equippedId, unlocked ->
+            val equipped = unlocked.firstOrNull { it.id == equippedId }
+            equipped to unlocked
+        }.collect { (equipped, unlocked) ->
+            _uiState.update {
+                it.copy(
+                    equippedTitle = equipped?.let { t ->
+                        listOfNotNull(t.emoji, t.name).joinToString(" ")
+                    },
+                    unlockedTitles = unlocked
+                )
+            }
+        }
+    }
+
+    fun equipTitle(titleId: String?) {
+        viewModelScope.launch {
+            userPreferences.setEquippedTitleId(titleId)
+        }
+    }
+
+    /** Buy one Streak Freeze Shield. Outcome (success or friendly error) lands in
+     *  [StatusUiState.shieldMessage] for the shield dialog to display. */
+    fun buyShield() {
+        viewModelScope.launch {
+            pointsRepository.buyStreakShield().fold(
+                onSuccess = { count ->
+                    _uiState.update { it.copy(shieldMessage = "Shield acquired! You now hold $count.") }
+                },
+                onFailure = { e ->
+                    _uiState.update { it.copy(shieldMessage = e.message ?: "Couldn't buy a shield.") }
+                }
+            )
+        }
+    }
+
+    fun dismissShieldMessage() {
+        _uiState.update { it.copy(shieldMessage = null) }
+    }
+
+    /**
+     * Resolve the day's quote. Re-resolves when the local day rolls over (dayStartFlow)
+     * or the user changes the source in Settings (quoteSource). Cache hits inside
+     * QuoteRepository make repeat emissions free; failures resolve to the offline pack
+     * inside the repository, so this never errors — worst case the card stays hidden.
+     */
+    private suspend fun loadDailyQuote() {
+        combine(dayStartFlow, userPreferences.quoteSource) { _, _ -> }
+            .collect {
+                val quote: Quote? = runCatching { quoteRepository.getDailyQuote() }.getOrNull()
+                _uiState.update { it.copy(dailyQuote = quote) }
+            }
     }
 
     private suspend fun observeMoodCheckedInToday() {
-        val (start, end) = todayMillisRange()
-        transactionDao.countBySourceInRange(TransactionSource.MOOD.name, start, end)
+        // flatMapLatest off the day ticker so the underlying query is re-issued with the
+        // new range whenever the local day rolls over (catches users who leave the app
+        // open across midnight). Old subscription is cancelled by flatMapLatest semantics.
+        dayStartFlow
+            .flatMapLatest { start ->
+                transactionDao.countBySourceInRange(
+                    TransactionSource.MOOD.name, start, start + DAY_MS
+                )
+            }
             .collect { count ->
                 _uiState.update { it.copy(hasCheckedInMoodToday = count > 0) }
             }
@@ -90,16 +198,18 @@ class StatusViewModel(
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
-        return start to (start + 86_400_000L)
+        return start to (start + DAY_MS)
     }
 
     private suspend fun loadTodayPoints() {
-        val (start, end) = todayMillisRange()
-        // SQL-side SUM — was filtering the entire transactions list in memory on every emission,
-        // which scaled O(N) with history. Now O(1) DB-side aggregate.
-        transactionDao.observeEarnedInRange(start, end).collect { todayPoints ->
-            _uiState.update { it.copy(todayPoints = todayPoints) }
-        }
+        // Same midnight-aware pattern as mood: re-issue the SUM query when the day flips.
+        dayStartFlow
+            .flatMapLatest { start ->
+                transactionDao.observeEarnedInRange(start, start + DAY_MS)
+            }
+            .collect { todayPoints ->
+                _uiState.update { it.copy(todayPoints = todayPoints) }
+            }
     }
 
     private suspend fun loadCurrentBalance() {
@@ -149,6 +259,9 @@ class StatusViewModel(
         return rankCalculator.getStreakDaysToNextRank(stats)
     }
 
+    private companion object {
+        const val DAY_MS = 86_400_000L
+    }
 }
 
 data class StatusUiState(
@@ -158,6 +271,10 @@ data class StatusUiState(
     val currentBalance: Int = 0,
     val hexagonStyle: String = "simple",
     val hasCheckedInMoodToday: Boolean = false,
+    val dailyQuote: Quote? = null,
+    val equippedTitle: String? = null,
+    val unlockedTitles: List<TitleEntity> = emptyList(),
+    val shieldMessage: String? = null,
     val isLoading: Boolean = true,
     val error: String? = null
 )

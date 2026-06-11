@@ -18,6 +18,11 @@ class RewardsViewModel(
     private val _uiState = MutableStateFlow(RewardsUiState())
     val uiState: StateFlow<RewardsUiState> = _uiState.asStateFlow()
 
+    // Monotonic id per redemption so the screen's LaunchedEffect re-fires even when the
+    // SAME reward is redeemed twice inside the snackbar's display window (the reward name
+    // alone is an unchanged key in that case, which would freeze the auto-dismiss timer).
+    private var redeemEventId = 0L
+
     init {
         viewModelScope.launch {
             rewardRepository.activeRewards.collect { rewards ->
@@ -60,7 +65,7 @@ class RewardsViewModel(
             result.onSuccess {
                 achievementTracker.onRewardRedeemed()
                 _uiState.update {
-                    it.copy(redeemSuccess = reward.name)
+                    it.copy(redeemSuccess = RedeemSuccess(++redeemEventId, reward.name))
                 }
             }.onFailure { error ->
                 _uiState.update { it.copy(error = error.message) }
@@ -88,6 +93,12 @@ data class RewardsUiState(
     val currentBalance: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null,
-    val redeemSuccess: String? = null,
+    val redeemSuccess: RedeemSuccess? = null,
     val showCreateDialog: Boolean = false
 )
+
+/**
+ * One redemption event. [id] is monotonically increasing so back-to-back redemptions of the
+ * same reward still produce distinct LaunchedEffect keys (restarting the snackbar timer).
+ */
+data class RedeemSuccess(val id: Long, val rewardName: String)

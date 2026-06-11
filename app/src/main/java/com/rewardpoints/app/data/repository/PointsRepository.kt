@@ -139,6 +139,49 @@ class PointsRepository(
         transaction.copy(id = id).toDomain()
     }
 
+    /**
+     * Buy one Streak Freeze Shield for [PlayerStats.SHIELD_COST] points. Balance check,
+     * REDEEM insert, and shield increment run in a single Room transaction (balance is
+     * re-read live inside it — same pattern as RewardRepository.redeemReward), so a
+     * concurrent redemption can't drive the balance negative. Returns the new shield
+     * count, or fails with [InsufficientPointsException] / max-shields.
+     */
+    suspend fun buyStreakShield(): Result<Int> = runCatching {
+        database.withTransaction {
+            val stats = playerStatsDao.getStatsOnce()
+                ?: error("Player stats not initialized")
+            if (stats.streakShields >= PlayerStats.MAX_SHIELDS) {
+                error("You already hold the maximum of ${PlayerStats.MAX_SHIELDS} shields.")
+            }
+            val balance = (transactionDao.getTotalEarned() ?: 0) -
+                (transactionDao.getTotalRedeemed() ?: 0)
+            if (balance < PlayerStats.SHIELD_COST) {
+                throw InsufficientPointsException(
+                    required = PlayerStats.SHIELD_COST,
+                    available = balance
+                )
+            }
+            transactionDao.insert(
+                TransactionEntity(
+                    type = TransactionType.REDEEM.name,
+                    source = TransactionSource.REWARD.name,
+                    description = "🛡️ Streak Shield",
+                    points = PlayerStats.SHIELD_COST,
+                    statType = null,
+                    relatedId = null,
+                    createdAt = System.currentTimeMillis()
+                )
+            )
+            playerStatsDao.update(
+                stats.copy(
+                    streakShields = stats.streakShields + 1,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+            stats.streakShields + 1
+        }.also { widgetUpdater?.refresh() }
+    }
+
     private suspend fun updateStatAccumulator(statType: StatType, points: Int) {
         val stats = playerStatsDao.getStatsOnce() ?: return
         val currentAcc = when (statType) {
@@ -150,10 +193,6 @@ class PointsRepository(
             StatType.VIT -> stats.vitPointsAcc
         }
 
-        val newAcc = currentAcc + points
-        val statGain = newAcc / PlayerStats.POINTS_PER_STAT
-        val remainingAcc = newAcc % PlayerStats.POINTS_PER_STAT
-
         val currentStat = when (statType) {
             StatType.STR -> stats.strStat
             StatType.INT -> stats.intStat
@@ -163,7 +202,28 @@ class PointsRepository(
             StatType.VIT -> stats.vitStat
         }
 
-        val newStat = (currentStat + statGain).coerceAtMost(PlayerStats.MAX_STAT)
+        // If the stat is already maxed, freeze the accumulator at its current value so
+        // post-cap earns don't silently discard "would-be" stat gains. Without this
+        // clamp, every 10 points past MAX_STAT was being computed into statGain and then
+        // erased by the coerceAtMost — a leak invisible to the user.
+        val newStat: Int
+        val remainingAcc: Int
+        if (currentStat >= PlayerStats.MAX_STAT) {
+            newStat = PlayerStats.MAX_STAT
+            remainingAcc = currentAcc
+        } else {
+            val newAcc = currentAcc + points
+            val statGain = newAcc / PlayerStats.POINTS_PER_STAT
+            val uncapped = currentStat + statGain
+            newStat = uncapped.coerceAtMost(PlayerStats.MAX_STAT)
+            // If the gain would have pushed past MAX_STAT, preserve only enough remainder
+            // so the user isn't credited for points beyond the cap.
+            remainingAcc = if (uncapped <= PlayerStats.MAX_STAT) {
+                newAcc % PlayerStats.POINTS_PER_STAT
+            } else {
+                0
+            }
+        }
 
         val updatedStats = when (statType) {
             StatType.STR -> stats.copy(strStat = newStat, strPointsAcc = remainingAcc)

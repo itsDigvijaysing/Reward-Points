@@ -136,7 +136,14 @@ private fun BottomNavItemView(
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        // FIXED-size indicator slot (48x32) for every item, selected or not. The pill used
+        // to exist only while selected inside a wrap-content Box, so selecting a tab grew
+        // that item and re-laid-out the whole SpaceEvenly row — the visible "bar nudge" on
+        // every tab tap. With constant geometry, only colors/alpha animate.
+        Box(
+            modifier = Modifier.size(width = 48.dp, height = 32.dp),
+            contentAlignment = Alignment.Center
+        ) {
             if (isSelected) {
                 Box(
                     modifier = Modifier
@@ -168,11 +175,13 @@ private fun BottomNavItemView(
 
         Spacer(modifier = Modifier.height(4.dp))
 
+        // Constant weight: the SemiBold/Normal swap changed the label's measured width,
+        // contributing a second small layout shift. Selection now reads via color only.
         Text(
             text = item.label,
             color = textColor,
             fontSize = 11.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            fontWeight = FontWeight.SemiBold,
             fontFamily = Inter
         )
     }

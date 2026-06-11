@@ -197,6 +197,68 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Daily Quote source. OFFLINE (bundled pack, zero network) is the default to
+            // keep the offline-first stance; online sources are an explicit opt-in here.
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text(
+                        text = "Daily Quote",
+                        color = TextPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Inter
+                    )
+                    Text(
+                        text = "Where your quote of the day comes from",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        fontFamily = Inter
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        HexagonStyleOption(
+                            title = "Offline",
+                            description = "Bundled pack",
+                            selected = uiState.quoteSource == "OFFLINE",
+                            onClick = { viewModel.updateQuoteSource("OFFLINE") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        HexagonStyleOption(
+                            title = "Anime",
+                            description = "Animechan",
+                            selected = uiState.quoteSource == "ANIME",
+                            onClick = { viewModel.updateQuoteSource("ANIME") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        HexagonStyleOption(
+                            title = "Motivation",
+                            description = "ZenQuotes",
+                            selected = uiState.quoteSource == "MOTIVATION",
+                            onClick = { viewModel.updateQuoteSource("MOTIVATION") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        HexagonStyleOption(
+                            title = "Mixed",
+                            description = "Alternate daily",
+                            selected = uiState.quoteSource == "MIXED",
+                            onClick = { viewModel.updateQuoteSource("MIXED") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             SettingsToggle(
                 title = "Decay Animations",
                 description = "Show visual effects when stats decay",

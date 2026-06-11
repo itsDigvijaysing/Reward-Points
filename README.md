@@ -54,6 +54,9 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 ### 📊 **Progress Tracking**
 - **Streak Calendar** - 28-day view with month label showing your activity patterns
 - **Stat Decay** - Midnight check: idle days lose 1 stat point per stat and 1 star line
+- **Streak Freeze Shield** - Buy a 🛡️ (30 pts, max 3); an idle day consumes one instead of decaying your stats/streak/star lines
+- **Daily Quote** - Quote of the day on the status screen: offline pack (default), anime (Animechan), motivation (ZenQuotes), or mixed
+- **Equippable Titles** - Display an unlocked achievement title under your name, Solo Leveling style
 - **Mood Check-in** - Daily mood logging with +2 WIS bonus
 - **History Log** - Complete transaction history with filtering and pagination
 - **Per-Stat Breakdown** - Detailed view with weekly chart and top sources for each stat
@@ -68,7 +71,7 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 
 ### Prerequisites
 - **JDK 17** (Gradle 8.13 does not run on JDK 24+; pure JDK 17 is what AGP 8.11.2 expects)
-- **Android SDK** with platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools (compileSdk 36, minSdk 26)
+- **Android SDK** with platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools (compileSdk 36, targetSdk 36, minSdk 26)
 - Gradle 8.13 (wrapper included)
 
 ### Build Steps
@@ -108,7 +111,7 @@ waydroid app launch com.rewardpoints.app.debug
 - **Architecture**: MVVM with Repository pattern
 - **DI**: Koin 3.5.6
 - **Database**: Room 2.7.1
-- **Preferences**: DataStore 1.1.4 (plain) + AndroidX Security 1.1.0-alpha06 (`EncryptedSharedPreferences`, AES-256-GCM, for Todoist + Gemini tokens)
+- **Preferences**: DataStore 1.1.4 (plain) + AndroidX Security 1.1.0 (`EncryptedSharedPreferences`, AES-256-GCM, for Todoist + Gemini tokens)
 - **Network**: Ktor 3.1.2 (Todoist API + Gemini Generative Language API)
 - **Background**: WorkManager 2.10.1 (DecayWorker, TodoistSyncWorker)
 - **Widget**: AppWidgetProvider + RemoteViews (4×2 home-screen widget showing rank/balance/streak/today)
@@ -177,8 +180,8 @@ Your privacy matters:
 - [x] Per-stat detailed breakdown (weekly chart, top sources)
 - [x] Collapsible stat bars with full stat names
 
-### ✅ v4.0 (merged, build verified 2026-05-14)
-- [x] AI Agent — Gemini chat (free tier `gemini-2.0-flash`), ephemeral transcript, persona + fresh player-state injected per send. Gated in Settings by an encrypted API key.
+### ✅ v4.0 (merged, build verified 2026-06)
+- [x] AI Agent — Gemini chat (free tier `gemini-2.5-flash`), ephemeral transcript, persona + fresh player-state injected per send. Gated in Settings by an encrypted API key.
 - [x] Real backdrop blur — Haze 1.7.2; real GPU blur on API 31+, auto-falls-back to a translucent scrim on older devices.
 - [x] Push notifications — channels for sync results + auth failures; declines handled silently.
 - [x] Home-screen widget — 4×2 read-only widget with rank/balance/streak/today; refreshes are push-driven (no polling).

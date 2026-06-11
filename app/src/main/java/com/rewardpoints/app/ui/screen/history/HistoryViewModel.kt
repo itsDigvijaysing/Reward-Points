@@ -2,14 +2,17 @@ package com.rewardpoints.app.ui.screen.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.domain.model.Transaction
-import com.rewardpoints.app.domain.model.TransactionSource
 import com.rewardpoints.app.domain.model.TransactionType
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 data class DayStatus(
@@ -50,7 +53,8 @@ enum class HistoryFilter(val label: String) {
 }
 
 class HistoryViewModel(
-    private val pointsRepository: PointsRepository
+    private val transactions: Flow<List<Transaction>>,
+    private val computeDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
@@ -63,79 +67,100 @@ class HistoryViewModel(
     }
 
     fun toggleCalendar() {
-        _uiState.value = _uiState.value.copy(showCalendar = !_uiState.value.showCalendar)
+        _uiState.update { it.copy(showCalendar = !it.showCalendar) }
     }
 
     fun previousMonth() {
-        val state = _uiState.value
-        val cal = Calendar.getInstance().apply {
-            set(Calendar.YEAR, state.calendarYear)
-            set(Calendar.MONTH, state.calendarMonth)
-            add(Calendar.MONTH, -1)
+        _uiState.update { state ->
+            val cal = Calendar.getInstance().apply {
+                set(Calendar.YEAR, state.calendarYear)
+                set(Calendar.MONTH, state.calendarMonth)
+                add(Calendar.MONTH, -1)
+            }
+            val newMonth = cal.get(Calendar.MONTH)
+            val newYear = cal.get(Calendar.YEAR)
+            state.copy(
+                calendarMonth = newMonth,
+                calendarYear = newYear,
+                calendarDays = generateCalendarDays(allTransactions, newMonth, newYear)
+            )
         }
-        val newMonth = cal.get(Calendar.MONTH)
-        val newYear = cal.get(Calendar.YEAR)
-        _uiState.value = state.copy(
-            calendarMonth = newMonth,
-            calendarYear = newYear,
-            calendarDays = generateCalendarDays(allTransactions, newMonth, newYear)
-        )
     }
 
     fun nextMonth() {
-        val state = _uiState.value
-        val now = Calendar.getInstance()
-        // Don't go beyond current month
-        if (state.calendarYear == now.get(Calendar.YEAR) && state.calendarMonth == now.get(Calendar.MONTH)) return
-
-        val cal = Calendar.getInstance().apply {
-            set(Calendar.YEAR, state.calendarYear)
-            set(Calendar.MONTH, state.calendarMonth)
-            add(Calendar.MONTH, 1)
+        _uiState.update { state ->
+            val now = Calendar.getInstance()
+            // Don't go beyond current month
+            if (state.calendarYear == now.get(Calendar.YEAR) && state.calendarMonth == now.get(Calendar.MONTH)) {
+                return@update state
+            }
+            val cal = Calendar.getInstance().apply {
+                set(Calendar.YEAR, state.calendarYear)
+                set(Calendar.MONTH, state.calendarMonth)
+                add(Calendar.MONTH, 1)
+            }
+            val newMonth = cal.get(Calendar.MONTH)
+            val newYear = cal.get(Calendar.YEAR)
+            state.copy(
+                calendarMonth = newMonth,
+                calendarYear = newYear,
+                calendarDays = generateCalendarDays(allTransactions, newMonth, newYear)
+            )
         }
-        val newMonth = cal.get(Calendar.MONTH)
-        val newYear = cal.get(Calendar.YEAR)
-        _uiState.value = state.copy(
-            calendarMonth = newMonth,
-            calendarYear = newYear,
-            calendarDays = generateCalendarDays(allTransactions, newMonth, newYear)
-        )
     }
 
     private fun loadTransactions() {
         viewModelScope.launch {
-            pointsRepository.transactions.collect { transactions ->
-                val sorted = transactions.sortedByDescending { it.createdAt }
-                allTransactions = sorted
-                val earned = transactions
-                    .filter { it.type == TransactionType.EARN }
-                    .sumOf { it.points }
-                val spent = transactions
-                    .filter { it.type == TransactionType.REDEEM }
-                    .sumOf { it.points }
-
-                val (currentStreak, longestStreak) = calculateStreaks(transactions)
-                val state = _uiState.value
-                val calendarDays = generateCalendarDays(transactions, state.calendarMonth, state.calendarYear)
-
-                val filtered = applyFilter(sorted, state.selectedFilter)
-                val pageSize = state.pageSize
-                _uiState.value = state.copy(
-                    transactions = sorted,
-                    filteredTransactions = filtered,
-                    visibleTransactions = filtered.take(pageSize),
-                    currentPage = 1,
-                    hasMore = filtered.size > pageSize,
-                    isLoading = false,
-                    totalEarned = earned,
-                    totalSpent = spent,
-                    currentStreak = currentStreak,
-                    longestStreak = longestStreak,
-                    calendarDays = calendarDays
-                )
+            transactions.collect { txns ->
+                // Heavy, user-state-INDEPENDENT aggregation (sort, sums, streak walk) is O(N)
+                // over the full history — offload to the compute dispatcher to avoid dropping
+                // frames on large histories.
+                val computed = withContext(computeDispatcher) {
+                    val sorted = txns.sortedByDescending { it.createdAt }
+                    val earned = txns
+                        .filter { it.type == TransactionType.EARN }
+                        .sumOf { it.points }
+                    val spent = txns
+                        .filter { it.type == TransactionType.REDEEM }
+                        .sumOf { it.points }
+                    val (currentStreak, longestStreak) = calculateStreaks(txns)
+                    BaseAggregates(sorted, earned, spent, currentStreak, longestStreak)
+                }
+                allTransactions = computed.sorted
+                // Write back through an atomic update that re-reads the CURRENT state, so a
+                // filter tap / month change made while the aggregation was in flight is not
+                // clobbered. The filter + calendar are derived from user-controllable fields,
+                // so they're recomputed against `current` rather than a stale pre-aggregation
+                // snapshot.
+                _uiState.update { current ->
+                    val filtered = applyFilter(computed.sorted, current.selectedFilter)
+                    current.copy(
+                        transactions = computed.sorted,
+                        filteredTransactions = filtered,
+                        visibleTransactions = filtered.take(current.pageSize),
+                        currentPage = 1,
+                        hasMore = filtered.size > current.pageSize,
+                        isLoading = false,
+                        totalEarned = computed.earned,
+                        totalSpent = computed.spent,
+                        currentStreak = computed.currentStreak,
+                        longestStreak = computed.longestStreak,
+                        calendarDays = generateCalendarDays(
+                            computed.sorted, current.calendarMonth, current.calendarYear
+                        )
+                    )
+                }
             }
         }
     }
+
+    private data class BaseAggregates(
+        val sorted: List<Transaction>,
+        val earned: Int,
+        val spent: Int,
+        val currentStreak: Int,
+        val longestStreak: Int
+    )
 
     private fun calculateStreaks(transactions: List<Transaction>): Pair<Int, Int> {
         if (transactions.isEmpty()) return Pair(0, 0)
@@ -259,26 +284,28 @@ class HistoryViewModel(
     }
 
     fun setFilter(filter: HistoryFilter) {
-        val filtered = applyFilter(_uiState.value.transactions, filter)
-        val pageSize = _uiState.value.pageSize
-        _uiState.value = _uiState.value.copy(
-            selectedFilter = filter,
-            filteredTransactions = filtered,
-            visibleTransactions = filtered.take(pageSize),
-            currentPage = 1,
-            hasMore = filtered.size > pageSize
-        )
+        _uiState.update { state ->
+            val filtered = applyFilter(state.transactions, filter)
+            state.copy(
+                selectedFilter = filter,
+                filteredTransactions = filtered,
+                visibleTransactions = filtered.take(state.pageSize),
+                currentPage = 1,
+                hasMore = filtered.size > state.pageSize
+            )
+        }
     }
 
     fun loadMore() {
-        val state = _uiState.value
-        val nextPage = state.currentPage + 1
-        val visible = state.filteredTransactions.take(nextPage * state.pageSize)
-        _uiState.value = state.copy(
-            visibleTransactions = visible,
-            currentPage = nextPage,
-            hasMore = visible.size < state.filteredTransactions.size
-        )
+        _uiState.update { state ->
+            val nextPage = state.currentPage + 1
+            val visible = state.filteredTransactions.take(nextPage * state.pageSize)
+            state.copy(
+                visibleTransactions = visible,
+                currentPage = nextPage,
+                hasMore = visible.size < state.filteredTransactions.size
+            )
+        }
     }
 
     private fun applyFilter(transactions: List<Transaction>, filter: HistoryFilter): List<Transaction> {

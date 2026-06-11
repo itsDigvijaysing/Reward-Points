@@ -11,6 +11,8 @@ import com.rewardpoints.app.data.local.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,22 +25,29 @@ class AgentViewModel(
     val uiState: StateFlow<AgentUiState> = _uiState.asStateFlow()
 
     init {
+        // Reactive: any change to the Gemini key (added/removed in Settings) immediately
+        // updates isConfigured without needing the screen to call refreshConfigured() on
+        // resume. The trigger lambda in the Koin module exposes the encrypted key as a
+        // StateFlow via UserPreferences.geminiApiKey.
         viewModelScope.launch {
-            val key = userPreferences.getGeminiApiKey()
-            _uiState.update { it.copy(isConfigured = !key.isNullOrBlank()) }
+            // Ensure the cached secret has been hydrated before the flow starts emitting
+            // — without this the flow's initial null could briefly show "not configured"
+            // even for users who already have a key saved.
+            userPreferences.getGeminiApiKey()
+            userPreferences.geminiApiKey
+                .map { !it.isNullOrBlank() }
+                .distinctUntilChanged()
+                .collect { configured ->
+                    _uiState.update { it.copy(isConfigured = configured) }
+                }
         }
     }
 
     /**
-     * Refresh whether Gemini is configured. Cheap — just reads the StateFlow.
-     * Called from the screen on resume in case the user just added a key in Settings.
+     * Kept for backwards compat with AgentScreen's repeatOnLifecycle wiring, but now a
+     * no-op — the reactive flow above handles updates automatically.
      */
-    fun refreshConfigured() {
-        viewModelScope.launch {
-            val key = userPreferences.getGeminiApiKey()
-            _uiState.update { it.copy(isConfigured = !key.isNullOrBlank()) }
-        }
-    }
+    fun refreshConfigured() = Unit
 
     fun sendMessage(text: String) {
         val trimmed = text.trim()

@@ -2,8 +2,12 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="file" path="datastore"/>
+        <!-- Device-bound AndroidKeyStore master key isn't backed up; the encrypted blobs
+             would be undecryptable after restore, so exclude the encrypted prefs. -->
+        <exclude domain="sharedpref" path="secret_prefs.xml"/>
     </cloud-backup>
     <device-transfer>
         <exclude domain="file" path="datastore"/>
+        <exclude domain="sharedpref" path="secret_prefs.xml"/>
     </device-transfer>
 </data-extraction-rules>

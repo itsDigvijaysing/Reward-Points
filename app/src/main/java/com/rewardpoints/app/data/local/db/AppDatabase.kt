@@ -9,6 +9,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.rewardpoints.app.data.local.db.dao.*
 import com.rewardpoints.app.data.local.db.entity.*
 
+// Single source of truth for the schema version. Bump this AND add the matching Migration to
+// AppDatabase.ALL_MIGRATIONS when the schema changes — never lower it (downgrades wipe).
+private const val DB_VERSION = 5
+
 @Database(
     entities = [
         RewardEntity::class,
@@ -22,7 +26,7 @@ import com.rewardpoints.app.data.local.db.entity.*
         AiMemoryEntity::class,
         AiConversationEntity::class
     ],
-    version = 4,
+    version = DB_VERSION,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,6 +41,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val DATABASE_NAME = "reward_points_db"
+
+        /** Current schema version — exposed for MigrationTest. Mirror of [DB_VERSION]. */
+        const val CURRENT_VERSION = DB_VERSION
 
         // v1 and v2 share the same identity hash — the bump was metadata-only.
         // We still need a registered Migration so v1 installs can upgrade without
@@ -74,6 +81,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Streak Freeze Shields (v5): count of owned shields on the singleton stats row.
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE player_stats ADD COLUMN streakShields INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        /**
+         * Every registered migration, in order. Exposed (internal) so the instrumented
+         * MigrationTest can validate each upgrade path against the exported schemas in
+         * app/schemas — see app/src/androidTest/.../MigrationTest.kt.
+         *
+         * When bumping [version], add the new Migration here. NEVER fall back to a
+         * destructive wipe to "handle" a schema change — that silently erases user data on
+         * update, which is exactly what the migration path prevents.
+         */
+        internal val ALL_MIGRATIONS: Array<Migration>
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -84,8 +110,17 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                    .fallbackToDestructiveMigration(false)
+                    .addMigrations(*ALL_MIGRATIONS)
+                    // Registered migrations preserve user data across every version bump.
+                    // We deliberately do NOT call fallbackToDestructiveMigration(): that sets
+                    // requireMigration=false, so a FORGOTTEN upgrade migration would silently
+                    // drop+recreate the tables and wipe the user's progress on update. With
+                    // the default (requireMigration=true) a missing migration throws instead,
+                    // surfacing the mistake in testing before it ships. Only a downgrade
+                    // (impossible for end users — Play enforces monotonic versionCode) is
+                    // allowed to destructively recreate, so dev-side reinstalls of older
+                    // builds don't hard-crash.
+                    .fallbackToDestructiveMigrationOnDowngrade(false)
                     .build()
                 INSTANCE = instance
                 instance

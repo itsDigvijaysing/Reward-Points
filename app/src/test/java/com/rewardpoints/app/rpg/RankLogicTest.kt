@@ -91,14 +91,16 @@ class RankLogicTest {
         }
     }
 
-    @Test fun `at rank S, active days just update the counter (no rank up)`() {
+    @Test fun `at rank S, active days update counter but cap at STREAK_DAYS_TO_RANK_UP`() {
+        // No rank above S, so the counter just sits at the threshold instead of growing
+        // unbounded. The counter still climbs from 0 → 5; subsequent active days no-op.
         var counter = 0
         repeat(8) {
             val t = RankLogic.applyActiveDay(counter, Rank.S)
             assertTrue("S is the cap: $t", t is RankLogic.Transition.CounterUpdated)
             counter = (t as RankLogic.Transition.CounterUpdated).newCounter
         }
-        assertEquals(8, counter)
+        assertEquals(Rank.STREAK_DAYS_TO_RANK_UP, counter)
     }
 
     @Test fun `full cycle - promote E to D, then 2 idle from plus1 back to E`() {

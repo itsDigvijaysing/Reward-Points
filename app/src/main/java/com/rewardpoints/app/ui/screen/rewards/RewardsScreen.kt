@@ -135,9 +135,10 @@ fun RewardsScreen(
             )
         }
 
-        // Success snackbar
-        uiState.redeemSuccess?.let { rewardName ->
-            LaunchedEffect(rewardName) {
+        // Success snackbar — keyed on the event id (not the reward name) so redeeming the
+        // same reward twice in quick succession restarts the auto-dismiss timer.
+        uiState.redeemSuccess?.let { success ->
+            LaunchedEffect(success.id) {
                 kotlinx.coroutines.delay(2000)
                 viewModel.clearRedeemSuccess()
             }
@@ -147,7 +148,7 @@ fun RewardsScreen(
                     .padding(16.dp),
                 containerColor = AccentSuccess.copy(alpha = 0.9f)
             ) {
-                Text("🎉 Redeemed: $rewardName", color = BackgroundBase)
+                Text("🎉 Redeemed: ${success.rewardName}", color = BackgroundBase)
             }
         }
     }
