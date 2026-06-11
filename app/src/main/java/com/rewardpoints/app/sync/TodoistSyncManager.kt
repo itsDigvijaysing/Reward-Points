@@ -59,11 +59,20 @@ class TodoistSyncManager(
                         if (tx != null) {
                             pointsEarned += points
                             tasksProcessed++
-                            achievementTracker.onPointsEarned(TransactionSource.TODOIST)
                         }
                     }
 
                     userPreferences.setLastSyncTime(System.currentTimeMillis())
+
+                    // Run achievement checks ONCE after the loop and off the sync's critical
+                    // path. onPointsEarned keys off cumulative totals (it writes absolute
+                    // progress), so once-after-the-loop is identical to per-task — but a thrown
+                    // achievement check can no longer downgrade an already-successful, already
+                    // idempotently-awarded sync to a retry + false "sync failed" notification.
+                    // It also collapses ~N achievement passes (one per task) into a single pass.
+                    if (tasksProcessed > 0) {
+                        runCatching { achievementTracker.onPointsEarned(TransactionSource.TODOIST) }
+                    }
 
                     SyncResult.Success(tasksProcessed, pointsEarned)
                 },

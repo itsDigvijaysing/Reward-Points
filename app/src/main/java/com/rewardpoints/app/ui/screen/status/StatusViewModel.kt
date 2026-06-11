@@ -235,8 +235,12 @@ class StatusViewModel(
                 statType = StatType.WIS,
                 relatedId = null
             )
-            achievementTracker.onMoodCheckedIn()
-            achievementTracker.onPointsEarned(TransactionSource.MOOD)
+            // Achievement checks are best-effort: a failure must not crash the check-in flow
+            // (points were already awarded atomically above).
+            runCatching {
+                achievementTracker.onMoodCheckedIn()
+                achievementTracker.onPointsEarned(TransactionSource.MOOD)
+            }
         }
     }
 
@@ -250,7 +254,8 @@ class StatusViewModel(
                 statType = statType,
                 relatedId = null
             )
-            achievementTracker.onPointsEarned(TransactionSource.MANUAL)
+            // Best-effort: don't let an achievement-check failure crash the earn flow.
+            runCatching { achievementTracker.onPointsEarned(TransactionSource.MANUAL) }
         }
     }
 

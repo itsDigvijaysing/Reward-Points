@@ -251,7 +251,9 @@ class TasksViewModel(
                 relatedId = current.id.toString()
             )
 
-            achievementTracker.onPointsEarned(TransactionSource.MISSION)
+            // Best-effort: an achievement-check failure must not crash mission completion
+            // (the mission points were already awarded atomically above).
+            runCatching { achievementTracker.onPointsEarned(TransactionSource.MISSION) }
         }
     }
 
