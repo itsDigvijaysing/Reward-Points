@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unit tests + lint + debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests, lint, assemble debug
+        run: ./gradlew :app:testDebugUnitTest lintDebug assembleDebug --stacktrace
+      - name: Upload reports & APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            app/build/reports/
+            app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+  changes:
+    name: Detect DB-layer changes
+    runs-on: ubuntu-latest
+    outputs:
+      db: ${{ steps.filter.outputs.db }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            db:
+              - 'app/src/main/java/com/rewardpoints/app/data/local/db/**'
+              - 'app/schemas/**'
+
+  instrumented:
+    name: Instrumented tests (Room migrations)
+    needs: [ unit, changes ]
+    # Run the emulator only when the DB layer/schemas changed, or on pushes to main.
+    # The data-loss-critical MigrationTest lives here.
+    if: ${{ github.ref == 'refs/heads/main' || needs.changes.outputs.db == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 26
+          arch: x86_64
+          profile: pixel_2
+          script: ./gradlew connectedDebugAndroidTest --stacktrace

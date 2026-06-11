@@ -98,6 +98,15 @@ android {
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas")
     }
+
+    // Freeze the existing lint backlog into a baseline so CI's lintDebug is deterministic:
+    // only NEW issues fail the build. Regenerate by deleting lint-baseline.xml and re-running
+    // ./gradlew lintDebug. Warnings are not promoted to errors; the baseline captures them.
+    lint {
+        baseline = file("lint-baseline.xml")
+        warningsAsErrors false
+        abortOnError true
+    }
 }
 
 // Loud guard: a release build with no keystore.properties is signed with the SHARED Android
@@ -180,9 +189,6 @@ dependencies {
 
     // Kotlinx Serialization
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1'
-
-    // Coil for images
-    implementation 'io.coil-kt:coil-compose:2.7.0'
 
     // WorkManager for background sync
     implementation 'androidx.work:work-runtime-ktx:2.10.1'
