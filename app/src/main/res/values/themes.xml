@@ -8,11 +8,11 @@
     </style>
 
     <!-- Splash theme — applied at activity launch via android:theme, swapped out post-splash by
-         installSplashScreen() in MainActivity. Uses the same hexagon foreground as the launcher icon
-         so the transition into the app is seamless. -->
+         installSplashScreen() in MainActivity. Uses the new neon-hexagon mark (rendered on the same
+         #0A0A0F background) so the splash matches the launcher icon and the transition is seamless. -->
     <style name="Theme.StatUp.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#0A0A0F</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.StatUp</item>
     </style>
 </resources>
