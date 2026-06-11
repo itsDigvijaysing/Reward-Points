@@ -2,6 +2,7 @@ package com.rewardpoints.app.sync
 
 import android.content.Context
 import androidx.work.*
+import com.rewardpoints.app.data.repository.MissionRepository
 import com.rewardpoints.app.rpg.DecayEngine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -14,10 +15,15 @@ class DecayWorker(
 ) : CoroutineWorker(context, params), KoinComponent {
 
     private val decayEngine: DecayEngine by inject()
+    private val missionRepository: MissionRepository by inject()
 
     override suspend fun doWork(): Result {
         return try {
             decayEngine.applyDailyDecay()
+            // Reset daily missions at the midnight tick so completed dailies clear even on days
+            // the user never opens the Tasks tab. Idempotent (gated on lastMissionResetDay) and
+            // decay's own marker means a retry here can't re-apply decay.
+            missionRepository.resetDailyIfNeeded()
             Result.success()
         } catch (e: Exception) {
             Result.retry()

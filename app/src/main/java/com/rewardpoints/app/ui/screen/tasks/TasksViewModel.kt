@@ -2,9 +2,9 @@ package com.rewardpoints.app.ui.screen.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.local.db.dao.MissionDao
 import com.rewardpoints.app.data.local.db.entity.MissionEntity
 import com.rewardpoints.app.data.local.datastore.UserPreferences
+import com.rewardpoints.app.data.repository.MissionRepository
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.rpg.AchievementTracker
@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -41,7 +40,7 @@ data class TasksUiState(
 )
 
 class TasksViewModel(
-    private val missionDao: MissionDao,
+    private val missionRepository: MissionRepository,
     private val pointsRepository: PointsRepository,
     private val playerRepository: PlayerRepository,
     private val achievementTracker: AchievementTracker,
@@ -177,7 +176,7 @@ class TasksViewModel(
 
     private fun loadMissions() {
         viewModelScope.launch {
-            missionDao.getAllMissions().collect { missions ->
+            missionRepository.missions.collect { missions ->
                 _uiState.update {
                     it.copy(
                         missions = missions,
@@ -204,51 +203,30 @@ class TasksViewModel(
         isDaily: Boolean
     ) {
         viewModelScope.launch {
-            val mission = MissionEntity(
-                name = name,
-                description = description,
-                pointsReward = points,
-                statType = statType.name,
-                isDaily = isDaily,
-                isCompletedToday = false,
-                createdAt = System.currentTimeMillis()
-            )
-            missionDao.insert(mission)
+            missionRepository.createMission(name, description, points, statType, isDaily)
             hideCreateDialog()
         }
     }
 
     fun completeMission(mission: MissionEntity) {
         viewModelScope.launch {
-            // Re-fetch the live row inside the coroutine to close the double-tap race:
-            // the snapshot on the UI side may still say `isCompletedToday=false` while a
-            // concurrent tap is already mid-award.
-            val current = missionDao.getById(mission.id) ?: return@launch
-            if (current.isDaily && current.isCompletedToday) return@launch
+            // The repository applies the double-tap race guard and marks the mission complete
+            // FIRST; it returns null if the daily mission was already completed today (no award).
+            val completed = missionRepository.completeMission(mission.id) ?: return@launch
 
             val statType = try {
-                StatType.valueOf(current.statType)
+                StatType.valueOf(completed.statType)
             } catch (e: Exception) {
                 StatType.STR
             }
 
-            // Mark complete FIRST so a second tap that races past the guard above still
-            // sees `isCompletedToday=true` before awarding. addPoints is the expensive op.
-            missionDao.update(
-                current.copy(
-                    isCompletedToday = true,
-                    lastCompletedAt = System.currentTimeMillis(),
-                    streak = current.streak + 1
-                )
-            )
-
             pointsRepository.addPoints(
-                points = current.pointsReward,
+                points = completed.pointsReward,
                 type = TransactionType.EARN,
                 source = TransactionSource.MISSION,
-                description = "Completed: ${current.name}",
+                description = "Completed: ${completed.name}",
                 statType = statType,
-                relatedId = current.id.toString()
+                relatedId = completed.id.toString()
             )
 
             // Best-effort: an achievement-check failure must not crash mission completion
@@ -259,7 +237,7 @@ class TasksViewModel(
 
     fun deleteMission(mission: MissionEntity) {
         viewModelScope.launch {
-            missionDao.delete(mission)
+            missionRepository.deleteMission(mission)
         }
     }
 
@@ -268,19 +246,9 @@ class TasksViewModel(
     }
 
     private suspend fun resetDailyMissionsSuspend() {
-        val todayStart = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        // Reset missions that were completed before today.
-        _uiState.value.missions
-            .filter { it.isDaily && it.isCompletedToday }
-            .filter { (it.lastCompletedAt ?: 0) < todayStart }
-            .forEach { mission ->
-                missionDao.update(mission.copy(isCompletedToday = false))
-            }
+        // Delegate to the repository's once-per-local-day guarded reset (the same call the
+        // midnight DecayWorker makes), so completed dailies clear consistently regardless of
+        // whether the reset is triggered by a tab open or by background work.
+        missionRepository.resetDailyIfNeeded()
     }
 }

@@ -4,6 +4,7 @@ import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.data.local.db.AppDatabase
 import com.rewardpoints.app.data.local.db.RoomTransactor
 import com.rewardpoints.app.data.repository.AchievementRepository
+import com.rewardpoints.app.data.repository.MissionRepository
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.data.repository.PointsRepository
 import com.rewardpoints.app.data.repository.RewardRepository
@@ -116,6 +117,7 @@ val appModule = module {
 
     // Repositories
     single { PlayerRepository(get(), get()) }
+    single { MissionRepository(get(), get()) }
     single { PointsRepository(get(), get(), get(), get(), get(), get()) }
     // AchievementRepository takes an optional points-award lambda. We resolve PointsRepository
     // lazily through the Koin container so we don't introduce a circular dependency

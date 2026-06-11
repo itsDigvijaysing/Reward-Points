@@ -47,6 +47,7 @@ class UserPreferences(private val context: Context) : DailyQuoteStore, DecayDayS
         // Guards against double-application when WorkManager retries, runNow() fires,
         // or scheduling overlaps the next tick.
         val LAST_DECAY_DAY = stringPreferencesKey("last_decay_day")
+        val LAST_MISSION_RESET_DAY = stringPreferencesKey("last_mission_reset_day")
         // Achievement title the user chose to display under their name on the status
         // window. Display preference only (the unlock state lives in the titles table).
         val EQUIPPED_TITLE_ID = stringPreferencesKey("equipped_title_id")
@@ -157,6 +158,12 @@ class UserPreferences(private val context: Context) : DailyQuoteStore, DecayDayS
 
     override suspend fun setLastDecayDay(day: String) {
         context.dataStore.edit { it[Keys.LAST_DECAY_DAY] = day }
+    }
+
+    suspend fun getLastMissionResetDay(): String? = context.dataStore.data.first()[Keys.LAST_MISSION_RESET_DAY]
+
+    suspend fun setLastMissionResetDay(day: String) {
+        context.dataStore.edit { it[Keys.LAST_MISSION_RESET_DAY] = day }
     }
 
     suspend fun setQuoteSource(source: String) {
