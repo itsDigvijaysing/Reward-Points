@@ -59,6 +59,21 @@ class RewardsViewModel(
         }
     }
 
+    fun editReward(original: Reward, name: String, description: String?, cost: Int, emoji: String, category: String?) {
+        viewModelScope.launch {
+            // Preserve id/createdAt/timesRedeemed; only the user-editable fields change.
+            rewardRepository.updateReward(
+                original.copy(
+                    name = name,
+                    description = description,
+                    pointsCost = cost,
+                    emoji = emoji,
+                    category = category ?: original.category
+                )
+            )
+        }
+    }
+
     fun redeemReward(reward: Reward) {
         viewModelScope.launch {
             val result = rewardRepository.redeemReward(reward)

@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +42,7 @@ fun RewardsScreen(
     // on a single tap of buttons that sit close together in a scrolling list.
     var pendingRedeem by remember { mutableStateOf<Reward?>(null) }
     var pendingDelete by remember { mutableStateOf<Reward?>(null) }
+    var pendingEdit by remember { mutableStateOf<Reward?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -123,6 +125,7 @@ fun RewardsScreen(
                             reward = reward,
                             canAfford = uiState.currentBalance >= reward.pointsCost,
                             onRedeem = { pendingRedeem = reward },
+                            onEdit = { pendingEdit = reward },
                             onDelete = { pendingDelete = reward }
                         )
                     }
@@ -136,6 +139,18 @@ fun RewardsScreen(
                 onDismiss = { viewModel.hideCreateDialog() },
                 onCreate = { name, desc, cost, emoji, category ->
                     viewModel.createReward(name, desc, cost, emoji, category)
+                }
+            )
+        }
+
+        // Edit Dialog — same form, pre-filled, routes to editReward (preserves id/redemptions).
+        pendingEdit?.let { reward ->
+            CreateRewardDialog(
+                existing = reward,
+                onDismiss = { pendingEdit = null },
+                onCreate = { name, desc, cost, emoji, category ->
+                    viewModel.editReward(reward, name, desc, cost, emoji, category)
+                    pendingEdit = null
                 }
             )
         }
@@ -235,6 +250,7 @@ private fun RewardCard(
     reward: Reward,
     canAfford: Boolean,
     onRedeem: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     GlassCard(modifier = Modifier.fillMaxWidth()) {
@@ -296,16 +312,29 @@ private fun RewardCard(
                     primary = canAfford
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = TextTertiary,
-                        modifier = Modifier.size(16.dp)
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = TextTertiary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = TextTertiary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -381,13 +410,16 @@ private fun ConfirmActionDialog(
 @Composable
 private fun CreateRewardDialog(
     onDismiss: () -> Unit,
-    onCreate: (name: String, desc: String?, cost: Int, emoji: String, category: String?) -> Unit
+    onCreate: (name: String, desc: String?, cost: Int, emoji: String, category: String?) -> Unit,
+    existing: Reward? = null
 ) {
-    var name by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(existing?.name ?: "") }
+    var description by remember { mutableStateOf(existing?.description ?: "") }
     var cost by remember { mutableStateOf("10") }
-    var customCost by remember { mutableStateOf("") }
-    var selectedEmoji by remember { mutableStateOf("🎁") }
+    // Put the existing cost in the custom field (it overrides the presets), so editing shows the
+    // current value regardless of whether it was originally a preset.
+    var customCost by remember { mutableStateOf(existing?.pointsCost?.toString() ?: "") }
+    var selectedEmoji by remember { mutableStateOf(existing?.emoji ?: "🎁") }
 
     val emojis = listOf("🎁", "🍕", "🎮", "☕", "🎬", "🛍️", "🍦", "📱", "🎧", "✈️", "💆", "🍫")
     val presetCosts = listOf("5", "10", "20", "50", "100", "200", "500")
@@ -419,7 +451,7 @@ private fun CreateRewardDialog(
                         .padding(8.dp)
                 ) {
                     Text(
-                        text = "Create Reward",
+                        text = if (existing != null) "Edit Reward" else "Create Reward",
                         color = TextPrimary,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
@@ -542,7 +574,7 @@ private fun CreateRewardDialog(
                             modifier = Modifier.weight(1f)
                         )
                         GlassButton(
-                            text = "Create",
+                            text = if (existing != null) "Save" else "Create",
                             onClick = {
                                 if (name.isNotBlank() && effectiveCost > 0) {
                                     onCreate(
