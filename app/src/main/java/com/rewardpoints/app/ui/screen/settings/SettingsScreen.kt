@@ -681,7 +681,7 @@ private fun GeminiConnectionDialog(
                         }
                     } else {
                         Text(
-                            text = "Powered by Google Gemini. Free tier: 15 requests/min, 1,500 requests/day.",
+                            text = "Powered by Google Gemini. Free tier: 10 requests/min, 500 requests/day.",
                             color = TextSecondary,
                             fontSize = 14.sp,
                             fontFamily = Inter

@@ -1,6 +1,6 @@
 Privacy Policy for Stat Up App
 
-Last updated: May 17, 2026
+Last updated: June 11, 2026
 
 1. Summary
 Stat Up is an offline-first app. The core features — stats, ranks, streaks, tasks, missions, rewards, achievements, history, and mood check-ins — run entirely on your device and never communicate with any server. Two features are *opt-in* network integrations: Todoist sync and the AI Coach (Google Gemini). Neither runs unless you explicitly add your own API key/token in Settings.
@@ -28,7 +28,7 @@ Stat Up is an offline-first app. The core features — stats, ranks, streaks, ta
 - Triggered only if you enter a Google Gemini API key in Settings and open the Agent tab.
 - When you send a message, the app contacts `generativelanguage.googleapis.com` (Google's Generative Language API) and sends:
   - your typed message
-  - a short snapshot of your current player state: name, rank, streak counter, six stat values, total points earned, your last 8 earn transactions, and up to 6 active missions (used to ground the coach's replies in your data)
+  - a short snapshot of your current player state: name, rank, streak counter, six stat values, total points earned, your last 5 earn transactions, and up to 4 active missions (used to ground the coach's replies in your data)
 - Replies come back from Google. Google's data-handling for this API is governed by Google's own privacy policy at https://policies.google.com/privacy. Google's terms for AI APIs are at https://ai.google.dev/terms.
 - Your API key is sent only to Google, encrypted in transit (HTTPS).
 - You can disconnect any time in Settings → Integrations → AI Agent.
@@ -45,6 +45,8 @@ On-device data persists until you:
 - Use the "Full Reset" button in Settings → Danger Zone, which wipes the database and preferences.
 - Clear app data through your device's system settings.
 - Uninstall the app.
+
+If you have Android's automatic backup enabled ("Back up to Google Drive"), your on-device app data — the local Room database (transactions, stats, missions, history, etc.) — may be included in your personal, end-to-end-encrypted Google backup so it can be restored when you reinstall. Your encrypted secrets (Todoist token, Gemini API key) are explicitly excluded from backup. This backup stays between your device and your own Google account; the app developer never receives it.
 
 For data sent to Todoist or Google: those services retain it according to their own policies. The app cannot delete data on their servers; use their respective settings to manage your data there.
 

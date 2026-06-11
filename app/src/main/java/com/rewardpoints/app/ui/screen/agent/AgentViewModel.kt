@@ -26,9 +26,9 @@ class AgentViewModel(
 
     init {
         // Reactive: any change to the Gemini key (added/removed in Settings) immediately
-        // updates isConfigured without needing the screen to call refreshConfigured() on
-        // resume. The trigger lambda in the Koin module exposes the encrypted key as a
-        // StateFlow via UserPreferences.geminiApiKey.
+        // updates isConfigured — the screen doesn't need to poll on resume. The trigger lambda
+        // in the Koin module exposes the encrypted key as a StateFlow via
+        // UserPreferences.geminiApiKey.
         viewModelScope.launch {
             // Ensure the cached secret has been hydrated before the flow starts emitting
             // — without this the flow's initial null could briefly show "not configured"
@@ -42,12 +42,6 @@ class AgentViewModel(
                 }
         }
     }
-
-    /**
-     * Kept for backwards compat with AgentScreen's repeatOnLifecycle wiring, but now a
-     * no-op — the reactive flow above handles updates automatically.
-     */
-    fun refreshConfigured() = Unit
 
     fun sendMessage(text: String) {
         val trimmed = text.trim()

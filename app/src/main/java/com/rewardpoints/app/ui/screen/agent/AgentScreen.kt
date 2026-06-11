@@ -25,9 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.rewardpoints.app.ai.AgentMessage
 import com.rewardpoints.app.ui.components.glass.GlassButton
@@ -44,14 +41,6 @@ fun AgentScreen(
     viewModel: AgentViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    // If user adds/removes a Gemini key in Settings, refresh the gating banner on tab re-entry.
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.refreshConfigured()
-        }
-    }
 
     if (!uiState.isConfigured) {
         NotConfiguredState(onOpenSettings = { navController.navigate(Routes.SETTINGS) })
