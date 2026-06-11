@@ -79,6 +79,7 @@
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
 
-    <!-- CRITICAL: Adding missing launcher background color -->
-    <color name="ic_launcher_background">#0A0A1A</color>
+    <!-- Adaptive launcher icon background — matches the dark of the ic_launcher_fg art so the
+         opaque foreground blends to the mask edge under any launcher shape. -->
+    <color name="ic_launcher_background">#010512</color>
 </resources>
