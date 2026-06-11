@@ -2,6 +2,7 @@ package com.rewardpoints.app.di
 
 import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.data.local.db.AppDatabase
+import com.rewardpoints.app.data.local.db.RoomTransactor
 import com.rewardpoints.app.data.repository.AchievementRepository
 import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.data.repository.PointsRepository
@@ -20,6 +21,7 @@ import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.rpg.DecayEngine
 import com.rewardpoints.app.rpg.RankCalculator
 import com.rewardpoints.app.rpg.StatsEngine
+import com.rewardpoints.app.rpg.Transactor
 import com.rewardpoints.app.sync.TodoistApi
 import com.rewardpoints.app.sync.TodoistSyncManager
 import com.rewardpoints.app.ui.screen.agent.AgentViewModel
@@ -51,6 +53,10 @@ val appModule = module {
     single { get<AppDatabase>().decayLogDao() }
     single { get<AppDatabase>().titleDao() }
     single { get<AppDatabase>().aiMemoryDao() }
+
+    // Wraps Room's withTransaction so engines (e.g. DecayEngine) can run a read-modify-write
+    // atomically without depending on the concrete AppDatabase — keeps them JVM-unit-testable.
+    single<Transactor> { RoomTransactor(get()) }
 
     // DataStore
     single { UserPreferences(androidContext()) }
@@ -133,7 +139,17 @@ val appModule = module {
     // RPG Engines
     single { StatsEngine() }
     single { RankCalculator() }
-    single { DecayEngine(get(), get(), get(), get(), get(), get()) }
+    single {
+        DecayEngine(
+            statsStore = get<PlayerRepository>(),
+            decayLogDao = get(),
+            dayStore = get<UserPreferences>(),
+            transactor = get(),
+            transactionDao = get(),
+            achievementTracker = get(),
+            widgetUpdater = get()
+        )
+    }
     single { AchievementTracker(get(), get(), get()) }
 
     // ViewModels

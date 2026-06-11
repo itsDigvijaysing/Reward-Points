@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.rewardpoints.app.quotes.DailyQuoteStore
+import com.rewardpoints.app.rpg.DecayDayStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "us
  * Implements [DailyQuoteStore] — the narrow slice QuoteRepository needs (source setting +
  * day-keyed quote cache) — so the repository stays unit-testable without a Context.
  */
-class UserPreferences(private val context: Context) : DailyQuoteStore {
+class UserPreferences(private val context: Context) : DailyQuoteStore, DecayDayStore {
 
     private val secretStorage = SecretStorage(context)
 
@@ -152,9 +153,9 @@ class UserPreferences(private val context: Context) : DailyQuoteStore {
         context.dataStore.edit { it[Keys.HEXAGON_STYLE] = style }
     }
 
-    suspend fun getLastDecayDay(): String? = context.dataStore.data.first()[Keys.LAST_DECAY_DAY]
+    override suspend fun getLastDecayDay(): String? = context.dataStore.data.first()[Keys.LAST_DECAY_DAY]
 
-    suspend fun setLastDecayDay(day: String) {
+    override suspend fun setLastDecayDay(day: String) {
         context.dataStore.edit { it[Keys.LAST_DECAY_DAY] = day }
     }
 

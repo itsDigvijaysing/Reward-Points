@@ -5,13 +5,14 @@ import com.rewardpoints.app.data.local.db.dao.PlayerStatsDao
 import com.rewardpoints.app.data.local.db.entity.PlayerStatsEntity
 import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.Rank
+import com.rewardpoints.app.rpg.DecayStatsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class PlayerRepository(
     private val playerStatsDao: PlayerStatsDao,
     private val userPreferences: UserPreferences
-) : PlayerStateProvider {
+) : PlayerStateProvider, DecayStatsStore {
     override val username: Flow<String> = userPreferences.username
 
     val playerStats: Flow<PlayerStats?> = playerStatsDao.getStats().map { entity ->
@@ -35,19 +36,19 @@ class PlayerRepository(
         }
     }
 
-    suspend fun updateStats(stats: PlayerStats) {
+    override suspend fun updateStats(stats: PlayerStats) {
         playerStatsDao.update(stats.toEntity())
     }
 
-    suspend fun updateStreak(streak: Int) {
+    override suspend fun updateStreak(streak: Int) {
         playerStatsDao.updateStreak(streak)
     }
 
-    suspend fun updateRank(rank: Rank) {
+    override suspend fun updateRank(rank: Rank) {
         playerStatsDao.updateRank(rank.name)
     }
 
-    suspend fun updateRankUpCounter(counter: Int) {
+    override suspend fun updateRankUpCounter(counter: Int) {
         playerStatsDao.updateRankUpCounter(counter)
     }
 

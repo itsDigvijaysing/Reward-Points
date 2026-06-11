@@ -1,10 +1,8 @@
 package com.rewardpoints.app.rpg
 
-import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.data.local.db.dao.DecayLogDao
 import com.rewardpoints.app.data.local.db.dao.TransactionDao
 import com.rewardpoints.app.data.local.db.entity.DecayLogEntity
-import com.rewardpoints.app.data.repository.PlayerRepository
 import com.rewardpoints.app.domain.model.PlayerStats
 import com.rewardpoints.app.domain.model.Rank
 import com.rewardpoints.app.widget.StatsWidgetUpdater
@@ -12,9 +10,10 @@ import java.time.LocalDate
 import java.util.Calendar
 
 class DecayEngine(
-    private val playerRepository: PlayerRepository,
+    private val statsStore: DecayStatsStore,
     private val decayLogDao: DecayLogDao,
-    private val userPreferences: UserPreferences,
+    private val dayStore: DecayDayStore,
+    private val transactor: Transactor,
     private val transactionDao: TransactionDao? = null,
     private val achievementTracker: AchievementTracker? = null,
     private val widgetUpdater: StatsWidgetUpdater? = null
@@ -31,7 +30,7 @@ class DecayEngine(
      */
     suspend fun applyDailyDecay(): DailyDecayResult {
         val today = LocalDate.now().toString() // yyyy-MM-dd in local zone
-        val lastRun = userPreferences.getLastDecayDay()
+        val lastRun = dayStore.getLastDecayDay()
         if (lastRun == today) {
             return DailyDecayResult.AlreadyApplied
         }
@@ -46,50 +45,59 @@ class DecayEngine(
         }.timeInMillis
         val yesterdayMidnight = todayMidnight - 24L * 60L * 60L * 1000L
 
-        // Check if any EARN transactions happened yesterday
-        val earnedYesterday = transactionDao?.getEarnedInRange(yesterdayMidnight, todayMidnight) ?: 0
+        // Read the activity signal and apply the day's mutation inside ONE DB transaction so a
+        // concurrent earn / redeem / buy-shield (each its own transaction) can't be clobbered by
+        // the full-row stats write below — which would otherwise erase a just-purchased Streak
+        // Shield or freshly-earned stat points.
+        val dailyResult = transactor.transaction {
+            // Check if any EARN transactions happened yesterday
+            val earnedYesterday = transactionDao?.getEarnedInRange(yesterdayMidnight, todayMidnight) ?: 0
 
-        val dailyResult = if (earnedYesterday > 0) {
-            // User was active, record success
-            when (val result = recordSuccessfulDay()) {
-                is StreakResult.StreakWithRankUp -> DailyDecayResult.ActiveWithRankUp(result.newRank)
-                is StreakResult.StreakContinued -> DailyDecayResult.ActiveDay(result.newStreak)
-                else -> DailyDecayResult.ActiveDay(0)
-            }
-        } else {
-            // User was idle. A Streak Freeze Shield (if owned) absorbs the idle day as a
-            // "rest day": consume one shield, leave stats / streak / star-line counter
-            // untouched. Otherwise decay applies as usual.
-            val stats = playerRepository.getStatsOnce()
-            if (stats != null && stats.streakShields > 0) {
-                playerRepository.updateStats(
-                    stats.copy(
-                        streakShields = stats.streakShields - 1,
-                        updatedAt = System.currentTimeMillis()
-                    )
-                )
-                DailyDecayResult.ShieldConsumed(shieldsLeft = stats.streakShields - 1)
+            if (earnedYesterday > 0) {
+                // User was active, record success
+                when (val result = recordSuccessfulDay()) {
+                    is StreakResult.StreakWithRankUp -> DailyDecayResult.ActiveWithRankUp(result.newRank)
+                    is StreakResult.StreakContinued -> DailyDecayResult.ActiveDay(result.newStreak)
+                    else -> DailyDecayResult.ActiveDay(0)
+                }
             } else {
-                when (val result = applyDecay("daily_idle")) {
-                    is DecayResult.DecayWithRankDown -> DailyDecayResult.IdleWithRankDown(result.newRank)
-                    is DecayResult.DecayApplied -> DailyDecayResult.IdleDay(result.statsLost)
-                    else -> DailyDecayResult.IdleDay(0)
+                // User was idle. A Streak Freeze Shield (if owned) absorbs the idle day as a
+                // "rest day": consume one shield, leave stats / streak / star-line counter
+                // untouched. Otherwise decay applies as usual.
+                val stats = statsStore.getStatsOnce()
+                if (stats != null && stats.streakShields > 0) {
+                    statsStore.updateStats(
+                        stats.copy(
+                            streakShields = stats.streakShields - 1,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                    )
+                    DailyDecayResult.ShieldConsumed(shieldsLeft = stats.streakShields - 1)
+                } else {
+                    when (val result = applyDecay("daily_idle")) {
+                        is DecayResult.DecayWithRankDown -> DailyDecayResult.IdleWithRankDown(result.newRank)
+                        is DecayResult.DecayApplied -> DailyDecayResult.IdleDay(result.statsLost)
+                        else -> DailyDecayResult.IdleDay(0)
+                    }
                 }
             }
         }
 
-        // Update streak/rank achievements
-        achievementTracker?.onStreakUpdated()
+        // Mark the day done BEFORE the non-transactional side-effects. If a side-effect throws,
+        // DecayWorker retries — but this marker already guards against re-applying decay on that
+        // retry. (The marker lives in DataStore, not Room, so it can't join the transaction above.)
+        dayStore.setLastDecayDay(today)
 
-        // Push fresh state to any home-screen widgets (rank/streak/balance may have changed).
+        // Update streak/rank achievements, then push fresh state to any home-screen widgets
+        // (rank/streak/balance may have changed).
+        achievementTracker?.onStreakUpdated()
         widgetUpdater?.refresh()
 
-        userPreferences.setLastDecayDay(today)
         return dailyResult
     }
 
     suspend fun applyDecay(reason: String = "daily_idle"): DecayResult {
-        val stats = playerRepository.getStatsOnce() ?: return DecayResult.NoStats
+        val stats = statsStore.getStatsOnce() ?: return DecayResult.NoStats
 
         // Stat loss: 1 point from each stat above BASE_STAT, floored there.
         val strLost = if (stats.strStat > PlayerStats.BASE_STAT) 1 else 0
@@ -129,7 +137,7 @@ class DecayEngine(
             rank = newRank,
             updatedAt = System.currentTimeMillis()
         )
-        playerRepository.updateStats(updatedStats)
+        statsStore.updateStats(updatedStats)
 
         if (totalLost > 0) {
             decayLogDao.insert(
@@ -164,24 +172,24 @@ class DecayEngine(
     }
 
     suspend fun recordSuccessfulDay(): StreakResult {
-        val stats = playerRepository.getStatsOnce() ?: return StreakResult.NoStats
+        val stats = statsStore.getStatsOnce() ?: return StreakResult.NoStats
 
         val newStreak = stats.streak + 1
-        playerRepository.updateStreak(newStreak)
+        statsStore.updateStreak(newStreak)
 
         // Delegate rank decision to RankLogic.
         val transition = RankLogic.applyActiveDay(stats.rankUpStreakCounter, stats.rank)
         return when (transition) {
             is RankLogic.Transition.RankUp -> {
                 // updateRank resets rankUpStreakCounter to 0 in its SQL.
-                playerRepository.updateRank(transition.newRank)
+                statsStore.updateRank(transition.newRank)
                 StreakResult.StreakWithRankUp(
                     newStreak = newStreak,
                     newRank = transition.newRank
                 )
             }
             is RankLogic.Transition.CounterUpdated -> {
-                playerRepository.updateRankUpCounter(transition.newCounter)
+                statsStore.updateRankUpCounter(transition.newCounter)
                 StreakResult.StreakContinued(
                     newStreak = newStreak,
                     daysToRankUp = (Rank.STREAK_DAYS_TO_RANK_UP - transition.newCounter)
