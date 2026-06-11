@@ -28,6 +28,7 @@ import com.rewardpoints.app.domain.model.Rank
 import com.rewardpoints.app.domain.model.StatType
 import com.rewardpoints.app.ui.components.glass.*
 import com.rewardpoints.app.ui.components.rpg.DailyQuoteCard
+import com.rewardpoints.app.ui.components.rememberHapticTick
 import com.rewardpoints.app.ui.components.rpg.RankUpAnimation
 import com.rewardpoints.app.ui.components.rpg.StatusWindow
 import com.rewardpoints.app.ui.navigation.Routes
@@ -45,11 +46,13 @@ fun StatusScreen(
     var showTitlePicker by remember { mutableStateOf(false) }
     var showShieldDialog by remember { mutableStateOf(false) }
     var showRankUpAnimation by remember { mutableStateOf<Rank?>(null) }
+    val hapticTick = rememberHapticTick()
 
     // Listen for rank-up events
     LaunchedEffect(Unit) {
         viewModel.rankUpEvent.collect { newRank ->
             showRankUpAnimation = newRank
+            hapticTick()
         }
     }
 
@@ -159,6 +162,7 @@ fun StatusScreen(
             onDismiss = { showMoodDialog = false },
             onMoodSelected = { mood ->
                 viewModel.checkInMood(mood)
+                hapticTick()
                 showMoodDialog = false
             }
         )
@@ -181,7 +185,7 @@ fun StatusScreen(
             shieldsHeld = uiState.stats.streakShields,
             balance = uiState.currentBalance,
             message = uiState.shieldMessage,
-            onBuy = { viewModel.buyShield() },
+            onBuy = { viewModel.buyShield(); hapticTick() },
             onDismiss = {
                 viewModel.dismissShieldMessage()
                 showShieldDialog = false

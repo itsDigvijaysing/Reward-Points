@@ -48,6 +48,7 @@ import com.rewardpoints.app.data.local.db.entity.MissionEntity
 import com.rewardpoints.app.domain.model.StatType
 import com.rewardpoints.app.sync.TodoistTask
 import com.rewardpoints.app.ui.components.glass.*
+import com.rewardpoints.app.ui.components.rememberHapticTick
 import com.rewardpoints.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
@@ -58,6 +59,7 @@ fun TasksScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val hapticTick = rememberHapticTick()
 
     // Re-run on every tab re-entry (not just initial composition).
     // - resetDailyMissions: catches midnight rollover while app stays open
@@ -114,7 +116,7 @@ fun TasksScreen(
             } else {
                 TasksList(
                     uiState = uiState,
-                    onCompleteMission = { viewModel.completeMission(it) },
+                    onCompleteMission = { viewModel.completeMission(it); hapticTick() },
                     onDeleteMission = { viewModel.deleteMission(it) },
                     onCreateMission = { viewModel.showCreateDialog() },
                     onToggleTodoist = { viewModel.toggleTodoistTasks() },

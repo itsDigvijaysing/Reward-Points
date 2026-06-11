@@ -28,6 +28,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.rewardpoints.app.domain.model.Reward
 import com.rewardpoints.app.ui.components.glass.*
+import com.rewardpoints.app.ui.components.rememberHapticTick
 import com.rewardpoints.app.ui.navigation.Routes
 import com.rewardpoints.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
@@ -43,6 +44,7 @@ fun RewardsScreen(
     var pendingRedeem by remember { mutableStateOf<Reward?>(null) }
     var pendingDelete by remember { mutableStateOf<Reward?>(null) }
     var pendingEdit by remember { mutableStateOf<Reward?>(null) }
+    val hapticTick = rememberHapticTick()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -163,6 +165,7 @@ fun RewardsScreen(
                 confirmText = "Redeem",
                 onConfirm = {
                     viewModel.redeemReward(reward)
+                    hapticTick()
                     pendingRedeem = null
                 },
                 onDismiss = { pendingRedeem = null }

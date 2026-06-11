@@ -4,6 +4,10 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +26,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.ui.components.AmbientBackground
+import com.rewardpoints.app.ui.components.LocalHapticsEnabled
 import com.rewardpoints.app.ui.components.glass.BottomNavItem
 import com.rewardpoints.app.ui.components.glass.GlassBottomBar
 import com.rewardpoints.app.ui.components.glass.LocalHazeState
@@ -59,10 +65,15 @@ fun AppNavigation(
     val onboarded by produceState<Boolean?>(initialValue = null, userPreferences) {
         userPreferences.onboardingComplete.collect { value = it }
     }
-    when (onboarded) {
-        null -> Box(modifier = Modifier.fillMaxSize().background(BackgroundBase))
-        false -> OnboardingScreen()
-        else -> MainShell(navController)
+    // Expose the Haptic Feedback preference app-wide so action handlers can tick on confirm.
+    val hapticsEnabled by userPreferences.hapticFeedback.collectAsStateWithLifecycle(initialValue = true)
+
+    CompositionLocalProvider(LocalHapticsEnabled provides hapticsEnabled) {
+        when (onboarded) {
+            null -> Box(modifier = Modifier.fillMaxSize().background(BackgroundBase))
+            false -> OnboardingScreen()
+            else -> MainShell(navController)
+        }
     }
 }
 
@@ -111,7 +122,12 @@ private fun MainShell(navController: NavHostController) {
                 startDestination = Routes.STATUS,
                 modifier = Modifier
                     .padding(paddingValues)
-                    .hazeSourceOrFallback()
+                    .hazeSourceOrFallback(),
+                // Subtle fade-through on route changes for a more fluid feel.
+                enterTransition = { fadeIn(tween(220)) + slideInHorizontally(tween(220)) { it / 16 } },
+                exitTransition = { fadeOut(tween(160)) },
+                popEnterTransition = { fadeIn(tween(220)) },
+                popExitTransition = { fadeOut(tween(160)) }
             ) {
                 composable(Routes.STATUS) {
                     StatusScreen(navController = navController)
