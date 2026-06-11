@@ -29,6 +29,7 @@ import com.rewardpoints.app.ui.screen.agent.AgentViewModel
 import com.rewardpoints.app.widget.StatsWidgetUpdater
 import com.rewardpoints.app.ui.screen.achievements.AchievementsViewModel
 import com.rewardpoints.app.ui.screen.history.HistoryViewModel
+import com.rewardpoints.app.ui.screen.onboarding.OnboardingViewModel
 import com.rewardpoints.app.ui.screen.rewards.RewardsViewModel
 import com.rewardpoints.app.ui.screen.settings.SettingsViewModel
 import com.rewardpoints.app.ui.screen.stats.StatsViewModel
@@ -163,4 +164,5 @@ val appModule = module {
     viewModel { AchievementsViewModel(get()) }
     viewModel { StatsViewModel(get(), get()) }
     viewModel { AgentViewModel(get(), get()) }
+    viewModel { OnboardingViewModel(get(), get()) }
 }

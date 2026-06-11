@@ -1,5 +1,10 @@
 package com.rewardpoints.app.ui.navigation
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,7 +12,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation.NavHostController
@@ -15,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.rewardpoints.app.data.local.datastore.UserPreferences
 import com.rewardpoints.app.ui.components.AmbientBackground
 import com.rewardpoints.app.ui.components.glass.BottomNavItem
 import com.rewardpoints.app.ui.components.glass.GlassBottomBar
@@ -24,11 +32,14 @@ import dev.chrisbanes.haze.rememberHazeState
 import com.rewardpoints.app.ui.screen.achievements.AchievementsScreen
 import com.rewardpoints.app.ui.screen.agent.AgentScreen
 import com.rewardpoints.app.ui.screen.history.HistoryScreen
+import com.rewardpoints.app.ui.screen.onboarding.OnboardingScreen
 import com.rewardpoints.app.ui.screen.rewards.RewardsScreen
 import com.rewardpoints.app.ui.screen.settings.SettingsScreen
 import com.rewardpoints.app.ui.screen.stats.StatsScreen
 import com.rewardpoints.app.ui.screen.status.StatusScreen
 import com.rewardpoints.app.ui.screen.tasks.TasksScreen
+import com.rewardpoints.app.ui.theme.BackgroundBase
+import org.koin.compose.koinInject
 
 private val bottomNavItems = listOf(
     BottomNavItem("Status", Icons.Outlined.Shield, Routes.STATUS),
@@ -42,6 +53,24 @@ private val bottomNavItems = listOf(
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
+    // First-run gate: show onboarding until the flag is set. `null` = the flag is still loading,
+    // so we render a neutral dark frame (never a flash of onboarding for already-onboarded users).
+    val userPreferences = koinInject<UserPreferences>()
+    val onboarded by produceState<Boolean?>(initialValue = null, userPreferences) {
+        userPreferences.onboardingComplete.collect { value = it }
+    }
+    when (onboarded) {
+        null -> Box(modifier = Modifier.fillMaxSize().background(BackgroundBase))
+        false -> OnboardingScreen()
+        else -> MainShell(navController)
+    }
+}
+
+@Composable
+private fun MainShell(navController: NavHostController) {
+    // Ask for notification permission here (after onboarding), not over the intro.
+    RequestNotificationPermissionOnce()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Routes.STATUS
 
@@ -112,4 +141,20 @@ fun AppNavigation(
         }
     }
     }  // CompositionLocalProvider
+}
+
+/**
+ * Asks for POST_NOTIFICATIONS once on Android 13+. Decline is fine — the Notifier re-checks
+ * permission before every notify call, so refusal silently disables notifications. No UI shows
+ * if the permission isn't needed (API < 33) or is already granted.
+ */
+@Composable
+private fun RequestNotificationPermissionOnce() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { /* result ignored — Notifier re-checks before each notify call */ }
+    LaunchedEffect(Unit) {
+        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
 }
