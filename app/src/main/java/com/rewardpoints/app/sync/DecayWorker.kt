@@ -3,6 +3,8 @@ package com.rewardpoints.app.sync
 import android.content.Context
 import androidx.work.*
 import com.rewardpoints.app.data.repository.MissionRepository
+import com.rewardpoints.app.notifications.Notifier
+import com.rewardpoints.app.rpg.DailyDecayResult
 import com.rewardpoints.app.rpg.DecayEngine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -16,14 +18,23 @@ class DecayWorker(
 
     private val decayEngine: DecayEngine by inject()
     private val missionRepository: MissionRepository by inject()
+    private val notifier: Notifier by inject()
 
     override suspend fun doWork(): Result {
         return try {
-            decayEngine.applyDailyDecay()
+            val result = decayEngine.applyDailyDecay()
             // Reset daily missions at the midnight tick so completed dailies clear even on days
             // the user never opens the Tasks tab. Idempotent (gated on lastMissionResetDay) and
             // decay's own marker means a retry here can't re-apply decay.
             missionRepository.resetDailyIfNeeded()
+            // Re-engagement nudges on the reminders channel. Only the consequential outcomes —
+            // a rank drop or a shield absorbing an idle day — notify; ordinary active/idle days
+            // and already-applied no-ops stay silent to avoid daily spam.
+            when (result) {
+                is DailyDecayResult.IdleWithRankDown -> notifier.showRankDown(result.newRank.name)
+                is DailyDecayResult.ShieldConsumed -> notifier.showShieldUsed(result.shieldsLeft)
+                else -> {}
+            }
             Result.success()
         } catch (e: Exception) {
             Result.retry()

@@ -87,6 +87,30 @@ class Notifier(private val context: Context) {
         )
     }
 
+    /** An idle day dropped the player a rank — nudge them to come back and climb. */
+    fun showRankDown(rankName: String) {
+        notify(
+            id = NOTIF_RANK_DOWN,
+            channel = CHANNEL_REMINDERS,
+            title = "Rank dropped to $rankName",
+            body = "An idle day cost you a rank. Complete a task today to start climbing back."
+        )
+    }
+
+    /** A Streak Freeze Shield absorbed an idle day — reassure and prompt re-engagement. */
+    fun showShieldUsed(shieldsLeft: Int) {
+        notify(
+            id = NOTIF_SHIELD_USED,
+            channel = CHANNEL_REMINDERS,
+            title = "Streak Freeze used 🛡️",
+            body = if (shieldsLeft > 0) {
+                "A shield absorbed your idle day — streak safe. $shieldsLeft left."
+            } else {
+                "Your last shield absorbed your idle day. Complete a task to stay safe."
+            }
+        )
+    }
+
     /**
      * Single funnel for all notifications. Bails early if POST_NOTIFICATIONS is denied
      * (Android 13+) or notifications are globally muted (pre-13). Centralising the gate
@@ -122,5 +146,7 @@ class Notifier(private val context: Context) {
 
         private const val NOTIF_SYNC_RESULT = 1001
         private const val NOTIF_SYNC_AUTH = 1002
+        private const val NOTIF_RANK_DOWN = 1003
+        private const val NOTIF_SHIELD_USED = 1004
     }
 }
