@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.1.2-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.3-blue.svg)
 ![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.1-purple.svg)
@@ -42,7 +42,8 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 
 ### 🎁 **Rewards System**
 - **Custom Rewards** - Create personal rewards (e.g., "Watch an episode" = 50pts)
-- **Point Redemption** - Spend earned points on your rewards
+- **Edit Rewards** - Change a reward's name, cost (presets or a custom amount up to 999,999), description, or icon any time
+- **Point Redemption** - Spend earned points on your rewards (with a confirm step so you never spend by mistake)
 - **Transaction History** - Track all earnings and spendings
 
 ### 🏆 **Achievements**
@@ -64,8 +65,11 @@ Stat Up transforms your daily life into an RPG experience. Complete tasks to ear
 ### 🎨 **Premium UI**
 - **Liquid Glass Design** - Translucent cards, glowing borders, blur effects
 - **Dark Theme** - Eye-friendly dark interface
-- **Smooth Animations** - AnimatedVisibility, progress animations, transitions
-- **RPG Aesthetic** - Status window design inspired by Solo Leveling and other anime
+- **First-Run Onboarding** - A short guided intro the first time you open the app
+- **Smooth Animations** - AnimatedVisibility, progress animations, fade-through screen transitions
+- **Haptic Feedback** - Subtle taps on redeem, mission complete, mood check-in, shield buy, and rank-up (toggle in Settings)
+- **Re-engagement Reminders** - A notification when an idle day drops your rank or a Streak Shield saves your streak
+- **RPG Aesthetic** - New neon-hexagon app icon; status window design inspired by Solo Leveling and other anime
 
 ## 🏗️ Building
 

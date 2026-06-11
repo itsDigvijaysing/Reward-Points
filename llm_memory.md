@@ -8,12 +8,22 @@
 - **Repo**: /home/king/Documents/Projects/Stat-Up
 - **License**: GPL-3.0 | **Package**: com.rewardpoints.app (historical name; matches DB/DataStore identity)
 
-## Current State (as of 2026-06-10)
-- **Status**: v3.1.2 (versionCode 10). v4.0 feature work is merged into the tree **and verified building** locally on this machine — debug APK is `app/build/outputs/apk/debug/app-debug.apk` (~29 MB). All 31 JVM unit tests pass.
+## Current State (as of 2026-06-12)
+- **Status**: v3.1.3 (versionCode 11). Pre-launch hardening + polish batches merged and verified — debug APK + release build clean under R8; **36 JVM unit tests pass**; instrumented `MigrationTest` (2) + `ExampleInstrumentedTest` pass on Waydroid. CI (`.github/workflows/ci.yml`) runs tests/lint/build automatically. **No DB schema change** — `DB_VERSION` stays 5.
 - **Stack**: Kotlin 2.1.20, Compose BOM 2025.03.01, Room 2.7.1, Ktor 3.1.2, Koin 3.5.6, DataStore 1.1.4, WorkManager 2.10.1, Haze 1.7.2 (backdrop blur), AndroidX Security 1.1.0 (encrypted prefs — stable release deprecates the `EncryptedSharedPreferences` API; still functional, kept until a storage migration is planned).
 - **Android targets**: minSdk 26, **targetSdk 36** (bumped 2026-06-10 — Play requires 36 for updates after Aug 31, 2026), **compileSdk 36**.
 - **Local build env (2026-05-14)**: JDK 17.0.18 GA (apt `openjdk-17-jdk`, alongside an unusable JDK 25 EA), Android SDK at `~/Android/Sdk` with `cmdline-tools/latest`, platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools r37. `local.properties` points `sdk.dir` at `~/Android/Sdk`.
 - **DB version**: 5 (`DB_VERSION` in `AppDatabase.kt`; migrations 1→2 no-op, 2→3 adds `titles.rewardPoints`, 3→4 dedupes `transactions.externalId` + unique index, 4→5 adds `player_stats.streakShields`). Builder uses `fallbackToDestructiveMigrationOnDowngrade(false)` — a forgotten upgrade migration **throws** instead of wiping user data; instrumented `MigrationTest` validates every migration path against `app/schemas/*.json`. The `AiConversationEntity` table stays dormant — agent transcript lives in-memory only by design (user opted out of conversation persistence).
+
+## 3.1.3 Changelog (2026-06-12) — pre-launch hardening + polish
+- **Data safety**: daily decay is now atomic — `DecayEngine` wraps its `player_stats` read-modify-write in a `Transactor`/`RoomTransactor` transaction and sets the idempotency marker before side-effects; fixes "concurrent earn/buy-shield clobbered by decay" + double-apply-on-retry. Uses `DecayStatsStore`/`DecayDayStore` ports, JVM-tested (`DecayEngineTest`).
+- **MissionRepository** extracted; daily-mission reset runs from `DecayWorker` at midnight (once/day via `lastMissionResetDay`), not only on Tasks-tab resume.
+- **Achievement checks** hoisted out of the Todoist per-task loop (guarded `runCatching`) → no false "sync failed", far fewer transactions.
+- **MigrationTest** gained a data-survival case; **CI + lint baseline** added; `network_security_config` wired; Gemini key sent in header; password IME on secret fields; unused Coil removed.
+- **New icon** (neon hexagon) on launcher + splash; old icon vectors + `ICONS/` source + 19 unused drawables/font archived in `OLD_ASSET/` (safe to delete).
+- **New features**: 3-step onboarding (gated on `onboardingComplete`), edit-a-reward, re-engagement notifications (rank-down/shield-saved), real haptics (was a dead toggle) + fade-through screen transitions.
+- Confirmed already-built: mood once/day, custom reward cost (≤999,999).
+- **Publishing**: not yet on Play. Release signing still falls back to the debug keystore until `keystore.properties` + an upload key exist (see Gotchas in CLAUDE.md).
 
 ## What Works
 - ✅ Glass UI (cards, buttons, bottom bar, ambient background, no click rectangles)
