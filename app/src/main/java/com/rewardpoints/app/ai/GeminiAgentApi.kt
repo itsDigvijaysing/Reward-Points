@@ -78,7 +78,9 @@ class GeminiAgentApi(
             val body = json.encodeToString(GeminiRequest.serializer(), request)
 
             val response = httpClient.post("$BASE/$MODEL:generateContent") {
-                parameter("key", apiKey)
+                // Send the key as a header, not a query parameter, so it can't leak into
+                // proxy / CDN / server access logs the way a ?key=... URL can.
+                header("x-goog-api-key", apiKey)
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
