@@ -22,6 +22,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -133,6 +137,9 @@ private fun BottomNavItemView(
                 indication = null,
                 onClick = onClick
             )
+            // Expose this as a selectable tab to TalkBack: without it the bar reads as five
+            // unlabeled clickables with no active/inactive state (selection is colour-only).
+            .semantics { selected = isSelected; role = Role.Tab }
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

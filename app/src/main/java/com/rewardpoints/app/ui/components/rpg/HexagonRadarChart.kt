@@ -37,7 +37,11 @@ fun HexagonRadarChart(
     stats: PlayerStats,
     modifier: Modifier = Modifier,
     size: Dp = 200.dp,
-    showAnimation: Boolean = true,
+    // Off by default: the infinite "breathe" scale animates a value read inside the Canvas draw
+    // lambda, and this chart sits on the Haze blur source layer — so leaving it on continuously
+    // re-blurs the bottom bar, quick-action cards, and quote card every frame while Status is
+    // open. The stat-fill tween on real stat changes is separate and unaffected.
+    showAnimation: Boolean = false,
     showLabels: Boolean = true,
     style: HexagonStyle = HexagonStyle.SIMPLE
 ) {

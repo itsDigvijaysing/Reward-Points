@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,10 @@ fun RewardsScreen(
     viewModel: RewardsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    // Confirmation gates: redeeming spends points and deleting is permanent — both used to fire
+    // on a single tap of buttons that sit close together in a scrolling list.
+    var pendingRedeem by remember { mutableStateOf<Reward?>(null) }
+    var pendingDelete by remember { mutableStateOf<Reward?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -117,8 +122,8 @@ fun RewardsScreen(
                         RewardCard(
                             reward = reward,
                             canAfford = uiState.currentBalance >= reward.pointsCost,
-                            onRedeem = { viewModel.redeemReward(reward) },
-                            onDelete = { viewModel.deleteReward(reward) }
+                            onRedeem = { pendingRedeem = reward },
+                            onDelete = { pendingDelete = reward }
                         )
                     }
                 }
@@ -132,6 +137,35 @@ fun RewardsScreen(
                 onCreate = { name, desc, cost, emoji, category ->
                     viewModel.createReward(name, desc, cost, emoji, category)
                 }
+            )
+        }
+
+        // Redeem confirmation — spending points is irreversible.
+        pendingRedeem?.let { reward ->
+            ConfirmActionDialog(
+                title = "Redeem Reward",
+                message = "Spend ${reward.pointsCost} points on \"${reward.name}\"?",
+                confirmText = "Redeem",
+                onConfirm = {
+                    viewModel.redeemReward(reward)
+                    pendingRedeem = null
+                },
+                onDismiss = { pendingRedeem = null }
+            )
+        }
+
+        // Delete confirmation — deletion is permanent.
+        pendingDelete?.let { reward ->
+            ConfirmActionDialog(
+                title = "Delete Reward",
+                titleColor = AccentError,
+                message = "Delete \"${reward.name}\"? This can't be undone.",
+                confirmText = "Delete",
+                onConfirm = {
+                    viewModel.deleteReward(reward)
+                    pendingDelete = null
+                },
+                onDismiss = { pendingDelete = null }
             )
         }
 
@@ -272,6 +306,72 @@ private fun RewardCard(
                         tint = TextTertiary,
                         modifier = Modifier.size(16.dp)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConfirmActionDialog(
+    title: String,
+    message: String,
+    confirmText: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    titleColor: Color = TextPrimary
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundBase.copy(alpha = 0.92f))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                elevated = true
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = title,
+                        color = titleColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Inter
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = message,
+                        color = TextSecondary,
+                        fontSize = 14.sp,
+                        fontFamily = Inter
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        GlassButton(
+                            text = "Cancel",
+                            onClick = onDismiss,
+                            primary = false,
+                            modifier = Modifier.weight(1f)
+                        )
+                        GlassButton(
+                            text = confirmText,
+                            onClick = onConfirm,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
