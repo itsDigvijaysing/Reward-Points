@@ -4,8 +4,8 @@ package com.rewardpoints.app.ai
  * Provider-agnostic chat API. Concrete impls today: [GeminiAgentApi].
  *
  * The interface exists so the rest of the app talks to "an AI" rather than to Gemini
- * specifically — swapping in a different provider (Claude, local Gemini Nano, etc.)
- * only requires another impl + a Koin rebind.
+ * specifically — swapping in a different provider (a local on-device model, another
+ * cloud LLM, etc.) only requires another impl + a Koin rebind.
  */
 interface AgentApi {
 

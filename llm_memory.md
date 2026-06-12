@@ -23,7 +23,7 @@
 - **New icon** (neon hexagon) on launcher + splash; old icon vectors + `ICONS/` source + 19 unused drawables/font archived in `OLD_ASSET/` (safe to delete).
 - **New features**: 3-step onboarding (gated on `onboardingComplete`), edit-a-reward, re-engagement notifications (rank-down/shield-saved), real haptics (was a dead toggle) + fade-through screen transitions.
 - Confirmed already-built: mood once/day, custom reward cost (≤999,999).
-- **Publishing**: not yet on Play. Release signing still falls back to the debug keystore until `keystore.properties` + an upload key exist (see Gotchas in CLAUDE.md).
+- **Publishing**: not yet on Play. Release signing still falls back to the debug keystore until `keystore.properties` + an upload key exist.
 
 ## What Works
 - ✅ Glass UI (cards, buttons, bottom bar, ambient background, no click rectangles)

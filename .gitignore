@@ -29,3 +29,5 @@ keystore.properties
 .vscode
 .kotlin
 graphify-out
+# Local dev-tooling docs / generated output — not for publishing
+CLAUDE.md
