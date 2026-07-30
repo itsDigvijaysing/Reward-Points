@@ -123,7 +123,7 @@ fun StatusWindow(
         ) {
             HexagonRadarChart(
                 stats = stats,
-                size = 160.dp,
+                size = 200.dp,
                 showLabels = true,
                 style = hexagonStyle
             )

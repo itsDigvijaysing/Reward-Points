@@ -47,7 +47,12 @@ fun AgentScreen(
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .imePadding()
+    ) {
         Header(
             messageCount = uiState.messages.size,
             onClear = { viewModel.clearChat() }
@@ -56,7 +61,14 @@ fun AgentScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (uiState.messages.isEmpty()) {
-            EmptyState(onPickPrompt = { viewModel.sendMessage(it) })
+            // weight(1f) matches MessageList below — without it, EmptyState only takes its
+            // natural (short) height and AgentInput ends up wherever that leaves off instead
+            // of pinned to the bottom, leaving it stranded mid-screen instead of docked above
+            // the keyboard.
+            EmptyState(
+                onPickPrompt = { viewModel.sendMessage(it) },
+                modifier = Modifier.weight(1f)
+            )
         } else {
             MessageList(
                 messages = uiState.messages,
@@ -153,7 +165,7 @@ private fun NotConfiguredState(onOpenSettings: () -> Unit) {
 }
 
 @Composable
-private fun EmptyState(onPickPrompt: (String) -> Unit) {
+private fun EmptyState(onPickPrompt: (String) -> Unit, modifier: Modifier = Modifier) {
     val starters = listOf(
         "How am I doing this week?",
         "Suggest 3 quick STR missions",
@@ -161,10 +173,11 @@ private fun EmptyState(onPickPrompt: (String) -> Unit) {
         "Help me build a bedtime routine"
     )
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(text = "💬", fontSize = 48.sp)
         Spacer(modifier = Modifier.height(12.dp))

@@ -26,6 +26,8 @@ keystore.properties
 .env.*
 !.env.example
 .claude
+.agents
+.codex
 .vscode
 .kotlin
 graphify-out

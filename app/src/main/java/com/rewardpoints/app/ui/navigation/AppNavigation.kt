@@ -10,7 +10,11 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -77,6 +81,7 @@ fun AppNavigation(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MainShell(navController: NavHostController) {
     // Ask for notification permission here (after onboarding), not over the intro.
@@ -85,9 +90,15 @@ private fun MainShell(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Routes.STATUS
 
+    // Scaffold's bottomBar slot reserves a FIXED height for content padding — it never
+    // accounts for the IME, so when the keyboard opens over AgentScreen's chat input, that
+    // fixed reservation and the keyboard height fight each other (wrong gap either way).
+    // Hiding the bar while the keyboard is visible removes the fixed competitor entirely,
+    // leaving AgentScreen's own imePadding() as the only thing sizing the bottom space.
+    val imeVisible = WindowInsets.isImeVisible
     val showBottomBar = currentRoute in listOf(
         Routes.STATUS, Routes.TASKS, Routes.REWARDS, Routes.AGENT, Routes.SETTINGS
-    )
+    ) && !imeVisible
 
     // Single HazeState shared across the whole shell — content is the "source", glass
     // primitives (cards, bottom bar) are "effects" that sample the source at blur time.
@@ -122,6 +133,11 @@ private fun MainShell(navController: NavHostController) {
                 startDestination = Routes.STATUS,
                 modifier = Modifier
                     .padding(paddingValues)
+                    // Without this, descendants that read WindowInsets directly (e.g.
+                    // AgentScreen's imePadding()) don't know paddingValues already reserved
+                    // the bottom-bar's height, so they stack the full inset on top of it —
+                    // a permanent gap the size of the bottom bar between content and the IME.
+                    .consumeWindowInsets(paddingValues)
                     .hazeSourceOrFallback(),
                 // Subtle fade-through on route changes for a more fluid feel.
                 enterTransition = { fadeIn(tween(220)) + slideInHorizontally(tween(220)) { it / 16 } },
