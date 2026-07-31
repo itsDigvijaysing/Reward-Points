@@ -1,6 +1,5 @@
 package com.rewardpoints.app.ai
 
-import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -35,7 +34,6 @@ class GeminiAgentApi(
 ) : AgentApi {
 
     companion object {
-        private const val TAG = "GeminiAgentApi"
         private const val MODEL = "gemini-2.5-flash"
         private const val BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
@@ -57,8 +55,6 @@ class GeminiAgentApi(
         if (apiKey.isNullOrBlank()) {
             return Result.failure(AgentAuthException("No Gemini API key. Add one in Settings."))
         }
-        val startMs = System.currentTimeMillis()
-        val turnCount = transcript.count { !it.isPending }
         return runCatching {
             val request = GeminiRequest(
                 systemInstruction = GeminiContent(
@@ -94,8 +90,6 @@ class GeminiAgentApi(
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
-            val elapsedMs = System.currentTimeMillis() - startMs
-            Log.d(TAG, "chat: turns=$turnCount status=${response.status.value} elapsedMs=$elapsedMs")
 
             when {
                 response.status == HttpStatusCode.Unauthorized ||
@@ -123,16 +117,12 @@ class GeminiAgentApi(
             // (just a truncated reply) and should fall through to the normal text path.
             val finish = candidate.finishReason
             if (finish != null && finish !in BENIGN_FINISH_REASONS) {
-                Log.w(TAG, "chat: blocked, finishReason=$finish")
                 throw AgentSafetyException("Gemini blocked the response ($finish).")
             }
 
             val text = candidate.content?.parts?.firstOrNull()?.text
                 ?: throw Exception("Gemini returned an empty response.")
-            Log.d(TAG, "chat: finishReason=$finish replyChars=${text.length}")
             text.trim()
-        }.onFailure { e ->
-            Log.w(TAG, "chat: failed (${e::class.simpleName}): ${e.message}")
         }
     }
 }

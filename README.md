@@ -1,18 +1,9 @@
-# Stat Up - RPG Gamification for Real Life
-
-<div align="center">
-
-![Version](https://img.shields.io/badge/version-3.1.3-blue.svg)
-![API](https://img.shields.io/badge/API-26%2B-brightgreen.svg)
-![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.1-purple.svg)
-![Compose](https://img.shields.io/badge/Jetpack_Compose-Material3-green.svg)
+# Stat Up: RPG Gamification for Real Life
 
 **An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.**
 
-[Features](#-features) • [Screenshots](#-screenshots) • [Building](#-building) • [Architecture](#-architecture) • [Contributing](#-contributing)
-
-</div>
+![Stat Up](asset/STAT_UP.webp)
+- Demo Video: https://www.youtube.com/watch?v=gvXfM7x2DlU
 
 ## 📱 Overview
 
