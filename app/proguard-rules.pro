@@ -57,12 +57,12 @@
 -keep class androidx.security.crypto.** { *; }
 
 # Koin
+# Koin 3.x resolves dependencies through the explicit `single { }` / `viewModel { }` lambdas in
+# AppModule.kt — constructor reflection is never used, so no app-wide constructor keep is needed.
+# ViewModels are kept because androidx.lifecycle instantiates them reflectively.
 -keepnames class androidx.lifecycle.ViewModel
 -keepclassmembers class * extends androidx.lifecycle.ViewModel {
     <init>(...);
-}
--keepclassmembers class * {
-    public <init>(...);
 }
 
 # Compose

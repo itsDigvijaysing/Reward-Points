@@ -1,6 +1,8 @@
 package com.rewardpoints.app.ui.screen.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -28,12 +30,62 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.rewardpoints.app.ui.navigation.Routes
 import com.rewardpoints.app.ui.components.glass.GlassButton
 import com.rewardpoints.app.ui.components.glass.GlassCard
 import com.rewardpoints.app.ui.components.glass.GlassTextField
 import com.rewardpoints.app.ui.theme.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
+/**
+ * Prominent disclosure for the AI Coach, shown in the connect dialog directly above the API-key
+ * field so the user reads it before the affirmative action that enables sharing.
+ *
+ * Google Play's User Data policy requires an in-app disclosure — not a buried settings page or a
+ * privacy-policy-only mention — whenever an app sends user data somewhere the user would not
+ * otherwise expect. Sending player state to Google's servers from an app advertised as
+ * offline-first is exactly that case.
+ */
+@Composable
+private fun DataSharingDisclosure() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = AccentWarning.copy(alpha = 0.08f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = AccentWarning.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp)
+    ) {
+        Text(
+            text = "What gets sent to Google",
+            color = AccentWarning,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = Inter
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "Connecting the AI Coach turns off offline-only mode for this feature. " +
+                "Each time you send a message, your message and a snapshot of your player " +
+                "state — name, rank, streak, six stat values, total points, last 5 earns and " +
+                "up to 4 active missions — are sent over HTTPS to Google's Gemini API so the " +
+                "reply can reference your progress.\n\n" +
+                "Nothing is sent until you send a message, and disconnecting stops it " +
+                "immediately. Google handles this data under its own privacy policy.",
+            color = TextSecondary,
+            fontSize = 12.sp,
+            lineHeight = 17.sp,
+            fontFamily = Inter
+        )
+    }
+}
 
 @Composable
 fun SettingsScreen(
@@ -297,6 +349,41 @@ fun SettingsScreen(
                         fontSize = 12.sp,
                         fontFamily = Inter
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Required by Google Play's User Data policy: the privacy policy must be
+            // reachable from inside the app, not only from the store listing.
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { navController.navigate(Routes.PRIVACY_POLICY) }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🔒",
+                        fontSize = 24.sp
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Privacy Policy",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = Inter
+                        )
+                        Text(
+                            text = "What stays on your device, and what doesn't",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            fontFamily = Inter
+                        )
+                    }
                 }
             }
         }
@@ -695,6 +782,10 @@ private fun GeminiConnectionDialog(
                             fontSize = 12.sp,
                             fontFamily = Inter
                         )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        DataSharingDisclosure()
 
                         Spacer(modifier = Modifier.height(16.dp))
 

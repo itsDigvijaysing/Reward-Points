@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
 import androidx.compose.material.icons.outlined.CardGiftcard
-import androidx.compose.material.icons.outlined.TrendingUp
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +49,7 @@ private data class OnboardingStep(
 
 private val steps = listOf(
     OnboardingStep(
-        Icons.Outlined.TrendingUp,
+        Icons.AutoMirrored.Outlined.TrendingUp,
         "Welcome to Stat Up",
         "Turn the things you already do into a character you level up — one task at a time."
     ),

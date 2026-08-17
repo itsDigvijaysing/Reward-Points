@@ -315,10 +315,13 @@ private fun RewardCard(
                     primary = canAfford
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                // 48dp touch targets (Core App Quality Touch_Target_Size / Material a11y
+                // minimum). The glyphs stay small so the card's visual weight is unchanged —
+                // only the tappable area grows. Do NOT shrink these back with Modifier.size().
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
                         onClick = onEdit,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -329,7 +332,7 @@ private fun RewardCard(
                     }
                     IconButton(
                         onClick = onDelete,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,

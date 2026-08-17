@@ -13,5 +13,8 @@ object Routes {
     const val EDIT_REWARD = "edit_reward/{rewardId}"
     const val HISTORY = "history"
 
+    /** Play's User Data policy requires the privacy policy to be reachable inside the app. */
+    const val PRIVACY_POLICY = "privacy_policy"
+
     fun editReward(rewardId: Long) = "edit_reward/$rewardId"
 }

@@ -18,12 +18,17 @@ import com.rewardpoints.app.quotes.QuoteRepository
 import com.rewardpoints.app.rpg.AchievementTracker
 import com.rewardpoints.app.rpg.RankCalculator
 import com.rewardpoints.app.rpg.StatsEngine
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 
+// flatMapLatest is still marked experimental in kotlinx-coroutines. It is used deliberately here
+// to re-issue the day-scoped queries when the local day rolls over — opting in explicitly rather
+// than building on an unacknowledged warning.
+@OptIn(ExperimentalCoroutinesApi::class)
 class StatusViewModel(
     private val playerRepository: PlayerRepository,
     private val pointsRepository: PointsRepository,

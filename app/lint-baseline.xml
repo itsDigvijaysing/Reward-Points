@@ -34,291 +34,31 @@
             column="5"/>
     </issue>
 
-    <issue
-        id="AndroidGradlePluginVersion"
-        message="A newer version of Gradle than 8.13 is available: 8.14.5"
-        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="$HOME/Documents/Projects/Stat-Up/gradle/wrapper/gradle-wrapper.properties"
-            line="3"
-            column="17"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2025.03.01 is available: 2026.05.01"
-        errorLine1="    def composeBom = platform(&apos;androidx.compose:compose-bom:2025.03.01&apos;)"
-        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="131"
-            column="5"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.compose:compose-bom than 2025.03.01 is available: 2026.05.01"
-        errorLine1="    def composeBom = platform(&apos;androidx.compose:compose-bom:2025.03.01&apos;)"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="131"
-            column="31"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.core:core-ktx than 1.16.0 is available: 1.19.0"
-        errorLine1="    implementation &apos;androidx.core:core-ktx:1.16.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="146"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0"
-        errorLine1="    implementation &apos;androidx.core:core-splashscreen:1.0.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="147"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.9.0 is available: 2.10.0"
-        errorLine1="    implementation &apos;androidx.lifecycle:lifecycle-runtime-ktx:2.9.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="148"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.9.0 is available: 2.10.0"
-        errorLine1="    implementation &apos;androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="149"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.9.0 is available: 2.10.0"
-        errorLine1="    implementation &apos;androidx.lifecycle:lifecycle-runtime-compose:2.9.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="150"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.activity:activity-compose than 1.10.1 is available: 1.13.0"
-        errorLine1="    implementation &apos;androidx.activity:activity-compose:1.10.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="151"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.navigation:navigation-compose than 2.9.0 is available: 2.9.8"
-        errorLine1="    implementation &apos;androidx.navigation:navigation-compose:2.9.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="154"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.room:room-runtime than 2.7.1 is available: 2.8.4"
-        errorLine1="    implementation &apos;androidx.room:room-runtime:2.7.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="157"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.room:room-ktx than 2.7.1 is available: 2.8.4"
-        errorLine1="    implementation &apos;androidx.room:room-ktx:2.7.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="158"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.room:room-compiler than 2.7.1 is available: 2.8.4"
-        errorLine1="    ksp &apos;androidx.room:room-compiler:2.7.1&apos;"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="159"
-            column="9"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.datastore:datastore-preferences than 1.1.4 is available: 1.2.1"
-        errorLine1="    implementation &apos;androidx.datastore:datastore-preferences:1.1.4&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="162"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.work:work-runtime-ktx than 2.10.1 is available: 2.11.2"
-        errorLine1="    implementation &apos;androidx.work:work-runtime-ktx:2.10.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="194"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0"
-        errorLine1="    androidTestImplementation &apos;androidx.test.ext:junit:1.2.1&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="200"
-            column="31"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.espresso:espresso-core than 3.6.1 is available: 3.7.0"
-        errorLine1="    androidTestImplementation &apos;androidx.test.espresso:espresso-core:3.6.1&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="201"
-            column="31"/>
-    </issue>
 
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.room:room-testing than 2.7.1 is available: 2.8.4"
-        errorLine1="    androidTestImplementation &apos;androidx.room:room-testing:2.7.1&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="205"
-            column="31"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.insert-koin:koin-android than 3.5.6 is available: 4.2.1"
-        errorLine1="    implementation &apos;io.insert-koin:koin-android:3.5.6&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="181"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.insert-koin:koin-androidx-compose than 3.5.6 is available: 4.2.1"
-        errorLine1="    implementation &apos;io.insert-koin:koin-androidx-compose:3.5.6&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="182"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.ktor:ktor-client-core than 3.1.2 is available: 3.5.0"
-        errorLine1="    implementation &apos;io.ktor:ktor-client-core:3.1.2&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="185"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.ktor:ktor-client-android than 3.1.2 is available: 3.5.0"
-        errorLine1="    implementation &apos;io.ktor:ktor-client-android:3.1.2&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="186"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.ktor:ktor-client-content-negotiation than 3.1.2 is available: 3.5.0"
-        errorLine1="    implementation &apos;io.ktor:ktor-client-content-negotiation:3.1.2&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="187"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of io.ktor:ktor-serialization-kotlinx-json than 3.1.2 is available: 3.5.0"
-        errorLine1="    implementation &apos;io.ktor:ktor-serialization-kotlinx-json:3.1.2&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="188"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.8.1 is available: 1.11.0"
-        errorLine1="    implementation &apos;org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="191"
-            column="20"/>
-    </issue>
 
-    <issue
-        id="NewerVersionAvailable"
-        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.10.1 is available: 1.11.0"
-        errorLine1="    testImplementation &apos;org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1&apos;"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="199"
-            column="24"/>
-    </issue>
 
     <issue
         id="ModifierParameter"

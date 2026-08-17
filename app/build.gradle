@@ -102,12 +102,47 @@ android {
     // Freeze the existing lint backlog into a baseline so CI's lintDebug is deterministic:
     // only NEW issues fail the build. Regenerate by deleting lint-baseline.xml and re-running
     // ./gradlew lintDebug. Warnings are not promoted to errors; the baseline captures them.
+    //
+    // Deliberately NOT baselined: GradleDependency / NewerVersionAvailable /
+    // AndroidGradlePluginVersion. Core App Quality's SDK_Maintenance criterion asks that
+    // dependencies stay current, so those must stay visible in every CI run instead of being
+    // silently frozen. They surface as warnings (warningsAsErrors = false), so they inform
+    // without breaking the build. If you regenerate the baseline, strip those ids again.
     lint {
         baseline = file("lint-baseline.xml")
         warningsAsErrors false
         abortOnError true
     }
 }
+
+// Google Play's User Data policy requires the privacy policy to be reachable from INSIDE the
+// app, not just from the store listing. PRIVACY_POLICY.md at the repo root is the single
+// source of truth; this task copies it into assets so PrivacyPolicyScreen can render it
+// offline. The asset is generated (gitignored) — never edit it by hand.
+def privacyPolicySource = rootProject.file("PRIVACY_POLICY.md")
+def privacyPolicyAssetDir = file("src/main/assets")
+
+tasks.register('syncPrivacyPolicy') {
+    description = 'Copies PRIVACY_POLICY.md into assets so the app can render it offline.'
+    inputs.file(privacyPolicySource)
+    outputs.file(new File(privacyPolicyAssetDir, 'privacy_policy.md'))
+    doLast {
+        // Drop the maintainer note — it is repo guidance, not something a user should read
+        // in the app. Everything outside the DEV-NOTE markers ships verbatim.
+        def shipped = new StringBuilder()
+        def skipping = false
+        privacyPolicySource.eachLine { line ->
+            if (line.contains('<!--DEV-NOTE-START-->')) { skipping = true; return }
+            if (line.contains('<!--DEV-NOTE-END-->')) { skipping = false; return }
+            if (!skipping) shipped.append(line).append('\n')
+        }
+        privacyPolicyAssetDir.mkdirs()
+        new File(privacyPolicyAssetDir, 'privacy_policy.md').text =
+            shipped.toString().replaceAll('\n{3,}', '\n\n')
+    }
+}
+
+tasks.named('preBuild') { dependsOn('syncPrivacyPolicy') }
 
 // Loud guard: a release build with no keystore.properties is signed with the SHARED Android
 // debug key. Such an artifact must never be published/distributed — and once users install a

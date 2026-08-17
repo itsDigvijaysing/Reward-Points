@@ -304,7 +304,8 @@ private fun ErrorBanner(text: String, onDismiss: () -> Unit) {
             fontFamily = Inter,
             modifier = Modifier.weight(1f)
         )
-        IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+        // 48dp accessibility minimum touch target (Core App Quality Touch_Target_Size).
+        IconButton(onClick = onDismiss, modifier = Modifier.size(48.dp)) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Dismiss",

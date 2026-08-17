@@ -33,3 +33,6 @@ keystore.properties
 graphify-out
 # Local dev-tooling docs / generated output — not for publishing
 CLAUDE.md
+
+# Generated from PRIVACY_POLICY.md by the syncPrivacyPolicy Gradle task — do not edit or commit.
+app/src/main/assets/privacy_policy.md

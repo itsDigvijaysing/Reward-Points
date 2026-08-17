@@ -308,10 +308,11 @@ private fun AchievementCard(
                 }
             }
 
-            // Delete button for all achievements
+            // Delete button for all achievements. 48dp is the accessibility minimum touch
+            // target (Core App Quality Touch_Target_Size); the 18dp glyph keeps it visually light.
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

@@ -42,6 +42,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import com.rewardpoints.app.ui.screen.achievements.AchievementsScreen
 import com.rewardpoints.app.ui.screen.agent.AgentScreen
 import com.rewardpoints.app.ui.screen.history.HistoryScreen
+import com.rewardpoints.app.ui.screen.legal.PrivacyPolicyScreen
 import com.rewardpoints.app.ui.screen.onboarding.OnboardingScreen
 import com.rewardpoints.app.ui.screen.rewards.RewardsScreen
 import com.rewardpoints.app.ui.screen.settings.SettingsScreen
@@ -168,6 +169,9 @@ private fun MainShell(navController: NavHostController) {
                 }
                 composable(Routes.ACHIEVEMENTS) {
                     AchievementsScreen(navController = navController)
+                }
+                composable(Routes.PRIVACY_POLICY) {
+                    PrivacyPolicyScreen(navController = navController)
                 }
             }
         }
