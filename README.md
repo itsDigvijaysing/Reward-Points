@@ -1,212 +1,141 @@
-# Stat Up: RPG Gamification for Real Life
+# Stat Up
 
-**An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.**
+An offline-first Android app that turns daily tasks into RPG progression. Complete tasks to earn
+points, level six character stats, hold a streak to climb the rank ladder, and spend points on
+rewards you define yourself.
 
 ![Stat Up](asset/STAT_UP.webp)
-- Demo Video: https://www.youtube.com/watch?v=gvXfM7x2DlU
 
-## 📱 Overview
+Demo: https://www.youtube.com/watch?v=gvXfM7x2DlU
 
-Stat Up transforms your daily life into an RPG experience. Complete tasks to earn points, level up your character stats, maintain streaks to rank up, and redeem rewards you create. All with a beautiful liquid glass aesthetic inspired by iOS and anime "Status Window" interfaces.
+## Features
 
-### Why Stat Up?
+**Progression**
+- Six stats — Strength, Intelligence, Wisdom, Dexterity, Charisma, Vitality — shown on a hexagon
+  radar chart, range 5–100.
+- Points convert to stats at 10 points per stat point; the remainder is carried in a per-stat
+  accumulator.
+- Rank ladder E → D → C → B → A → S driven by a single star-line counter: +1 per active day,
+  −1 per idle day. Five consecutive active days rank you up; one negative day ranks you down.
+- Daily decay at midnight: an idle day costs 1 point per stat and 1 star line.
+- Streak Freeze Shield — 30 points, max 3. An idle day consumes one instead of decaying stats.
 
-- 🎮 **Gamified Productivity** - Turn boring tasks into exciting quests
-- ✨ **Premium UI** - Liquid glass effects, hexagon stat charts, animated rank badges
-- 🔒 **Privacy First** - Offline-first core, no accounts, no tracking; Todoist and AI Coach are opt-in only
-- 🎯 **Simple Yet Effective** - No complex systems, just points, stats, and ranks
+**Tasks**
+- Manual missions with priority P1–P4 and a stat assignment. P1=4pts, P2=3pts, P3=2pts, P4=1pt.
+- Daily missions reset at local midnight, including when the app is never opened.
+- Optional Todoist sync — label-to-stat routing, deduplicated by task ID, runs every 15 minutes.
 
-## ✨ Features
+**Rewards and achievements**
+- User-defined rewards with preset or custom costs up to 999,999, editable after creation.
+- 12 built-in achievements plus custom ones; unlocked titles can be equipped under your name.
+- Full transaction history with filtering and pagination.
 
-### 🎯 **Core Gamification**
-- **RPG Stats System** - 6 stats: Strength, Intelligence, Wisdom, Dexterity, Charisma, Vitality
-- **Hexagon Radar Chart** - Visual representation of your stats with tap-to-expand details
-- **Rank System** - Progress from E → D → C → B → A → S based on streak consistency
-- **Star Lines Progress** - 5 streak days = ⭐ = Rank Up; breaks can cause rank down
-- **Points Economy** - Earn points from tasks, spend on custom rewards
+**Other**
+- Mood check-in, once per local day, +2 Wisdom.
+- Daily quote — offline pack by default, or Animechan / ZenQuotes / mixed.
+- 4x2 home-screen widget showing rank, balance, streak and today's points.
+- Optional Gemini-backed AI coach that reads your current stats to give grounded advice.
+- Dark-only Material 3 UI with GPU backdrop blur on API 31+.
 
-### 📋 **Task Management**
-- **Manual Tasks** - Create custom tasks with priority (P1-P4) and stat assignment
-- **Todoist Integration** - Connect your Todoist account, sync completed tasks with label-to-stat routing
-- **Priority Points** - P1=4pts, P2=3pts, P3=2pts, P4=1pt
-- **Background Sync** - TodoistSyncWorker runs every 15 minutes
+## Building
 
-### 🎁 **Rewards System**
-- **Custom Rewards** - Create personal rewards (e.g., "Watch an episode" = 50pts)
-- **Edit Rewards** - Change a reward's name, cost (presets or a custom amount up to 999,999), description, or icon any time
-- **Point Redemption** - Spend earned points on your rewards (with a confirm step so you never spend by mistake)
-- **Transaction History** - Track all earnings and spendings
+Requires JDK 17 (Gradle 8.13 does not run on JDK 24+) and the Android SDK with platforms
+`android-35` and `android-36`, build-tools `35.0.0` and `36.0.0`.
 
-### 🏆 **Achievements**
-- **Built-in Achievements** - 12 prebuilt achievements across streak, points, stats, tasks, rank, and special categories
-- **Custom Achievements** - Create your own with custom emoji, target goal, and reward points
-- **No-Goal Achievements** - Manual completion option for open-ended goals
-- **Delete Any Achievement** - Full control over your achievement list
-
-### 📊 **Progress Tracking**
-- **Streak Calendar** - 28-day view with month label showing your activity patterns
-- **Stat Decay** - Midnight check: idle days lose 1 stat point per stat and 1 star line
-- **Streak Freeze Shield** - Buy a 🛡️ (30 pts, max 3); an idle day consumes one instead of decaying your stats/streak/star lines
-- **Daily Quote** - Quote of the day on the status screen: offline pack (default), anime (Animechan), motivation (ZenQuotes), or mixed
-- **Equippable Titles** - Display an unlocked achievement title under your name, Solo Leveling style
-- **Mood Check-in** - Daily mood logging with +2 WIS bonus
-- **History Log** - Complete transaction history with filtering and pagination
-- **Per-Stat Breakdown** - Detailed view with weekly chart and top sources for each stat
-
-### 🎨 **Premium UI**
-- **Liquid Glass Design** - Translucent cards, glowing borders, blur effects
-- **Dark Theme** - Eye-friendly dark interface
-- **First-Run Onboarding** - A short guided intro the first time you open the app
-- **Smooth Animations** - AnimatedVisibility, progress animations, fade-through screen transitions
-- **Haptic Feedback** - Subtle taps on redeem, mission complete, mood check-in, shield buy, and rank-up (toggle in Settings)
-- **Re-engagement Reminders** - A notification when an idle day drops your rank or a Streak Shield saves your streak
-- **RPG Aesthetic** - New neon-hexagon app icon; status window design inspired by Solo Leveling and other anime
-
-## 🏗️ Building
-
-### Prerequisites
-- **JDK 17** (Gradle 8.13 does not run on JDK 24+; pure JDK 17 is what AGP 8.11.2 expects)
-- **Android SDK** with platforms `android-35` + `android-36`, build-tools `35.0.0` + `36.0.0`, platform-tools (compileSdk 36, targetSdk 36, minSdk 26)
-- Gradle 8.13 (wrapper included)
-
-### Build Steps
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/Stat-Up.git
+git clone https://github.com/itsDigvijaysing/Stat-Up.git
 cd Stat-Up
 
-# Build debug APK
-./gradlew assembleDebug
-
-# Build release APK
-# Without a real keystore this falls back to debug signing.
-# To produce a Play-ready APK, copy keystore.properties.template → keystore.properties
-# and fill in the real values (see template comments).
-./gradlew assembleRelease
+./gradlew assembleDebug          # debug APK -> app/build/outputs/apk/debug/
+./gradlew testDebugUnitTest      # JVM unit tests
+./gradlew lintDebug              # report -> app/build/reports/
+./gradlew bundleRelease          # Play-ready AAB
 ```
 
-The APK will be generated in `app/build/outputs/apk/`
+Release builds fall back to the debug keystore if `keystore.properties` is missing, and print a
+warning when they do. Copy `keystore.properties.template` to `keystore.properties` and fill in real
+values before producing anything for Play.
 
-### Testing on Waydroid (Linux)
+Testing on Waydroid:
+
 ```bash
-# Enable multi-window mode
 waydroid prop set persist.waydroid.multi_windows true
-systemctl restart waydroid-container
+waydroid session stop && waydroid session start
 
-# Install and run
 waydroid app install app/build/outputs/apk/debug/app-debug.apk
 waydroid app launch com.rewardpoints.app.debug
 ```
 
-## 🏛️ Architecture
+## Architecture
 
-### Tech Stack
-- **Language**: Kotlin 2.1.20
-- **UI**: Jetpack Compose (Compose BOM 2025.03.01) with Material 3 + [Haze 1.7.2](https://chrisbanes.github.io/haze/) for real GPU backdrop blur on API 31+
-- **Architecture**: MVVM with Repository pattern
-- **DI**: Koin 3.5.6
-- **Database**: Room 2.7.1
-- **Preferences**: DataStore 1.1.4 (plain) + AndroidX Security 1.1.0 (`EncryptedSharedPreferences`, AES-256-GCM, for Todoist + Gemini tokens)
-- **Network**: Ktor 3.1.2 (Todoist API + Gemini Generative Language API)
-- **Background**: WorkManager 2.10.1 (DecayWorker, TodoistSyncWorker)
-- **Widget**: AppWidgetProvider + RemoteViews (4×2 home-screen widget showing rank/balance/streak/today)
+MVVM in explicit layers, wired through Koin in `di/AppModule.kt`.
 
-### Project Structure
 ```
-app/src/main/java/com/rewardpoints/app/
-├── data/
-│   ├── local/
-│   │   ├── db/          # Room database, DAOs, entities
-│   │   └── datastore/   # User preferences
-│   └── repository/      # Data repositories
-├── domain/
-│   └── model/           # Domain models (PlayerStats, Rank, StatType)
-├── rpg/                 # Game mechanics (StatsEngine, RankCalculator, DecayEngine)
-├── ui/
-│   ├── components/
-│   │   ├── glass/       # Reusable glass UI components
-│   │   └── rpg/         # RPG-specific components (StatusWindow, HexagonChart)
-│   ├── screen/          # Screen composables and ViewModels
-│   └── theme/           # Colors, typography, design tokens
-└── di/                  # Koin modules
+UI (Compose)          ui/screen/*, ui/components/*
+ViewModel             ui/screen/<feature>/<Feature>ViewModel.kt
+Repository            data/repository/*
+Room DAO + DataStore  data/local/db/*, data/local/datastore/*
+RPG engines           rpg/StatsEngine, DecayEngine, RankCalculator, AchievementTracker
+Workers               sync/DecayWorker, sync/TodoistSyncWorker
 ```
 
-### Design Tokens
-```kotlin
-// Colors
-BackgroundBase = #0A0A0F
-SurfaceBase = #12121A
-AccentPrimary = #7C4DFF
-PointsGold = #FFD740
+- Kotlin 2.1.20, Compose BOM 2025.03.01, Material 3
+- Room 2.7.1 (schema v5, migrations exported to `app/schemas/`)
+- DataStore 1.1.4 for preferences; AndroidX Security 1.1.0 (`EncryptedSharedPreferences`,
+  AES-256-GCM) for the Todoist token and Gemini key
+- Ktor 3.1.2, Koin 3.5.6, WorkManager 2.10.1, Haze 1.7.2
+- minSdk 26, targetSdk 36, compileSdk 36
 
-// Glass Effect
-GlassFill = white @ 10% alpha
-GlassBorder = white @ 18% alpha
-GlassRadius = 24.dp
+Every multi-write earn or redeem path runs inside a single Room transaction, and daily decay is
+idempotent per local day so a retried worker cannot double-apply it.
+
+### Design tokens
+
+```
+BackgroundBase  #0A0A0F        GlassFill    white @ 10%
+SurfaceBase     #12121A        GlassBorder  white @ 18%
+AccentPrimary   #7C4DFF        GlassRadius  24.dp
+PointsGold      #FFD740
 ```
 
-## 🔒 Privacy
+## Privacy
 
-Your privacy matters:
+All gameplay data stays on the device in a local Room database. There are no accounts, no
+analytics, no telemetry, no crash reporting and no ads.
 
-- **Offline First** - Core gamification (stats, tasks, rewards, achievements, decay) works fully offline. The only network use is opt-in Todoist sync, which requires you to manually enter your own API token.
-- **Local Data Only** - All data stored on-device using Room database. Todoist API tokens are stored in `EncryptedSharedPreferences` (AndroidX Security).
-- **No Analytics** - Zero tracking, telemetry, or crash reporting
-- **No Ads** - Completely ad-free
-- **No Accounts** - No registration or cloud sync
-- **Open Source** - Fully auditable code
+The app makes no network requests until you enable one of four optional integrations in Settings:
 
-## 🗺️ Roadmap
+| Integration | Endpoint | Enabled by |
+| --- | --- | --- |
+| Todoist sync | `api.todoist.com` | Your Todoist API token |
+| AI coach | `generativelanguage.googleapis.com` | Your Gemini API key |
+| Anime quotes | `api.animechan.io` | Choosing the Anime or Mixed quote source |
+| Motivation quotes | `zenquotes.io` | Choosing the Motivation or Mixed quote source |
 
-### ✅ Completed (v3.1.2)
-- [x] Complete Kotlin/Compose rewrite
-- [x] Liquid glass UI system
-- [x] Hexagon radar chart (Simple/Glow styles)
-- [x] Rank system with star lines (E → S)
-- [x] Manual task creation with stat assignment
-- [x] Rewards create/redeem/delete
-- [x] Streak calendar with month display
-- [x] Mood check-in (+2 WIS)
-- [x] Settings with full reset
-- [x] Todoist integration (sync, label→stat routing, token validation)
-- [x] Stat decay system (midnight DecayWorker)
-- [x] Rank-up animations (particles + badge)
-- [x] Achievements system (built-in + custom + no-goal)
-- [x] Per-stat detailed breakdown (weekly chart, top sources)
-- [x] Collapsible stat bars with full stat names
+The daily quote defaults to a bundled offline pack, so a fresh install is fully offline. The AI
+coach sends a snapshot of your current stats, rank, streak and recent activity with each message —
+Settings shows exactly what is sent before you enable it. API tokens are stored encrypted and are
+excluded from Android backups.
 
-### ✅ v4.0 (merged, build verified 2026-06)
-- [x] AI Agent — Gemini chat (free tier `gemini-2.5-flash`), ephemeral transcript, persona + fresh player-state injected per send. Gated in Settings by an encrypted API key.
-- [x] Real backdrop blur — Haze 1.7.2; real GPU blur on API 31+, auto-falls-back to a translucent scrim on older devices.
-- [x] Push notifications — channels for sync results + auth failures; declines handled silently.
-- [x] Home-screen widget — 4×2 read-only widget with rank/balance/streak/today; refreshes are push-driven (no polling).
+Full policy: [PRIVACY_POLICY.md](PRIVACY_POLICY.md), also readable in-app at Settings → About.
 
-### 🔭 Roadmap beyond v4.0
-- [ ] Decay & rank-up notifications (channels already created, just need wiring)
-- [ ] Widget configure activity for a few size variants
-- [ ] AI Agent: persist conversations (table already exists, currently dormant)
+## Roadmap
 
-## 🤝 Contributing
+Shipped through v3.1.4: the full stat and rank system, Todoist sync, decay and shields,
+achievements and titles, the AI coach, the home-screen widget, notifications for sync results and
+rank changes, onboarding, and daily quotes.
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Not built yet:
 
-### Quick Start
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make changes and test
-4. Commit (`git commit -m 'Add amazing feature'`)
-5. Push and open a Pull Request
+- Evening "no points yet today" reminder — needs its own scheduled worker.
+- Widget size variants and a configuration activity.
+- Persisted AI conversations. The `ai_conversations` table exists but has no DAO or consumer.
+- Dependency refresh — Compose BOM and Koin are both well behind current.
 
-## 📄 License
+## Contributing
 
-GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
+## License
 
-<div align="center">
-
-**Built with ❤️ for productivity enthusiasts and RPG lovers**
-
-[⬆ Back to Top](#stat-up---rpg-gamification-for-real-life)
-
-</div>
+GNU General Public License v3.0 — see [LICENSE](LICENSE).
