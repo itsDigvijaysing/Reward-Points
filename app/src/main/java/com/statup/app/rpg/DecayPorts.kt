@@ -1,11 +1,11 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.Rank
 
 /**
  * Narrow read/write surface that [DecayEngine] needs from the player-stats store. Implemented by
- * [com.rewardpoints.app.data.repository.PlayerRepository]; depending on this interface (instead of
+ * [com.statup.app.data.repository.PlayerRepository]; depending on this interface (instead of
  * the concrete repository) lets DecayEngine be unit-tested on the JVM with a hand-written fake —
  * no Android, no Room.
  */
@@ -29,7 +29,7 @@ interface DecayDayStore {
  * Without this, a late-firing decay (e.g. 02:15 while the user is earning) could clobber a
  * just-purchased Streak Shield or freshly-earned stat points with its stale full-row write.
  *
- * Implemented in production by [com.rewardpoints.app.data.local.db.RoomTransactor]; JVM tests use
+ * Implemented in production by [com.statup.app.data.local.db.RoomTransactor]; JVM tests use
  * a pass-through fake.
  */
 interface Transactor {

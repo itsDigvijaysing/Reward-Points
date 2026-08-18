@@ -1,15 +1,15 @@
-package com.rewardpoints.app.ui.screen.settings
+package com.statup.app.ui.screen.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.AppDatabase
-import com.rewardpoints.app.data.local.db.StatMappingSeeder
-import com.rewardpoints.app.data.local.db.dao.StatMappingDao
-import com.rewardpoints.app.data.repository.AchievementRepository
-import com.rewardpoints.app.data.repository.PlayerRepository
-import com.rewardpoints.app.rpg.AchievementTracker
-import com.rewardpoints.app.sync.TodoistApi
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.local.db.AppDatabase
+import com.statup.app.data.local.db.StatMappingSeeder
+import com.statup.app.data.local.db.dao.StatMappingDao
+import com.statup.app.data.repository.AchievementRepository
+import com.statup.app.data.repository.PlayerRepository
+import com.statup.app.rpg.AchievementTracker
+import com.statup.app.sync.TodoistApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.rewardpoints.app.domain.model
+package com.statup.app.domain.model
 
 data class Reward(
     val id: Long = 0,

@@ -1,40 +1,40 @@
-package com.rewardpoints.app.di
+package com.statup.app.di
 
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.AppDatabase
-import com.rewardpoints.app.data.local.db.RoomTransactor
-import com.rewardpoints.app.data.repository.AchievementRepository
-import com.rewardpoints.app.data.repository.MissionRepository
-import com.rewardpoints.app.data.repository.PlayerRepository
-import com.rewardpoints.app.data.repository.PointsRepository
-import com.rewardpoints.app.data.repository.RewardRepository
-import com.rewardpoints.app.ai.AgentApi
-import com.rewardpoints.app.ai.AgentContextBuilder
-import com.rewardpoints.app.ai.AgentRepository
-import com.rewardpoints.app.ai.GeminiAgentApi
-import com.rewardpoints.app.notifications.Notifier
-import com.rewardpoints.app.quotes.AnimechanApi
-import com.rewardpoints.app.quotes.OfflineQuotePack
-import com.rewardpoints.app.quotes.QuotePack
-import com.rewardpoints.app.quotes.QuoteRepository
-import com.rewardpoints.app.quotes.ZenQuotesApi
-import com.rewardpoints.app.rpg.AchievementTracker
-import com.rewardpoints.app.rpg.DecayEngine
-import com.rewardpoints.app.rpg.RankCalculator
-import com.rewardpoints.app.rpg.StatsEngine
-import com.rewardpoints.app.rpg.Transactor
-import com.rewardpoints.app.sync.TodoistApi
-import com.rewardpoints.app.sync.TodoistSyncManager
-import com.rewardpoints.app.ui.screen.agent.AgentViewModel
-import com.rewardpoints.app.widget.StatsWidgetUpdater
-import com.rewardpoints.app.ui.screen.achievements.AchievementsViewModel
-import com.rewardpoints.app.ui.screen.history.HistoryViewModel
-import com.rewardpoints.app.ui.screen.onboarding.OnboardingViewModel
-import com.rewardpoints.app.ui.screen.rewards.RewardsViewModel
-import com.rewardpoints.app.ui.screen.settings.SettingsViewModel
-import com.rewardpoints.app.ui.screen.stats.StatsViewModel
-import com.rewardpoints.app.ui.screen.status.StatusViewModel
-import com.rewardpoints.app.ui.screen.tasks.TasksViewModel
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.local.db.AppDatabase
+import com.statup.app.data.local.db.RoomTransactor
+import com.statup.app.data.repository.AchievementRepository
+import com.statup.app.data.repository.MissionRepository
+import com.statup.app.data.repository.PlayerRepository
+import com.statup.app.data.repository.PointsRepository
+import com.statup.app.data.repository.RewardRepository
+import com.statup.app.ai.AgentApi
+import com.statup.app.ai.AgentContextBuilder
+import com.statup.app.ai.AgentRepository
+import com.statup.app.ai.GeminiAgentApi
+import com.statup.app.notifications.Notifier
+import com.statup.app.quotes.AnimechanApi
+import com.statup.app.quotes.OfflineQuotePack
+import com.statup.app.quotes.QuotePack
+import com.statup.app.quotes.QuoteRepository
+import com.statup.app.quotes.ZenQuotesApi
+import com.statup.app.rpg.AchievementTracker
+import com.statup.app.rpg.DecayEngine
+import com.statup.app.rpg.RankCalculator
+import com.statup.app.rpg.StatsEngine
+import com.statup.app.rpg.Transactor
+import com.statup.app.sync.TodoistApi
+import com.statup.app.sync.TodoistSyncManager
+import com.statup.app.ui.screen.agent.AgentViewModel
+import com.statup.app.widget.StatsWidgetUpdater
+import com.statup.app.ui.screen.achievements.AchievementsViewModel
+import com.statup.app.ui.screen.history.HistoryViewModel
+import com.statup.app.ui.screen.onboarding.OnboardingViewModel
+import com.statup.app.ui.screen.rewards.RewardsViewModel
+import com.statup.app.ui.screen.settings.SettingsViewModel
+import com.statup.app.ui.screen.stats.StatsViewModel
+import com.statup.app.ui.screen.status.StatusViewModel
+import com.statup.app.ui.screen.tasks.TasksViewModel
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -107,7 +107,7 @@ val appModule = module {
     // reads the latest value from encrypted storage — no need to recreate the singleton when
     // the user updates their key in Settings.
     single<AgentApi> {
-        val userPreferences = get<com.rewardpoints.app.data.local.datastore.UserPreferences>()
+        val userPreferences = get<com.statup.app.data.local.datastore.UserPreferences>()
         GeminiAgentApi(
             httpClient = get(),
             apiKeyProvider = { userPreferences.getGeminiApiKey() }
@@ -130,8 +130,8 @@ val appModule = module {
             pointsAwarder = { achievementId, points ->
                 get<PointsRepository>().addPoints(
                     points = points,
-                    type = com.rewardpoints.app.domain.model.TransactionType.EARN,
-                    source = com.rewardpoints.app.domain.model.TransactionSource.MANUAL,
+                    type = com.statup.app.domain.model.TransactionType.EARN,
+                    source = com.statup.app.domain.model.TransactionSource.MANUAL,
                     description = "Achievement reward: $achievementId"
                 )
             }

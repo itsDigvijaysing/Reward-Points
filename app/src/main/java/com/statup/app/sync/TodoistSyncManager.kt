@@ -1,10 +1,10 @@
-package com.rewardpoints.app.sync
+package com.statup.app.sync
 
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.repository.PointsRepository
-import com.rewardpoints.app.domain.model.TransactionSource
-import com.rewardpoints.app.rpg.AchievementTracker
-import com.rewardpoints.app.rpg.StatsEngine
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.repository.PointsRepository
+import com.statup.app.domain.model.TransactionSource
+import com.statup.app.rpg.AchievementTracker
+import com.statup.app.rpg.StatsEngine
 import kotlinx.coroutines.flow.first
 
 class TodoistSyncManager(

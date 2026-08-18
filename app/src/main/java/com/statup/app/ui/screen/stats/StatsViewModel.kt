@@ -1,13 +1,13 @@
-package com.rewardpoints.app.ui.screen.stats
+package com.statup.app.ui.screen.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.repository.PlayerRepository
-import com.rewardpoints.app.data.repository.PointsRepository
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.domain.model.Transaction
-import com.rewardpoints.app.domain.model.TransactionType
+import com.statup.app.data.repository.PlayerRepository
+import com.statup.app.data.repository.PointsRepository
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.StatType
+import com.statup.app.domain.model.Transaction
+import com.statup.app.domain.model.TransactionType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -139,7 +139,7 @@ data class DayData(
 )
 
 data class SourceData(
-    val source: com.rewardpoints.app.domain.model.TransactionSource,
+    val source: com.statup.app.domain.model.TransactionSource,
     val totalPoints: Int,
     val count: Int
 )

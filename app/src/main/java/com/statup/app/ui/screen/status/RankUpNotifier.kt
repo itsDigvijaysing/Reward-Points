@@ -1,6 +1,6 @@
-package com.rewardpoints.app.ui.screen.status
+package com.statup.app.ui.screen.status
 
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.domain.model.Rank
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow

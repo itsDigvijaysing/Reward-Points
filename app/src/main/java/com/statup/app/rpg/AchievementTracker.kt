@@ -1,11 +1,11 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
-import com.rewardpoints.app.data.repository.AchievementRepository
-import com.rewardpoints.app.data.repository.PlayerRepository
-import com.rewardpoints.app.data.repository.PointsRepository
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.Rank
-import com.rewardpoints.app.domain.model.TransactionSource
+import com.statup.app.data.repository.AchievementRepository
+import com.statup.app.data.repository.PlayerRepository
+import com.statup.app.data.repository.PointsRepository
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.Rank
+import com.statup.app.domain.model.TransactionSource
 
 class AchievementTracker(
     private val achievementRepository: AchievementRepository,

@@ -1,11 +1,11 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
-import com.rewardpoints.app.data.local.db.dao.DecayLogDao
-import com.rewardpoints.app.data.local.db.dao.TransactionDao
-import com.rewardpoints.app.data.local.db.entity.DecayLogEntity
-import com.rewardpoints.app.data.local.db.entity.TransactionEntity
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.data.local.db.dao.DecayLogDao
+import com.statup.app.data.local.db.dao.TransactionDao
+import com.statup.app.data.local.db.entity.DecayLogEntity
+import com.statup.app.data.local.db.entity.TransactionEntity
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.Rank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

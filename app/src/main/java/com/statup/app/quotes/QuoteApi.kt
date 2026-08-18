@@ -1,6 +1,6 @@
-package com.rewardpoints.app.quotes
+package com.statup.app.quotes
 
-import com.rewardpoints.app.domain.model.Quote
+import com.statup.app.domain.model.Quote
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText

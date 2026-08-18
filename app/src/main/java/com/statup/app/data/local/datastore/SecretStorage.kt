@@ -1,4 +1,4 @@
-package com.rewardpoints.app.data.local.datastore
+package com.statup.app.data.local.datastore
 
 import android.content.Context
 import android.content.SharedPreferences

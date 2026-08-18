@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.rpg
+package com.statup.app.ui.components.rpg
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rewardpoints.app.domain.model.Rank
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Rank
+import com.statup.app.ui.theme.*
 
 @Composable
 fun RankBadge(

@@ -1,4 +1,4 @@
-package com.rewardpoints.app.data.local.db
+package com.statup.app.data.local.db
 
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4

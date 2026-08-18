@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.rpg
+package com.statup.app.ui.components.rpg
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.rewardpoints.app.domain.model.Rank
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Rank
+import com.statup.app.ui.theme.*
 import kotlin.math.cos
 import kotlin.math.sin
 

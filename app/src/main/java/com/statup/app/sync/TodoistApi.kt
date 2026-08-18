@@ -1,4 +1,4 @@
-package com.rewardpoints.app.sync
+package com.statup.app.sync
 
 import io.ktor.client.*
 import io.ktor.client.call.*

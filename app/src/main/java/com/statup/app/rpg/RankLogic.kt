@@ -1,6 +1,6 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.domain.model.Rank
 
 /**
  * Pure functions for the star-line counter model. Extracted from [DecayEngine] so the

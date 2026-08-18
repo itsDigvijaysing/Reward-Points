@@ -1,8 +1,8 @@
-package com.rewardpoints.app.ui.screen.history
+package com.statup.app.ui.screen.history
 
-import com.rewardpoints.app.domain.model.Transaction
-import com.rewardpoints.app.domain.model.TransactionSource
-import com.rewardpoints.app.domain.model.TransactionType
+import com.statup.app.domain.model.Transaction
+import com.statup.app.domain.model.TransactionSource
+import com.statup.app.domain.model.TransactionType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow

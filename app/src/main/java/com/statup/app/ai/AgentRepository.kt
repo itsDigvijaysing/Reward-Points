@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ai
+package com.statup.app.ai
 
 /**
  * Thin orchestrator: build the system instruction (persona + fresh player state),

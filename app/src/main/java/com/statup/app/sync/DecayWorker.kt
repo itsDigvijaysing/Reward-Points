@@ -1,11 +1,11 @@
-package com.rewardpoints.app.sync
+package com.statup.app.sync
 
 import android.content.Context
 import androidx.work.*
-import com.rewardpoints.app.data.repository.MissionRepository
-import com.rewardpoints.app.notifications.Notifier
-import com.rewardpoints.app.rpg.DailyDecayResult
-import com.rewardpoints.app.rpg.DecayEngine
+import com.statup.app.data.repository.MissionRepository
+import com.statup.app.notifications.Notifier
+import com.statup.app.rpg.DailyDecayResult
+import com.statup.app.rpg.DecayEngine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.Calendar

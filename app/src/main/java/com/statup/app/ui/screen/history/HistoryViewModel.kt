@@ -1,9 +1,9 @@
-package com.rewardpoints.app.ui.screen.history
+package com.statup.app.ui.screen.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.domain.model.Transaction
-import com.rewardpoints.app.domain.model.TransactionType
+import com.statup.app.domain.model.Transaction
+import com.statup.app.domain.model.TransactionType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

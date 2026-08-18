@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.rpg
+package com.statup.app.ui.components.rpg
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -17,9 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.StatType
+import com.statup.app.ui.theme.*
 
 @Composable
 fun StatBarsColumn(

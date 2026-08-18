@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.onboarding
+package com.statup.app.ui.screen.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,14 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rewardpoints.app.ui.components.AmbientBackground
-import com.rewardpoints.app.ui.components.glass.GlassButton
-import com.rewardpoints.app.ui.components.glass.GlassTextField
-import com.rewardpoints.app.ui.theme.AccentPrimary
-import com.rewardpoints.app.ui.theme.Inter
-import com.rewardpoints.app.ui.theme.TextPrimary
-import com.rewardpoints.app.ui.theme.TextSecondary
-import com.rewardpoints.app.ui.theme.TextTertiary
+import com.statup.app.ui.components.AmbientBackground
+import com.statup.app.ui.components.glass.GlassButton
+import com.statup.app.ui.components.glass.GlassTextField
+import com.statup.app.ui.theme.AccentPrimary
+import com.statup.app.ui.theme.Inter
+import com.statup.app.ui.theme.TextPrimary
+import com.statup.app.ui.theme.TextSecondary
+import com.statup.app.ui.theme.TextTertiary
 import org.koin.androidx.compose.koinViewModel
 
 private data class OnboardingStep(

@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.navigation
+package com.statup.app.ui.navigation
 
 import android.Manifest
 import android.os.Build
@@ -31,25 +31,25 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.ui.components.AmbientBackground
-import com.rewardpoints.app.ui.components.LocalHapticsEnabled
-import com.rewardpoints.app.ui.components.glass.BottomNavItem
-import com.rewardpoints.app.ui.components.glass.GlassBottomBar
-import com.rewardpoints.app.ui.components.glass.LocalHazeState
-import com.rewardpoints.app.ui.components.glass.hazeSourceOrFallback
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.ui.components.AmbientBackground
+import com.statup.app.ui.components.LocalHapticsEnabled
+import com.statup.app.ui.components.glass.BottomNavItem
+import com.statup.app.ui.components.glass.GlassBottomBar
+import com.statup.app.ui.components.glass.LocalHazeState
+import com.statup.app.ui.components.glass.hazeSourceOrFallback
 import dev.chrisbanes.haze.rememberHazeState
-import com.rewardpoints.app.ui.screen.achievements.AchievementsScreen
-import com.rewardpoints.app.ui.screen.agent.AgentScreen
-import com.rewardpoints.app.ui.screen.history.HistoryScreen
-import com.rewardpoints.app.ui.screen.legal.PrivacyPolicyScreen
-import com.rewardpoints.app.ui.screen.onboarding.OnboardingScreen
-import com.rewardpoints.app.ui.screen.rewards.RewardsScreen
-import com.rewardpoints.app.ui.screen.settings.SettingsScreen
-import com.rewardpoints.app.ui.screen.stats.StatsScreen
-import com.rewardpoints.app.ui.screen.status.StatusScreen
-import com.rewardpoints.app.ui.screen.tasks.TasksScreen
-import com.rewardpoints.app.ui.theme.BackgroundBase
+import com.statup.app.ui.screen.achievements.AchievementsScreen
+import com.statup.app.ui.screen.agent.AgentScreen
+import com.statup.app.ui.screen.history.HistoryScreen
+import com.statup.app.ui.screen.legal.PrivacyPolicyScreen
+import com.statup.app.ui.screen.onboarding.OnboardingScreen
+import com.statup.app.ui.screen.rewards.RewardsScreen
+import com.statup.app.ui.screen.settings.SettingsScreen
+import com.statup.app.ui.screen.stats.StatsScreen
+import com.statup.app.ui.screen.status.StatusScreen
+import com.statup.app.ui.screen.tasks.TasksScreen
+import com.statup.app.ui.theme.BackgroundBase
 import org.koin.compose.koinInject
 
 private val bottomNavItems = listOf(

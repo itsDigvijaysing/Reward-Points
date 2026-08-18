@@ -1,8 +1,8 @@
-package com.rewardpoints.app.data.local.db.entity
+package com.statup.app.data.local.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.rewardpoints.app.domain.model.PlayerStats
+import com.statup.app.domain.model.PlayerStats
 
 @Entity(tableName = "player_stats")
 data class PlayerStatsEntity(

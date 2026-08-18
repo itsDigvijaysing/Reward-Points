@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.stats
+package com.statup.app.ui.screen.stats
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -23,11 +23,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.domain.model.TransactionSource
-import com.rewardpoints.app.ui.components.glass.GlassCard
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.StatType
+import com.statup.app.domain.model.TransactionSource
+import com.statup.app.ui.components.glass.GlassCard
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 import java.time.format.TextStyle
 import java.util.Locale

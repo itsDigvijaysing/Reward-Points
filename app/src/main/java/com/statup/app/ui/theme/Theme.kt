@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.theme
+package com.statup.app.ui.theme
 
 import android.app.Activity
 import androidx.compose.material3.MaterialTheme

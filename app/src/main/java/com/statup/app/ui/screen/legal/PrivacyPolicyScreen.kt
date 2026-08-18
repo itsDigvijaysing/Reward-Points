@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.legal
+package com.statup.app.ui.screen.legal
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,11 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.rewardpoints.app.ui.components.glass.GlassCard
-import com.rewardpoints.app.ui.theme.AccentPrimary
-import com.rewardpoints.app.ui.theme.Inter
-import com.rewardpoints.app.ui.theme.TextPrimary
-import com.rewardpoints.app.ui.theme.TextSecondary
+import com.statup.app.ui.components.glass.GlassCard
+import com.statup.app.ui.theme.AccentPrimary
+import com.statup.app.ui.theme.Inter
+import com.statup.app.ui.theme.TextPrimary
+import com.statup.app.ui.theme.TextSecondary
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

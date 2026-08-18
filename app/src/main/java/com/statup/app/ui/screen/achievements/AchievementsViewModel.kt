@@ -1,10 +1,10 @@
-package com.rewardpoints.app.ui.screen.achievements
+package com.statup.app.ui.screen.achievements
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.repository.AchievementRepository
-import com.rewardpoints.app.domain.model.Achievement
-import com.rewardpoints.app.domain.model.AchievementCategory
+import com.statup.app.data.repository.AchievementRepository
+import com.statup.app.domain.model.Achievement
+import com.statup.app.domain.model.AchievementCategory
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

@@ -1,7 +1,7 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.Rank
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

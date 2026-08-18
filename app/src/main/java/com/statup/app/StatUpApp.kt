@@ -1,18 +1,18 @@
-package com.rewardpoints.app
+package com.statup.app
 
 import android.app.Application
 import android.util.Log
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.StatMappingSeeder
-import com.rewardpoints.app.data.local.db.dao.StatMappingDao
-import com.rewardpoints.app.data.repository.AchievementRepository
-import com.rewardpoints.app.data.repository.PlayerRepository
-import com.rewardpoints.app.di.appModule
-import com.rewardpoints.app.notifications.Notifier
-import com.rewardpoints.app.widget.StatsWidgetUpdater
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.local.db.StatMappingSeeder
+import com.statup.app.data.local.db.dao.StatMappingDao
+import com.statup.app.data.repository.AchievementRepository
+import com.statup.app.data.repository.PlayerRepository
+import com.statup.app.di.appModule
+import com.statup.app.notifications.Notifier
+import com.statup.app.widget.StatsWidgetUpdater
 import org.koin.android.ext.android.get
-import com.rewardpoints.app.sync.DecayWorker
-import com.rewardpoints.app.sync.TodoistSyncWorker
+import com.statup.app.sync.DecayWorker
+import com.statup.app.sync.TodoistSyncWorker
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +49,7 @@ class StatUpApp : Application() {
         val playerRepository: PlayerRepository by inject()
         val achievementRepository: AchievementRepository by inject()
         val statMappingDao: StatMappingDao by inject()
-        val database: com.rewardpoints.app.data.local.db.AppDatabase by inject()
+        val database: com.statup.app.data.local.db.AppDatabase by inject()
         val userPreferences: UserPreferences by inject()
         // Eagerly resolve Notifier so its channels are created before any worker tries to notify.
         // (`by inject()` would defer construction until first access.)

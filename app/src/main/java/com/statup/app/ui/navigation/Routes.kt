@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.navigation
+package com.statup.app.ui.navigation
 
 object Routes {
     const val STATUS = "status"

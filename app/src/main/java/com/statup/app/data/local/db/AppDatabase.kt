@@ -1,4 +1,4 @@
-package com.rewardpoints.app.data.local.db
+package com.statup.app.data.local.db
 
 import android.content.Context
 import androidx.room.Database
@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.rewardpoints.app.data.local.db.dao.*
-import com.rewardpoints.app.data.local.db.entity.*
+import com.statup.app.data.local.db.dao.*
+import com.statup.app.data.local.db.entity.*
 
 // Single source of truth for the schema version. Bump this AND add the matching Migration to
 // AppDatabase.ALL_MIGRATIONS when the schema changes — never lower it (downgrades wipe).
@@ -40,7 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun aiMemoryDao(): AiMemoryDao
 
     companion object {
-        const val DATABASE_NAME = "reward_points_db"
+        const val DATABASE_NAME = "stat_up_db"
 
         /** Current schema version — exposed for MigrationTest. Mirror of [DB_VERSION]. */
         const val CURRENT_VERSION = DB_VERSION

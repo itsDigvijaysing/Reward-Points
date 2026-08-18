@@ -1,4 +1,4 @@
-package com.rewardpoints.app.widget
+package com.statup.app.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -13,8 +13,8 @@ import android.content.Intent
  * provider stays the single source of truth for how the widget looks.
  *
  * Call sites: data mutations that change anything the widget displays (rank, balance, streak,
- * today's earned points). Today that's [com.rewardpoints.app.data.repository.PointsRepository]
- * (earn/redeem) and [com.rewardpoints.app.rpg.DecayEngine] (daily tick → streak/rank).
+ * today's earned points). Today that's [com.statup.app.data.repository.PointsRepository]
+ * (earn/redeem) and [com.statup.app.rpg.DecayEngine] (daily tick → streak/rank).
  *
  * Cheap when no widget is on the home screen — `getAppWidgetIds()` returns empty and we early-out.
  */

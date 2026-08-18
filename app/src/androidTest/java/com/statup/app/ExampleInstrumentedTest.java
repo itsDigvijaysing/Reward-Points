@@ -1,4 +1,4 @@
-package com.rewardpoints.app;
+package com.statup.app;
 
 import android.content.Context;
 
@@ -23,6 +23,6 @@ public class ExampleInstrumentedTest {
         // suffix, so assert the base id as a prefix rather than an exact match (an exact
         // match made connectedDebugAndroidTest fail on every debug build).
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertTrue(appContext.getPackageName().startsWith("com.rewardpoints.app"));
+        assertTrue(appContext.getPackageName().startsWith("com.statup.app"));
     }
 }

@@ -1,7 +1,7 @@
-package com.rewardpoints.app.quotes
+package com.statup.app.quotes
 
-import com.rewardpoints.app.domain.model.Quote
-import com.rewardpoints.app.domain.model.QuoteSource
+import com.statup.app.domain.model.Quote
+import com.statup.app.domain.model.QuoteSource
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
 

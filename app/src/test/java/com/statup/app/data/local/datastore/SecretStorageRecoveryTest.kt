@@ -1,4 +1,4 @@
-package com.rewardpoints.app.data.local.datastore
+package com.statup.app.data.local.datastore
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

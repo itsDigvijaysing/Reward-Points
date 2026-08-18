@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.agent
+package com.statup.app.ui.screen.agent
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -26,13 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.rewardpoints.app.ai.AgentMessage
-import com.rewardpoints.app.ui.components.glass.GlassButton
+import com.statup.app.ai.AgentMessage
+import com.statup.app.ui.components.glass.GlassButton
 import dev.jeziellago.compose.markdowntext.MarkdownText
-import com.rewardpoints.app.ui.components.glass.GlassButtonSmall
-import com.rewardpoints.app.ui.components.glass.GlassCard
-import com.rewardpoints.app.ui.navigation.Routes
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.components.glass.GlassButtonSmall
+import com.statup.app.ui.components.glass.GlassCard
+import com.statup.app.ui.navigation.Routes
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

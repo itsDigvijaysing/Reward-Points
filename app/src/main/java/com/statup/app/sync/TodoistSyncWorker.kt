@@ -1,9 +1,9 @@
-package com.rewardpoints.app.sync
+package com.statup.app.sync
 
 import android.content.Context
 import android.util.Log
 import androidx.work.*
-import com.rewardpoints.app.notifications.Notifier
+import com.statup.app.notifications.Notifier
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.IOException

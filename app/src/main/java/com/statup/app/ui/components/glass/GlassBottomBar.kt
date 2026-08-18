@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.glass
+package com.statup.app.ui.components.glass
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -29,7 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.theme.*
 
 data class BottomNavItem(
     val label: String,

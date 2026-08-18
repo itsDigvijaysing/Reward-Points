@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ai
+package com.statup.app.ai
 
 import io.ktor.client.*
 import io.ktor.client.request.*

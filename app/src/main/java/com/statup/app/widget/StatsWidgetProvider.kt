@@ -1,4 +1,4 @@
-package com.rewardpoints.app.widget
+package com.statup.app.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -6,11 +6,11 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import com.rewardpoints.app.MainActivity
-import com.rewardpoints.app.R
-import com.rewardpoints.app.data.local.db.AppDatabase
-import com.rewardpoints.app.data.local.db.entity.PlayerStatsEntity
-import com.rewardpoints.app.domain.model.Rank
+import com.statup.app.MainActivity
+import com.statup.app.R
+import com.statup.app.data.local.db.AppDatabase
+import com.statup.app.data.local.db.entity.PlayerStatsEntity
+import com.statup.app.domain.model.Rank
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate

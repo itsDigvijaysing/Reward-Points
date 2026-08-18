@@ -16,11 +16,11 @@ if (keystorePropertiesFile.exists()) {
 def hasReleaseKeystore = keystoreProperties.getProperty('storeFile') != null
 
 android {
-    namespace 'com.rewardpoints.app'
+    namespace 'com.statup.app'
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.rewardpoints.app"
+        applicationId "com.statup.app"
         minSdk 26
         // Play requires targetSdk 36 for new app updates from Aug 31, 2026. Bumped from 35
         // on 2026-06-10: no edge-to-edge opt-outs, no orientation locks, no custom back

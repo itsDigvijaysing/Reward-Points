@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.settings
+package com.statup.app.ui.screen.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.rewardpoints.app.ui.navigation.Routes
-import com.rewardpoints.app.ui.components.glass.GlassButton
-import com.rewardpoints.app.ui.components.glass.GlassCard
-import com.rewardpoints.app.ui.components.glass.GlassTextField
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.navigation.Routes
+import com.statup.app.ui.components.glass.GlassButton
+import com.statup.app.ui.components.glass.GlassCard
+import com.statup.app.ui.components.glass.GlassTextField
+import com.statup.app.ui.theme.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -344,7 +344,7 @@ fun SettingsScreen(
                         fontFamily = Inter
                     )
                     Text(
-                        text = "v${com.rewardpoints.app.BuildConfig.VERSION_NAME}",
+                        text = "v${com.statup.app.BuildConfig.VERSION_NAME}",
                         color = TextSecondary,
                         fontSize = 12.sp,
                         fontFamily = Inter

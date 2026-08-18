@@ -1,13 +1,13 @@
-package com.rewardpoints.app.ui.screen.agent
+package com.statup.app.ui.screen.agent
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.ai.AgentAuthException
-import com.rewardpoints.app.ai.AgentMessage
-import com.rewardpoints.app.ai.AgentRateLimitException
-import com.rewardpoints.app.ai.AgentRepository
-import com.rewardpoints.app.ai.AgentSafetyException
-import com.rewardpoints.app.data.local.datastore.UserPreferences
+import com.statup.app.ai.AgentAuthException
+import com.statup.app.ai.AgentMessage
+import com.statup.app.ai.AgentRateLimitException
+import com.statup.app.ai.AgentRepository
+import com.statup.app.ai.AgentSafetyException
+import com.statup.app.data.local.datastore.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

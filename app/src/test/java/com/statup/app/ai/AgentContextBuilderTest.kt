@@ -1,11 +1,11 @@
-package com.rewardpoints.app.ai
+package com.statup.app.ai
 
-import com.rewardpoints.app.data.local.db.dao.MissionDao
-import com.rewardpoints.app.data.local.db.dao.TransactionDao
-import com.rewardpoints.app.data.local.db.entity.MissionEntity
-import com.rewardpoints.app.data.local.db.entity.TransactionEntity
-import com.rewardpoints.app.data.repository.PlayerStateProvider
-import com.rewardpoints.app.domain.model.PlayerStats
+import com.statup.app.data.local.db.dao.MissionDao
+import com.statup.app.data.local.db.dao.TransactionDao
+import com.statup.app.data.local.db.entity.MissionEntity
+import com.statup.app.data.local.db.entity.TransactionEntity
+import com.statup.app.data.repository.PlayerStateProvider
+import com.statup.app.domain.model.PlayerStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest

@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ai
+package com.statup.app.ai
 
 import java.util.UUID
 

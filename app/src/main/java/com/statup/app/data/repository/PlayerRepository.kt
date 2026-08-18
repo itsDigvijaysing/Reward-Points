@@ -1,11 +1,11 @@
-package com.rewardpoints.app.data.repository
+package com.statup.app.data.repository
 
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.dao.PlayerStatsDao
-import com.rewardpoints.app.data.local.db.entity.PlayerStatsEntity
-import com.rewardpoints.app.domain.model.PlayerStats
-import com.rewardpoints.app.domain.model.Rank
-import com.rewardpoints.app.rpg.DecayStatsStore
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.local.db.dao.PlayerStatsDao
+import com.statup.app.data.local.db.entity.PlayerStatsEntity
+import com.statup.app.domain.model.PlayerStats
+import com.statup.app.domain.model.Rank
+import com.statup.app.rpg.DecayStatsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

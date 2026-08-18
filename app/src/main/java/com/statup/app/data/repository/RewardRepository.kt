@@ -1,10 +1,10 @@
-package com.rewardpoints.app.data.repository
+package com.statup.app.data.repository
 
 import androidx.room.withTransaction
-import com.rewardpoints.app.data.local.db.AppDatabase
-import com.rewardpoints.app.data.local.db.dao.RewardDao
-import com.rewardpoints.app.data.local.db.entity.RewardEntity
-import com.rewardpoints.app.domain.model.Reward
+import com.statup.app.data.local.db.AppDatabase
+import com.statup.app.data.local.db.dao.RewardDao
+import com.statup.app.data.local.db.entity.RewardEntity
+import com.statup.app.domain.model.Reward
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

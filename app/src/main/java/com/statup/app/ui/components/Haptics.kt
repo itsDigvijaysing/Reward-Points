@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components
+package com.statup.app.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

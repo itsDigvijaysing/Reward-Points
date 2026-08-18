@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.status
+package com.statup.app.ui.screen.status
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,15 +24,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.rewardpoints.app.domain.model.Rank
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.ui.components.glass.*
-import com.rewardpoints.app.ui.components.rpg.DailyQuoteCard
-import com.rewardpoints.app.ui.components.rememberHapticTick
-import com.rewardpoints.app.ui.components.rpg.RankUpAnimation
-import com.rewardpoints.app.ui.components.rpg.StatusWindow
-import com.rewardpoints.app.ui.navigation.Routes
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Rank
+import com.statup.app.domain.model.StatType
+import com.statup.app.ui.components.glass.*
+import com.statup.app.ui.components.rpg.DailyQuoteCard
+import com.statup.app.ui.components.rememberHapticTick
+import com.statup.app.ui.components.rpg.RankUpAnimation
+import com.statup.app.ui.components.rpg.StatusWindow
+import com.statup.app.ui.navigation.Routes
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -65,8 +65,8 @@ fun StatusScreen(
     }
 
     val hexStyle = when (uiState.hexagonStyle) {
-        "glow" -> com.rewardpoints.app.ui.components.rpg.HexagonStyle.GLOW
-        else -> com.rewardpoints.app.ui.components.rpg.HexagonStyle.SIMPLE
+        "glow" -> com.statup.app.ui.components.rpg.HexagonStyle.GLOW
+        else -> com.statup.app.ui.components.rpg.HexagonStyle.SIMPLE
     }
 
     Column(
@@ -215,8 +215,8 @@ private fun ShieldDialog(
     onBuy: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val maxShields = com.rewardpoints.app.domain.model.PlayerStats.MAX_SHIELDS
-    val cost = com.rewardpoints.app.domain.model.PlayerStats.SHIELD_COST
+    val maxShields = com.statup.app.domain.model.PlayerStats.MAX_SHIELDS
+    val cost = com.statup.app.domain.model.PlayerStats.SHIELD_COST
     val atMax = shieldsHeld >= maxShields
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties()) {
@@ -283,7 +283,7 @@ private fun ShieldDialog(
 
 @Composable
 private fun TitlePickerDialog(
-    titles: List<com.rewardpoints.app.data.local.db.entity.TitleEntity>,
+    titles: List<com.statup.app.data.local.db.entity.TitleEntity>,
     equippedTitle: String?,
     onDismiss: () -> Unit,
     onSelect: (String?) -> Unit

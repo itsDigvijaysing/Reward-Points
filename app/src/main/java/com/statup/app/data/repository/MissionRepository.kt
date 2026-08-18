@@ -1,9 +1,9 @@
-package com.rewardpoints.app.data.repository
+package com.statup.app.data.repository
 
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.local.db.dao.MissionDao
-import com.rewardpoints.app.data.local.db.entity.MissionEntity
-import com.rewardpoints.app.domain.model.StatType
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.local.db.dao.MissionDao
+import com.statup.app.data.local.db.entity.MissionEntity
+import com.statup.app.domain.model.StatType
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 

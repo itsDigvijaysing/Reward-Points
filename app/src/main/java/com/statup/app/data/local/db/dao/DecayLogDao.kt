@@ -1,7 +1,7 @@
-package com.rewardpoints.app.data.local.db.dao
+package com.statup.app.data.local.db.dao
 
 import androidx.room.*
-import com.rewardpoints.app.data.local.db.entity.DecayLogEntity
+import com.statup.app.data.local.db.entity.DecayLogEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

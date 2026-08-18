@@ -81,7 +81,7 @@ We may update this policy as features change (in particular, if more optional ne
 
 ## 9. Contact
 
-For questions about this privacy policy or the app: support@rewardpoints.app
+For questions about this privacy policy or the app: support@statup.app
 
 ## 10. Compliance
 

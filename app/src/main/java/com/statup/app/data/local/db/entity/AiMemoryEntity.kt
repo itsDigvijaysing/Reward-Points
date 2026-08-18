@@ -1,4 +1,4 @@
-package com.rewardpoints.app.data.local.db.entity
+package com.statup.app.data.local.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

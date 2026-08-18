@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.rpg
+package com.statup.app.ui.components.rpg
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +13,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rewardpoints.app.domain.model.Quote
-import com.rewardpoints.app.ui.components.glass.GlassCard
-import com.rewardpoints.app.ui.theme.AccentPrimary
-import com.rewardpoints.app.ui.theme.Inter
-import com.rewardpoints.app.ui.theme.TextPrimary
-import com.rewardpoints.app.ui.theme.TextTertiary
+import com.statup.app.domain.model.Quote
+import com.statup.app.ui.components.glass.GlassCard
+import com.statup.app.ui.theme.AccentPrimary
+import com.statup.app.ui.theme.Inter
+import com.statup.app.ui.theme.TextPrimary
+import com.statup.app.ui.theme.TextTertiary
 
 /**
  * The day's quote, rendered as a glass card under the status window. Renders nothing

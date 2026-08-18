@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.history
+package com.statup.app.ui.screen.history
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -28,12 +28,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.rewardpoints.app.domain.model.Transaction
-import com.rewardpoints.app.domain.model.TransactionSource
-import com.rewardpoints.app.domain.model.TransactionType
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.ui.components.glass.*
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Transaction
+import com.statup.app.domain.model.TransactionSource
+import com.statup.app.domain.model.TransactionType
+import com.statup.app.domain.model.StatType
+import com.statup.app.ui.components.glass.*
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*

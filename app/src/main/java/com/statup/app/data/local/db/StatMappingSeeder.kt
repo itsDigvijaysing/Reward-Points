@@ -1,8 +1,8 @@
-package com.rewardpoints.app.data.local.db
+package com.statup.app.data.local.db
 
 import androidx.room.withTransaction
-import com.rewardpoints.app.data.local.db.dao.StatMappingDao
-import com.rewardpoints.app.data.local.db.entity.StatMappingEntity
+import com.statup.app.data.local.db.dao.StatMappingDao
+import com.statup.app.data.local.db.entity.StatMappingEntity
 
 /**
  * Default Todoist label → stat mappings. Called from app startup and from

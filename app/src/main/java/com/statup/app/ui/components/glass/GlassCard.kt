@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components.glass
+package com.statup.app.ui.components.glass
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.theme.*
 
 @Composable
 fun GlassCard(

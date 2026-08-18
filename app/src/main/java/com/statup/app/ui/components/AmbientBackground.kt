@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.components
+package com.statup.app.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.theme.*
 
 /**
  * Background "ambient orbs" layer used as the Haze blur source for the whole app shell.

@@ -1,12 +1,12 @@
-package com.rewardpoints.app
+package com.statup.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.rewardpoints.app.ui.navigation.AppNavigation
-import com.rewardpoints.app.ui.theme.StatUpTheme
+import com.statup.app.ui.navigation.AppNavigation
+import com.statup.app.ui.theme.StatUpTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

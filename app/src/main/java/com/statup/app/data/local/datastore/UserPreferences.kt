@@ -1,11 +1,11 @@
-package com.rewardpoints.app.data.local.datastore
+package com.statup.app.data.local.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import com.rewardpoints.app.quotes.DailyQuoteStore
-import com.rewardpoints.app.rpg.DecayDayStore
+import com.statup.app.quotes.DailyQuoteStore
+import com.statup.app.rpg.DecayDayStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

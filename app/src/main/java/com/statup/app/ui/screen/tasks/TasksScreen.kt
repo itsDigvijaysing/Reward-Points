@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.tasks
+package com.statup.app.ui.screen.tasks
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -44,12 +44,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.rewardpoints.app.data.local.db.entity.MissionEntity
-import com.rewardpoints.app.domain.model.StatType
-import com.rewardpoints.app.sync.TodoistTask
-import com.rewardpoints.app.ui.components.glass.*
-import com.rewardpoints.app.ui.components.rememberHapticTick
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.data.local.db.entity.MissionEntity
+import com.statup.app.domain.model.StatType
+import com.statup.app.sync.TodoistTask
+import com.statup.app.ui.components.glass.*
+import com.statup.app.ui.components.rememberHapticTick
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

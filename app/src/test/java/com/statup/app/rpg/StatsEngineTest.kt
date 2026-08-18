@@ -1,4 +1,4 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

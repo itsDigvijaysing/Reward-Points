@@ -1,11 +1,11 @@
-package com.rewardpoints.app.ui.screen.rewards
+package com.statup.app.ui.screen.rewards
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.repository.PointsRepository
-import com.rewardpoints.app.data.repository.RewardRepository
-import com.rewardpoints.app.domain.model.Reward
-import com.rewardpoints.app.rpg.AchievementTracker
+import com.statup.app.data.repository.PointsRepository
+import com.statup.app.data.repository.RewardRepository
+import com.statup.app.domain.model.Reward
+import com.statup.app.rpg.AchievementTracker
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

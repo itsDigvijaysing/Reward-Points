@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.rewards
+package com.statup.app.ui.screen.rewards
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.rewardpoints.app.domain.model.Reward
-import com.rewardpoints.app.ui.components.glass.*
-import com.rewardpoints.app.ui.components.rememberHapticTick
-import com.rewardpoints.app.ui.navigation.Routes
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Reward
+import com.statup.app.ui.components.glass.*
+import com.statup.app.ui.components.rememberHapticTick
+import com.statup.app.ui.navigation.Routes
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

@@ -1,4 +1,4 @@
-package com.rewardpoints.app.ui.screen.achievements
+package com.statup.app.ui.screen.achievements
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.rewardpoints.app.domain.model.Achievement
-import com.rewardpoints.app.domain.model.AchievementCategory
-import com.rewardpoints.app.ui.components.glass.*
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.domain.model.Achievement
+import com.statup.app.domain.model.AchievementCategory
+import com.statup.app.ui.components.glass.*
+import com.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

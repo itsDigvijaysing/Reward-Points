@@ -1,4 +1,4 @@
-package com.rewardpoints.app.rpg
+package com.statup.app.rpg
 
 /**
  * Pure math for stat/points calculations. Used to host instance methods that wrapped

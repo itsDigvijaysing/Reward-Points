@@ -1,7 +1,7 @@
-package com.rewardpoints.app.data.local.db
+package com.statup.app.data.local.db
 
 import androidx.room.withTransaction
-import com.rewardpoints.app.rpg.Transactor
+import com.statup.app.rpg.Transactor
 
 /** [Transactor] backed by Room's [withTransaction]. */
 class RoomTransactor(private val database: AppDatabase) : Transactor {

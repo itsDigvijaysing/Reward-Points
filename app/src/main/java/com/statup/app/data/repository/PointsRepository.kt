@@ -1,15 +1,15 @@
-package com.rewardpoints.app.data.repository
+package com.statup.app.data.repository
 
 import androidx.room.withTransaction
-import com.rewardpoints.app.data.local.db.AppDatabase
-import com.rewardpoints.app.data.local.db.dao.PlayerStatsDao
-import com.rewardpoints.app.data.local.db.dao.StatMappingDao
-import com.rewardpoints.app.data.local.db.dao.TransactionDao
-import com.rewardpoints.app.data.local.db.entity.StatMappingEntity
-import com.rewardpoints.app.data.local.db.entity.TransactionEntity
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.domain.model.*
-import com.rewardpoints.app.widget.StatsWidgetUpdater
+import com.statup.app.data.local.db.AppDatabase
+import com.statup.app.data.local.db.dao.PlayerStatsDao
+import com.statup.app.data.local.db.dao.StatMappingDao
+import com.statup.app.data.local.db.dao.TransactionDao
+import com.statup.app.data.local.db.entity.StatMappingEntity
+import com.statup.app.data.local.db.entity.TransactionEntity
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.domain.model.*
+import com.statup.app.widget.StatsWidgetUpdater
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

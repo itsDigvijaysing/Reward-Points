@@ -1,9 +1,9 @@
-package com.rewardpoints.app.ui.screen.onboarding
+package com.statup.app.ui.screen.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rewardpoints.app.data.local.datastore.UserPreferences
-import com.rewardpoints.app.data.repository.PlayerRepository
+import com.statup.app.data.local.datastore.UserPreferences
+import com.statup.app.data.repository.PlayerRepository
 import kotlinx.coroutines.launch
 
 /**

@@ -1,7 +1,7 @@
-package com.rewardpoints.app.domain.model
+package com.statup.app.domain.model
 
 import androidx.compose.ui.graphics.Color
-import com.rewardpoints.app.ui.theme.*
+import com.statup.app.ui.theme.*
 
 data class Achievement(
     val id: String,

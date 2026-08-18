@@ -1,7 +1,7 @@
-package com.rewardpoints.app.quotes
+package com.statup.app.quotes
 
 import android.content.Context
-import com.rewardpoints.app.domain.model.Quote
+import com.statup.app.domain.model.Quote
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
