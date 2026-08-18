@@ -21,11 +21,11 @@
 -keepclasseswithmembers class kotlinx.serialization.json.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep,includedescriptorclasses class com.statup.app.**$$serializer { *; }
--keepclassmembers class com.statup.app.** {
+-keep,includedescriptorclasses class dev.statup.app.**$$serializer { *; }
+-keepclassmembers class dev.statup.app.** {
     *** Companion;
 }
--keepclasseswithmembers class com.statup.app.** {
+-keepclasseswithmembers class dev.statup.app.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -35,12 +35,12 @@
 -dontwarn androidx.room.paging.**
 
 # Keep Room entities and DAOs
--keep class com.statup.app.data.local.db.entity.** { *; }
--keep class com.statup.app.data.local.db.dao.** { *; }
--keep class com.statup.app.data.local.db.AppDatabase { *; }
+-keep class dev.statup.app.data.local.db.entity.** { *; }
+-keep class dev.statup.app.data.local.db.dao.** { *; }
+-keep class dev.statup.app.data.local.db.AppDatabase { *; }
 
 # Keep domain models
--keep class com.statup.app.domain.model.** { *; }
+-keep class dev.statup.app.domain.model.** { *; }
 
 # Ktor
 -dontwarn io.ktor.**
@@ -48,8 +48,8 @@
 -keep class kotlinx.coroutines.** { *; }
 
 # WorkManager — workers are instantiated reflectively by the default WorkerFactory
--keep class com.statup.app.sync.DecayWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
--keep class com.statup.app.sync.TodoistSyncWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
+-keep class dev.statup.app.sync.DecayWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
+-keep class dev.statup.app.sync.TodoistSyncWorker { <init>(android.content.Context, androidx.work.WorkerParameters); }
 
 # Security Crypto / Tink (EncryptedSharedPreferences)
 -keep class com.google.crypto.tink.** { *; }

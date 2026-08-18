@@ -66,7 +66,7 @@
         errorLine1="    modifier: Modifier = Modifier,"
         errorLine2="    ~~~~~~~~">
         <location
-            file="src/main/java/com/statup/app/ui/components/rpg/StatusWindow.kt"
+            file="src/main/java/dev/statup/app/ui/components/rpg/StatusWindow.kt"
             line="36"
             column="5"/>
     </issue>
@@ -135,7 +135,7 @@
         errorLine1="    var step by remember { mutableStateOf(0) }"
         errorLine2="                           ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/statup/app/ui/screen/onboarding/OnboardingScreen.kt"
+            file="src/main/java/dev/statup/app/ui/screen/onboarding/OnboardingScreen.kt"
             line="71"
             column="28"/>
     </issue>
@@ -2467,7 +2467,7 @@
         errorLine1="        prefs.edit().apply {"
         errorLine2="        ~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/statup/app/data/local/datastore/SecretStorage.kt"
+            file="src/main/java/dev/statup/app/data/local/datastore/SecretStorage.kt"
             line="53"
             column="9"/>
     </issue>
@@ -2478,7 +2478,7 @@
         errorLine1="        prefs.edit().clear().apply()"
         errorLine2="        ~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/statup/app/data/local/datastore/SecretStorage.kt"
+            file="src/main/java/dev/statup/app/data/local/datastore/SecretStorage.kt"
             line="59"
             column="9"/>
     </issue>

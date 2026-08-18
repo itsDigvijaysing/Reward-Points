@@ -48,7 +48,7 @@ jobs:
         with:
           filters: |
             db:
-              - 'app/src/main/java/com/statup/app/data/local/db/**'
+              - 'app/src/main/java/dev/statup/app/data/local/db/**'
               - 'app/schemas/**'
 
   instrumented:

@@ -63,7 +63,7 @@ waydroid prop set persist.waydroid.multi_windows true
 waydroid session stop && waydroid session start
 
 waydroid app install app/build/outputs/apk/debug/app-debug.apk
-waydroid app launch com.statup.app.debug
+waydroid app launch dev.statup.app.debug
 ```
 
 ## Architecture
