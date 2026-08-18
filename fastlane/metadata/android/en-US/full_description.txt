@@ -1,6 +1,8 @@
 Stat Up - RPG Gamification for Real Life
 
-An anime-inspired RPG Status Window app that gamifies your daily tasks and achievements with a premium liquid glass UI.
+Stat Up isn't just a to-do app. It turns real-life productivity into character progression.
+
+Do tasks, earn points, improve your stats, hold your streak, climb the ranks, and spend what you earn on rewards you set yourself. Everything runs on your device.
 
 FEATURES:
 • RPG stats system — Strength, Intelligence, Wisdom, Dexterity, Charisma, Vitality

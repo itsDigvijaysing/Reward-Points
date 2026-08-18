@@ -73,7 +73,7 @@ For data sent to Todoist or Google: those services retain it according to their 
 
 ## 7. Children's Privacy
 
-This app is suitable for users of all ages. The app itself does not collect personal information. If the AI Coach is enabled, please review Google's age and consent policies for their Generative Language API.
+Stat Up is intended for users aged 13 and over, and is not directed to children. The app itself does not collect personal information. The optional AI Coach sends your player state to Google's Generative Language API, so it should not be enabled by anyone under 13; see Google's age and consent policies for that API.
 
 ## 8. Changes to This Policy
 
@@ -81,7 +81,7 @@ We may update this policy as features change (in particular, if more optional ne
 
 ## 9. Contact
 
-For questions about this privacy policy or the app: support@statup.app
+For questions about this privacy policy or the app: itsdigvijaysing@gmail.com
 
 ## 10. Compliance
 
