@@ -66,8 +66,12 @@
 }
 
 # Compose
+# Do NOT add `-keep class androidx.compose.** { *; }` here. Compose ships its own consumer
+# ProGuard rules, and a blanket keep defeats R8 across the whole toolkit — most visibly it
+# retains every icon in material-icons-extended (11,408 classes / ~15 MB of DEX) when the app
+# references about 25 of them. Measured 2026-08-17: removing it cut the release AAB from
+# 25.3 MB to the size recorded in CLAUDE.md.
 -dontwarn androidx.compose.**
--keep class androidx.compose.** { *; }
 
 # DataStore
 -keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {

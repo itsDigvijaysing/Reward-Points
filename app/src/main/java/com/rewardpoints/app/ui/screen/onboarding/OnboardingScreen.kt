@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
@@ -75,8 +76,12 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = koinViewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground()
         Column(
+            // Onboarding renders outside MainShell's Scaffold, so nothing else reserves room
+            // for the system bars — without this the "Next" button sits under the navigation
+            // bar (gesture pill or 3-button alike). AmbientBackground stays edge-to-edge.
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

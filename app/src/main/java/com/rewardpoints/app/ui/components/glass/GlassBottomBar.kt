@@ -47,9 +47,11 @@ fun GlassBottomBar(
     val shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
 
     Box(
+        // No fixed height: the glass must paint all the way to the screen edge (the app is
+        // edge-to-edge), while the nav items sit above the system navigation bar. The Row
+        // below owns the height — BottomBarHeight for content, plus the navigation-bar inset.
         modifier = modifier
             .fillMaxWidth()
-            .height(GlassTokens.BottomBarHeight)
             .clip(shape)
             // Backdrop blur of scrolling content underneath. Falls back to tinted scrim on API < 31.
             .hazeEffectOrFallback(elevated = true)
@@ -88,7 +90,9 @@ fun GlassBottomBar(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .height(GlassTokens.BottomBarHeight)
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
