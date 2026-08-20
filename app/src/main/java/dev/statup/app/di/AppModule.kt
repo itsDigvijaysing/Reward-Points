@@ -78,6 +78,14 @@ val appModule = module {
                     isLenient = true
                 })
             }
+            // MUST be installed before HttpTimeout (Ktor requirement) or timeouts aren't retried.
+            // Gemini's free tier returns 503 UNAVAILABLE often enough that a single attempt
+            // surfaced a dead-end error for a condition one retry clears. 429 is NOT a server
+            // error, so genuine quota exhaustion is still not retried.
+            install(io.ktor.client.plugins.HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 2)
+                exponentialDelay()
+            }
             install(io.ktor.client.plugins.HttpTimeout) {
                 requestTimeoutMillis = 15000
                 connectTimeoutMillis = 10000
@@ -160,7 +168,12 @@ val appModule = module {
     viewModel { RewardsViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { TasksViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { HistoryViewModel(get<PointsRepository>().transactions) }
+    viewModel {
+        HistoryViewModel(
+            transactions = get<PointsRepository>().transactions,
+            playerStats = get<PlayerRepository>().playerStats
+        )
+    }
     viewModel { AchievementsViewModel(get()) }
     viewModel { StatsViewModel(get(), get()) }
     viewModel { AgentViewModel(get(), get()) }

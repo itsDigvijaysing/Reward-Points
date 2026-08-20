@@ -24,6 +24,10 @@ class AgentViewModel(
     private val _uiState = MutableStateFlow(AgentUiState())
     val uiState: StateFlow<AgentUiState> = _uiState.asStateFlow()
 
+    // Bumped by clearChat() so a send that was already in flight can tell its transcript was
+    // wiped underneath it and drop its result instead of writing into the fresh one.
+    private var sendCounter = 0
+
     init {
         // Reactive: any change to the Gemini key (added/removed in Settings) immediately
         // updates isConfigured — the screen doesn't need to poll on resume. The trigger lambda
@@ -57,10 +61,13 @@ class AgentViewModel(
             )
         }
 
+        val sendId = ++sendCounter
         viewModelScope.launch {
             // Transcript excludes the pending placeholder so we don't send an empty assistant turn.
             val transcript = _uiState.value.messages.filter { !it.isPending }
-            agentRepository.sendMessage(transcript).fold(
+            val result = agentRepository.sendMessage(transcript)
+            if (sendId != sendCounter) return@launch // cleared mid-flight — drop the result
+            result.fold(
                 onSuccess = { reply ->
                     _uiState.update { state ->
                         val withoutPending = state.messages.dropLast(1) // remove the pending placeholder
@@ -94,8 +101,14 @@ class AgentViewModel(
         }
     }
 
+    /**
+     * Wipes the transcript. [sendCounter] is bumped so an in-flight send's completion is
+     * discarded instead of appending an orphan reply to the cleared list, and isSending is
+     * reset so the input re-enables immediately rather than waiting on that dead request.
+     */
     fun clearChat() {
-        _uiState.update { it.copy(messages = emptyList(), error = null) }
+        sendCounter++
+        _uiState.update { it.copy(messages = emptyList(), error = null, isSending = false) }
     }
 
     fun dismissError() {

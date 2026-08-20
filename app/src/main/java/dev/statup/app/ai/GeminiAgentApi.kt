@@ -13,17 +13,29 @@ import kotlinx.serialization.json.Json
  *
  * Endpoint: POST `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key=API_KEY`
  *
- * Model: `gemini-2.5-flash` — current stable Flash model. Free tier (as of May 2026):
- * 10 RPM, 250k TPM, 500 RPD. The previously-used `gemini-2.0-flash` was retired on
- * 2026-03-03 — calls against that name now return errors (typically 404 or 429), which
- * is what caused the unexplained "TooManyRequests" spikes a user might see even without
- * actively sending messages. See: https://ai.google.dev/gemini-api/docs/models
+ * Model: `gemini-3.6-flash` (since 2026-08-21).
+ *
+ * `gemini-2.5-flash` is CLOSED TO NEW USERS — it returns
+ * `404 "no longer available to new users"` for any API key whose project had not already
+ * used it. An existing project keeps working, which makes this trap easy to miss: testing
+ * with a grandfathered developer key shows 200 while every real user gets 404. This app is
+ * bring-your-own-key, so ALWAYS validate a model with a fresh key/project, never the .env one.
+ *
+ * When changing MODEL, re-test the whole payload, not just the name — `generationConfig`
+ * is not portable across generations. Gemini 3.x rejects the 2.x `thinkingBudget` with
+ * 400 INVALID_ARGUMENT and uses `thinkingLevel` instead.
+ *
+ * Free tier on 3.6-flash is ~5 requests/min (2.5-flash allowed 10), so rapid-fire sends
+ * can legitimately 429 — that is quota, not a bad key, and is deliberately not retried.
+ * A transient `503 UNAVAILABLE` is capacity; the shared client's HttpRequestRetry absorbs it.
+ * Verify with scripts/verify_gemini_key.sh. See: https://ai.google.dev/gemini-api/docs/models
  *
  * Request shape (simplified):
  * ```
  * { "system_instruction": { "parts": [{ "text": "..." }] },
  *   "contents": [{ "role": "user"|"model", "parts": [{ "text": "..." }] }, ...],
- *   "generationConfig": { "temperature": 0.7, "maxOutputTokens": 512 } }
+ *   "generationConfig": { "temperature": 0.7, "maxOutputTokens": 1024,
+ *     "thinkingConfig": { "thinkingLevel": "low" } } }
  * ```
  *
  * Response shape: `candidates[0].content.parts[0].text` (or `finishReason=SAFETY` if blocked).
@@ -34,7 +46,7 @@ class GeminiAgentApi(
 ) : AgentApi {
 
     companion object {
-        private const val MODEL = "gemini-2.5-flash"
+        private const val MODEL = "gemini-3.6-flash"
         private const val BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
         // STOP = normal completion; MAX_TOKENS = hit our maxOutputTokens cap but the
@@ -70,15 +82,15 @@ class GeminiAgentApi(
                     },
                 generationConfig = GeminiGenerationConfig(
                     temperature = 0.7,
-                    // 2.5 Flash defaults to dynamic thinking (thinkingBudget=-1) when this is
-                    // omitted, and thinking tokens are drawn from the same maxOutputTokens cap
-                    // as the visible reply — with a low cap that silently ate the whole budget
-                    // and truncated or emptied the answer. Disabled: a short coaching reply
-                    // doesn't need chain-of-thought.
-                    thinkingConfig = GeminiThinkingConfig(thinkingBudget = 0),
-                    // Persona prompt asks for 2-4 short sentences; 512 leaves headroom for
-                    // markdown (bullets/bold) without the reply ever needing thinking tokens.
-                    maxOutputTokens = 512
+                    // Thinking tokens are drawn from the SAME maxOutputTokens cap as the visible
+                    // reply. Measured on 3.6-flash with a real coaching question: omitting this
+                    // spent 488 of 512 on thinking and truncated the answer at finishReason=
+                    // MAX_TOKENS. "low" spent 367 and finished cleanly. Gemini 3 does not accept
+                    // thinkingBudget (400 INVALID_ARGUMENT) — that is a 2.x-only field.
+                    thinkingConfig = GeminiThinkingConfig(thinkingLevel = "low"),
+                    // 1024, not 512: "low" still costs ~370 thinking tokens, so 512 left only
+                    // ~140 for the reply — enough to truncate a bulleted answer.
+                    maxOutputTokens = 1024
                 )
             )
             val body = json.encodeToString(GeminiRequest.serializer(), request)
@@ -155,7 +167,8 @@ private data class GeminiGenerationConfig(
 
 @Serializable
 private data class GeminiThinkingConfig(
-    val thinkingBudget: Int
+    /** Gemini 3.x field. The 2.x `thinkingBudget` is rejected with 400 on these models. */
+    val thinkingLevel: String
 )
 
 @Serializable

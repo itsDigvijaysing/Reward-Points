@@ -7,7 +7,7 @@ import dev.statup.app.domain.model.PlayerStats
 import dev.statup.app.domain.model.Rank
 import dev.statup.app.widget.StatsWidgetUpdater
 import java.time.LocalDate
-import java.util.Calendar
+import java.time.ZoneId
 
 class DecayEngine(
     private val statsStore: DecayStatsStore,
@@ -35,15 +35,15 @@ class DecayEngine(
             return DailyDecayResult.AlreadyApplied
         }
 
-        // Snapshot today's midnight once. Yesterday's window is [todayMidnight - 24h, todayMidnight).
-        // This is robust to WorkManager firing late: even at 02:15 the boundary stays correct.
-        val todayMidnight = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        val yesterdayMidnight = todayMidnight - 24L * 60L * 60L * 1000L
+        // Yesterday's window is [yesterday 00:00, today 00:00). Both bounds come from LocalDate
+        // rather than "today - 24h" so a DST day (23h or 25h long) still maps to exactly one
+        // calendar day — otherwise an earn in the shifted hour falls outside the window and
+        // costs the user an active day. Robust to WorkManager firing late: even at 02:15 the
+        // boundaries are unchanged.
+        val zone = ZoneId.systemDefault()
+        val todayMidnight = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+        val yesterdayMidnight = LocalDate.now(zone).minusDays(1)
+            .atStartOfDay(zone).toInstant().toEpochMilli()
 
         // Read the activity signal and apply the day's mutation inside ONE DB transaction so a
         // concurrent earn / redeem / buy-shield (each its own transaction) can't be clobbered by

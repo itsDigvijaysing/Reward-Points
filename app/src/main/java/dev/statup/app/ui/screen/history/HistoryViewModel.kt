@@ -2,6 +2,7 @@ package dev.statup.app.ui.screen.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.statup.app.domain.model.PlayerStats
 import dev.statup.app.domain.model.Transaction
 import dev.statup.app.domain.model.TransactionType
 import kotlinx.coroutines.CoroutineDispatcher
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 
 data class DayStatus(
@@ -54,6 +57,7 @@ enum class HistoryFilter(val label: String) {
 
 class HistoryViewModel(
     private val transactions: Flow<List<Transaction>>,
+    private val playerStats: Flow<PlayerStats?>,
     private val computeDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
@@ -64,6 +68,26 @@ class HistoryViewModel(
 
     init {
         loadTransactions()
+        observeStreaks()
+    }
+
+    /**
+     * Streaks come from player_stats — the same counter the Status screen and the widget show,
+     * and the one DecayEngine uses to drive rank. This screen used to re-derive its own from
+     * the transaction log, which disagreed on day one and after a Streak Shield absorbed an
+     * idle day. One source, three surfaces.
+     */
+    private fun observeStreaks() {
+        viewModelScope.launch {
+            playerStats.collect { stats ->
+                _uiState.update {
+                    it.copy(
+                        currentStreak = stats?.streak ?: 0,
+                        longestStreak = stats?.longestStreak ?: 0
+                    )
+                }
+            }
+        }
     }
 
     fun toggleCalendar() {
@@ -123,8 +147,7 @@ class HistoryViewModel(
                     val spent = txns
                         .filter { it.type == TransactionType.REDEEM }
                         .sumOf { it.points }
-                    val (currentStreak, longestStreak) = calculateStreaks(txns)
-                    BaseAggregates(sorted, earned, spent, currentStreak, longestStreak)
+                    BaseAggregates(sorted, earned, spent)
                 }
                 allTransactions = computed.sorted
                 // Write back through an atomic update that re-reads the CURRENT state, so a
@@ -143,8 +166,6 @@ class HistoryViewModel(
                         isLoading = false,
                         totalEarned = computed.earned,
                         totalSpent = computed.spent,
-                        currentStreak = computed.currentStreak,
-                        longestStreak = computed.longestStreak,
                         calendarDays = generateCalendarDays(
                             computed.sorted, current.calendarMonth, current.calendarYear
                         )
@@ -157,60 +178,8 @@ class HistoryViewModel(
     private data class BaseAggregates(
         val sorted: List<Transaction>,
         val earned: Int,
-        val spent: Int,
-        val currentStreak: Int,
-        val longestStreak: Int
+        val spent: Int
     )
-
-    private fun calculateStreaks(transactions: List<Transaction>): Pair<Int, Int> {
-        if (transactions.isEmpty()) return Pair(0, 0)
-
-        val activityDays = transactions
-            .filter { it.type == TransactionType.EARN }
-            .map { getDayStart(it.createdAt) }
-            .distinct()
-            .sortedDescending()
-
-        if (activityDays.isEmpty()) return Pair(0, 0)
-
-        val today = getDayStart(System.currentTimeMillis())
-        val yesterday = today - (24 * 60 * 60 * 1000L)
-
-        // Calculate current streak
-        var currentStreak = 0
-        var checkDate = if (activityDays.contains(today)) today else yesterday
-
-        for (day in activityDays) {
-            if (day == checkDate) {
-                currentStreak++
-                checkDate -= (24 * 60 * 60 * 1000L)
-            } else if (day < checkDate) {
-                break
-            }
-        }
-
-        if (!activityDays.contains(today) && !activityDays.contains(yesterday)) {
-            currentStreak = 0
-        }
-
-        // Calculate longest streak
-        var longestStreak = 0
-        var streak = 0
-        var prevDay: Long? = null
-
-        for (day in activityDays.sortedDescending()) {
-            if (prevDay == null || prevDay - day == 24 * 60 * 60 * 1000L) {
-                streak++
-            } else {
-                longestStreak = maxOf(longestStreak, streak)
-                streak = 1
-            }
-            prevDay = day
-        }
-        longestStreak = maxOf(longestStreak, streak)
-
-        return Pair(currentStreak, longestStreak)
-    }
 
     /**
      * Generates a proper month calendar grid.
@@ -309,13 +278,11 @@ class HistoryViewModel(
     }
 
     private fun applyFilter(transactions: List<Transaction>, filter: HistoryFilter): List<Transaction> {
-        val todayStart = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        val weekStart = todayStart - (7 * 24 * 60 * 60 * 1000L)
+        // LocalDate-derived, so a DST day (23h/25h) doesn't shift the boundaries by an hour.
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val todayStart = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val weekStart = today.minusDays(7).atStartOfDay(zone).toInstant().toEpochMilli()
 
         return when (filter) {
             HistoryFilter.ALL -> transactions

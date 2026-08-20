@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="file" path="datastore"/>
+        <!-- DataStore (username, onboarding flag, settings) IS backed up so it restores
+             together with the Room DB — see backup_rules.xml. -->
         <!-- Device-bound AndroidKeyStore master key isn't backed up; the encrypted blobs
              would be undecryptable after restore, so exclude the encrypted prefs. -->
         <exclude domain="sharedpref" path="secret_prefs.xml"/>
     </cloud-backup>
     <device-transfer>
-        <exclude domain="file" path="datastore"/>
         <exclude domain="sharedpref" path="secret_prefs.xml"/>
     </device-transfer>
 </data-extraction-rules>

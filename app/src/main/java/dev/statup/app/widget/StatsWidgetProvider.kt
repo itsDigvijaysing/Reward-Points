@@ -11,8 +11,11 @@ import dev.statup.app.R
 import dev.statup.app.data.local.db.AppDatabase
 import dev.statup.app.data.local.db.entity.PlayerStatsEntity
 import dev.statup.app.domain.model.Rank
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -26,8 +29,8 @@ import java.time.ZoneId
  *
  * RemoteViews trade-offs:
  *   - Can't use Compose, custom views, or coroutines on the rendering thread.
- *   - The provider receives onUpdate on a binder thread; we read the DB synchronously via
- *     runBlocking. Stats are a singleton row + a tiny SUM query — fast enough.
+ *   - onUpdate arrives via BroadcastReceiver.onReceive, which runs on the MAIN thread — so the
+ *     DB read is moved off it with goAsync() rather than blocking there.
  *   - Click target is the whole root view → opens MainActivity.
  */
 class StatsWidgetProvider : AppWidgetProvider() {
@@ -37,34 +40,40 @@ class StatsWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        val snapshot = readSnapshot(context)
-        appWidgetIds.forEach { id ->
-            appWidgetManager.updateAppWidget(id, buildViews(context, snapshot))
+        // goAsync() keeps the receiver alive while we read off the main thread. Blocking here
+        // instead would stall the UI thread on three DB queries per broadcast — an ANR risk
+        // whenever the DB is busy (e.g. mid-sync).
+        val pending = goAsync()
+        val appContext = context.applicationContext
+        scope.launch {
+            try {
+                val snapshot = readSnapshot(appContext)
+                appWidgetIds.forEach { id ->
+                    appWidgetManager.updateAppWidget(id, buildViews(appContext, snapshot))
+                }
+            } finally {
+                pending.finish()
+            }
         }
     }
 
-    private fun readSnapshot(context: Context): WidgetSnapshot {
-        val db = AppDatabase.getInstance(context.applicationContext)
-        val statsDao = db.playerStatsDao()
+    private suspend fun readSnapshot(context: Context): WidgetSnapshot {
+        val db = AppDatabase.getInstance(context)
+        val stats = db.playerStatsDao().getStatsOnce()
+            ?: PlayerStatsEntity(id = 1, lastActivityAt = null, updatedAt = System.currentTimeMillis())
         val txDao = db.transactionDao()
-        return runBlocking {
-            val stats = statsDao.getStatsOnce()
-                ?: PlayerStatsEntity(id = 1, lastActivityAt = null, updatedAt = System.currentTimeMillis())
-            val (start, end) = todayMillisRange()
-            val today = txDao.getEarnedInRange(start, end) ?: 0
-            // Pull the live balance in the same runBlocking so we only suspend the binder
-            // thread once. getBalance().first() is a one-row aggregate — fast.
-            val balance = txDao.getBalance().first()
-            WidgetSnapshot(stats, today, balance)
-        }
+        val (start, end) = todayMillisRange()
+        val today = txDao.getEarnedInRange(start, end) ?: 0
+        val balance = txDao.getBalance().first()
+        return WidgetSnapshot(stats, today, balance)
     }
 
+    /** Local-day bounds derived from LocalDate, so DST days (23h/25h) stay correct. */
     private fun todayMillisRange(): Pair<Long, Long> {
-        val start = LocalDate.now()
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-        return start to (start + 86_400_000L)
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        return today.atStartOfDay(zone).toInstant().toEpochMilli() to
+            today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
     }
 
     private fun buildViews(context: Context, snapshot: WidgetSnapshot): RemoteViews {
@@ -101,5 +110,10 @@ class StatsWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val REQUEST_OPEN_APP = 100
+
+        // One scope for the receiver class rather than a fresh one per broadcast. Provider
+        // instances are transient (the system recreates one per broadcast), so this can't hang
+        // off the instance.
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 }

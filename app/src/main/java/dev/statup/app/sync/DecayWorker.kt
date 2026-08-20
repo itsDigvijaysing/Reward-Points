@@ -28,9 +28,10 @@ class DecayWorker(
             // decay's own marker means a retry here can't re-apply decay.
             missionRepository.resetDailyIfNeeded()
             // Re-engagement nudges on the reminders channel. Only the consequential outcomes —
-            // a rank drop or a shield absorbing an idle day — notify; ordinary active/idle days
+            // a rank change or a shield absorbing an idle day — notify; ordinary active/idle days
             // and already-applied no-ops stay silent to avoid daily spam.
             when (result) {
+                is DailyDecayResult.ActiveWithRankUp -> notifier.showRankUp(result.newRank.name)
                 is DailyDecayResult.IdleWithRankDown -> notifier.showRankDown(result.newRank.name)
                 is DailyDecayResult.ShieldConsumed -> notifier.showShieldUsed(result.shieldsLeft)
                 else -> {}

@@ -76,16 +76,19 @@ class TodoistApi(private val httpClient: HttpClient) {
             val tasks = itemsArray.mapNotNull { element ->
                 try {
                     val obj = element.jsonObject
-                    val id = obj["id"]?.jsonPrimitive?.content ?: ""
-                    val taskId = obj["task_id"]?.jsonPrimitive?.content ?: ""
-                    val content = obj["content"]?.jsonPrimitive?.content ?: ""
-                    val completedAt = obj["completed_at"]?.jsonPrimitive?.content
+                    // contentOrNull, not content: JsonNull.content is the STRING "null", which
+                    // survives the isBlank guard below and would claim the unique externalId
+                    // index — silently dropping every later null-id task.
+                    val id = obj["id"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val taskId = obj["task_id"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val content = obj["content"]?.jsonPrimitive?.contentOrNull ?: ""
+                    val completedAt = obj["completed_at"]?.jsonPrimitive?.contentOrNull
 
                     // Extract priority & labels from item_object (present with annotate_items=true)
                     val itemObj = obj["item_object"]?.jsonObject
                     val priority = itemObj?.get("priority")?.jsonPrimitive?.int ?: 1
                     val labels = itemObj?.get("labels")?.jsonArray
-                        ?.map { it.jsonPrimitive.content } ?: emptyList()
+                        ?.mapNotNull { it.jsonPrimitive.contentOrNull } ?: emptyList()
 
                     CompletedTask(
                         id = id,

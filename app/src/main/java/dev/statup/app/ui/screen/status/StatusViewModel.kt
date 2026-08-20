@@ -51,20 +51,15 @@ class StatusViewModel(
     private var previousRank: Rank? = null
 
     /**
-     * Emits the local-midnight epoch (ms) for the current day, re-emitting once the day
-     * rolls over. Probes every 60s; `distinctUntilChanged` filters out the per-minute
+     * Emits the current local day's [start, endExclusive) epoch-ms bounds, re-emitting once the
+     * day rolls over. Probes every 60s; `distinctUntilChanged` filters out the per-minute
      * heartbeat so downstream `flatMapLatest` only re-issues on actual day boundaries.
      * Shared (`shareIn`) so the mood flag and today's-points collectors ride a single
      * ticker instead of each running their own.
      */
-    private val dayStartFlow: Flow<Long> = flow {
+    private val dayRangeFlow: Flow<Pair<Long, Long>> = flow {
         while (true) {
-            emit(
-                LocalDate.now()
-                    .atStartOfDay(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli()
-            )
+            emit(todayMillisRange())
             delay(60_000L)
         }
     }
@@ -176,7 +171,7 @@ class StatusViewModel(
      * inside the repository, so this never errors — worst case the card stays hidden.
      */
     private suspend fun loadDailyQuote() {
-        combine(dayStartFlow, userPreferences.quoteSource) { _, _ -> }
+        combine(dayRangeFlow, userPreferences.quoteSource) { _, _ -> }
             .collect {
                 val quote: Quote? = runCatching { quoteRepository.getDailyQuote() }.getOrNull()
                 _uiState.update { it.copy(dailyQuote = quote) }
@@ -187,30 +182,28 @@ class StatusViewModel(
         // flatMapLatest off the day ticker so the underlying query is re-issued with the
         // new range whenever the local day rolls over (catches users who leave the app
         // open across midnight). Old subscription is cancelled by flatMapLatest semantics.
-        dayStartFlow
-            .flatMapLatest { start ->
-                transactionDao.countBySourceInRange(
-                    TransactionSource.MOOD.name, start, start + DAY_MS
-                )
+        dayRangeFlow
+            .flatMapLatest { (start, end) ->
+                transactionDao.countBySourceInRange(TransactionSource.MOOD.name, start, end)
             }
             .collect { count ->
                 _uiState.update { it.copy(hasCheckedInMoodToday = count > 0) }
             }
     }
 
+    /** Local-day bounds derived from LocalDate, so DST days (23h/25h) stay correct. */
     private fun todayMillisRange(): Pair<Long, Long> {
-        val start = LocalDate.now()
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-        return start to (start + DAY_MS)
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        return today.atStartOfDay(zone).toInstant().toEpochMilli() to
+            today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
     }
 
     private suspend fun loadTodayPoints() {
         // Same midnight-aware pattern as mood: re-issue the SUM query when the day flips.
-        dayStartFlow
-            .flatMapLatest { start ->
-                transactionDao.observeEarnedInRange(start, start + DAY_MS)
+        dayRangeFlow
+            .flatMapLatest { (start, end) ->
+                transactionDao.observeEarnedInRange(start, end)
             }
             .collect { todayPoints ->
                 _uiState.update { it.copy(todayPoints = todayPoints) }
@@ -267,10 +260,6 @@ class StatusViewModel(
     fun getDaysToRankUp(): Int {
         val stats = _uiState.value.stats
         return rankCalculator.getStreakDaysToNextRank(stats)
-    }
-
-    private companion object {
-        const val DAY_MS = 86_400_000L
     }
 }
 

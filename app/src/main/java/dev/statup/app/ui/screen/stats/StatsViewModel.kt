@@ -81,10 +81,13 @@ class StatsViewModel(
         val today = LocalDate.now()
         val sevenDaysAgo = today.minusDays(6)
 
+        val zone = ZoneId.systemDefault()
         return (0..6).map { dayOffset ->
             val date = sevenDaysAgo.plusDays(dayOffset.toLong())
-            val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val endOfDay = startOfDay + 86400000
+            // Both bounds from LocalDate: a DST day is 23h or 25h, so start+24h would spill
+            // into the next bar or clip an hour off this one.
+            val startOfDay = date.atStartOfDay(zone).toInstant().toEpochMilli()
+            val endOfDay = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
 
             val dayTransactions = transactions.filter { it.createdAt in startOfDay until endOfDay }
             val totalPoints = dayTransactions.sumOf { it.points }

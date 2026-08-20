@@ -87,6 +87,20 @@ class Notifier(private val context: Context) {
         )
     }
 
+    /**
+     * An active day promoted the player. Posted from DecayWorker because the promotion happens
+     * at midnight with the app closed — StatusViewModel's rank-up animation only fires when it
+     * observes the transition live, so without this the best moment in the loop is silent.
+     */
+    fun showRankUp(rankName: String) {
+        notify(
+            id = NOTIF_RANK_UP,
+            channel = CHANNEL_REMINDERS,
+            title = "Rank up — $rankName! 🎉",
+            body = "Five active days paid off. Open Stat Up to see your new status."
+        )
+    }
+
     /** An idle day dropped the player a rank — nudge them to come back and climb. */
     fun showRankDown(rankName: String) {
         notify(
@@ -148,5 +162,6 @@ class Notifier(private val context: Context) {
         private const val NOTIF_SYNC_AUTH = 1002
         private const val NOTIF_RANK_DOWN = 1003
         private const val NOTIF_SHIELD_USED = 1004
+        private const val NOTIF_RANK_UP = 1005
     }
 }

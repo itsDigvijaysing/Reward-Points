@@ -61,7 +61,7 @@ On-device data persists until you:
 - Clear app data through your device's system settings.
 - Uninstall the app.
 
-If you have Android's automatic backup enabled ("Back up to Google Drive"), your on-device app data — the local Room database (transactions, stats, missions, history, etc.) — may be included in your personal, end-to-end-encrypted Google backup so it can be restored when you reinstall. Your encrypted secrets (Todoist token, Gemini API key) are explicitly excluded from backup. This backup stays between your device and your own Google account; the app developer never receives it.
+If you have Android's automatic backup enabled ("Back up to Google Drive"), your on-device app data — the local Room database (transactions, stats, missions, history, etc.) and your app settings and preferences (display name, chosen default stat, quote source, and similar) — may be included in your personal, end-to-end-encrypted Google backup so it can be restored when you reinstall. Your encrypted secrets (Todoist token, Gemini API key) are explicitly excluded from backup. This backup stays between your device and your own Google account; the app developer never receives it.
 
 For data sent to Todoist or Google: those services retain it according to their own policies. The app cannot delete data on their servers; use their respective settings to manage your data there.
 
