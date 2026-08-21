@@ -6,7 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TitleDao {
-    @Query("SELECT * FROM titles ORDER BY isUnlocked DESC, target ASC")
+    // isUnlocked ASC: in-progress first, completed sink to the bottom of the list.
+    @Query("SELECT * FROM titles ORDER BY isUnlocked ASC, target ASC")
     fun getAll(): Flow<List<TitleEntity>>
 
     @Query("SELECT * FROM titles WHERE isUnlocked = 1")
@@ -29,6 +30,14 @@ interface TitleDao {
     // bar would visibly regress.
     @Query("UPDATE titles SET progress = MAX(progress, :progress) WHERE id = :id")
     suspend fun updateProgress(id: String, progress: Int)
+
+    /**
+     * Re-point a built-in achievement the user has NOT unlocked yet. Guarded on isUnlocked = 0
+     * so an already-claimed row keeps the value that was actually paid out — re-pointing it
+     * would advertise a reward the player never received.
+     */
+    @Query("UPDATE titles SET rewardPoints = :points WHERE id = :id AND isUnlocked = 0")
+    suspend fun updateRewardPointsIfLocked(id: String, points: Int)
 
     @Query("UPDATE titles SET isUnlocked = 1, unlockedAt = :unlockedAt WHERE id = :id")
     suspend fun unlock(id: String, unlockedAt: Long = System.currentTimeMillis())

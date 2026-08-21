@@ -221,7 +221,7 @@ private fun ShieldDialog(
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties()) {
         GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = "🛡️ Streak Freeze Shield",
                     color = TextPrimary,
@@ -231,21 +231,44 @@ private fun ShieldDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "An idle day consumes one shield instead of hurting you: " +
-                        "no stat decay, your streak and star lines stay untouched. " +
-                        "Consumed automatically at the daily tick.",
+                    text = "Skip a day without losing anything. One shield absorbs the idle " +
+                        "day automatically — no stat decay, streak and star lines intact.",
                     color = TextSecondary,
                     fontSize = 13.sp,
                     fontFamily = Inter,
                     lineHeight = 18.sp
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Held: $shieldsHeld / $maxShields   ·   Cost: $cost pts   ·   Balance: $balance pts",
-                    color = TextTertiary,
-                    fontSize = 12.sp,
-                    fontFamily = Inter
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Three fixed columns rather than one dot-separated line: that line wrapped
+                // mid-value on narrow screens ("Balance: 632" / "pts"), which read as broken.
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    listOf(
+                        "Held" to "$shieldsHeld / $maxShields",
+                        "Cost" to "$cost pts",
+                        "Balance" to "$balance pts"
+                    ).forEach { (label, value) ->
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = label,
+                                color = TextTertiary,
+                                fontSize = 11.sp,
+                                fontFamily = Inter
+                            )
+                            Text(
+                                text = value,
+                                color = TextSecondary,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = Inter,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
+                }
 
                 message?.let {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -270,7 +293,7 @@ private fun ShieldDialog(
                         modifier = Modifier.weight(1f)
                     )
                     GlassButton(
-                        text = if (atMax) "Max held" else "Buy ($cost pts)",
+                        text = if (atMax) "Max held" else "Buy",   // cost already shown in the stats row above
                         onClick = onBuy,
                         enabled = !atMax && balance >= cost,
                         modifier = Modifier.weight(1f)
@@ -469,34 +492,38 @@ private fun MoodCheckInDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 3x2 Grid for moods
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        userScrollEnabled = false
-                    ) {
-                        items(moods) { (emoji, label) ->
-                            Column(
+                    // Two plain Rows, not a LazyVerticalGrid pinned to 160.dp. Two rows need
+                    // ~162dp (56dp button + 4dp + label), so the bottom row's labels were
+                    // clipped — and a larger system font scale clipped more. Rows wrap to
+                    // their content, so this holds at any font size or screen height.
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        moods.chunked(3).forEach { row ->
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                GlassIconButton(
-                                    icon = { Text(text = emoji, fontSize = 28.sp) },
-                                    onClick = { onMoodSelected(label) },
-                                    size = 56.dp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = label,
-                                    color = TextSecondary,
-                                    fontSize = 11.sp,
-                                    fontFamily = Inter,
-                                    textAlign = TextAlign.Center
-                                )
+                                row.forEach { (emoji, label) ->
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        GlassIconButton(
+                                            icon = { Text(text = emoji, fontSize = 28.sp) },
+                                            onClick = { onMoodSelected(label) },
+                                            size = 56.dp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = label,
+                                            color = TextSecondary,
+                                            fontSize = 11.sp,
+                                            fontFamily = Inter,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                                // Keeps a short final row column-aligned with the row above.
+                                repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                             }
                         }
                     }

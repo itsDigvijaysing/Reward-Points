@@ -30,6 +30,9 @@ import dev.statup.app.domain.model.Reward
 import dev.statup.app.ui.components.glass.*
 import dev.statup.app.ui.components.rememberHapticTick
 import dev.statup.app.ui.navigation.Routes
+import dev.statup.app.ui.components.HelpDialog
+import dev.statup.app.ui.components.HelpIconButton
+import dev.statup.app.ui.components.HelpPoint
 import dev.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
@@ -38,6 +41,7 @@ fun RewardsScreen(
     navController: NavController,
     viewModel: RewardsViewModel = koinViewModel()
 ) {
+    var showHelp by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
     // Confirmation gates: redeeming spends points and deleting is permanent — both used to fire
     // on a single tap of buttons that sit close together in a scrolling list.
@@ -65,16 +69,22 @@ fun RewardsScreen(
                     fontWeight = FontWeight.Bold,
                     fontFamily = Inter
                 )
-                GlassIconButton(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Reward",
-                            tint = AccentPrimary
-                        )
-                    },
-                    onClick = { viewModel.showCreateDialog() }
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HelpIconButton(onClick = { showHelp = true })
+                    GlassIconButton(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Reward",
+                                tint = AccentPrimary
+                            )
+                        },
+                        onClick = { viewModel.showCreateDialog() }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +146,9 @@ fun RewardsScreen(
         }
 
         // Create Dialog
-        if (uiState.showCreateDialog) {
+        if (showHelp) RewardsHelpDialog(onDismiss = { showHelp = false })
+
+    if (uiState.showCreateDialog) {
             CreateRewardDialog(
                 onDismiss = { viewModel.hideCreateDialog() },
                 onCreate = { name, desc, cost, emoji, category ->
@@ -600,4 +612,20 @@ private fun CreateRewardDialog(
             }
         }
     }
+}
+
+private val REWARDS_HELP = listOf(
+    HelpPoint("Add a reward", "Tap + and set its price in points.", "\"One episode\" for 20 pts"),
+    HelpPoint("Earn points anywhere", "Missions, Todoist, mood and achievements all pay in."),
+    HelpPoint("Redeem to spend", "Your balance drops by the price.")
+)
+
+@Composable
+private fun RewardsHelpDialog(onDismiss: () -> Unit) {
+    HelpDialog(
+        title = "Rewards Shop",
+        intro = "Spend the points you've earned on treats you set for yourself. This is the payoff half of the loop.",
+        points = REWARDS_HELP,
+        onDismiss = onDismiss
+    )
 }

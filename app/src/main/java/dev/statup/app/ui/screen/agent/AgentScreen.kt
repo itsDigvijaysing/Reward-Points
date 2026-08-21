@@ -32,6 +32,9 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 import dev.statup.app.ui.components.glass.GlassButtonSmall
 import dev.statup.app.ui.components.glass.GlassCard
 import dev.statup.app.ui.navigation.Routes
+import dev.statup.app.ui.components.HelpDialog
+import dev.statup.app.ui.components.HelpIconButton
+import dev.statup.app.ui.components.HelpPoint
 import dev.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
@@ -40,6 +43,7 @@ fun AgentScreen(
     navController: NavController,
     viewModel: AgentViewModel = koinViewModel()
 ) {
+    var showHelp by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
 
     if (!uiState.isConfigured) {
@@ -55,8 +59,11 @@ fun AgentScreen(
     ) {
         Header(
             messageCount = uiState.messages.size,
+            onHelp = { showHelp = true },
             onClear = { viewModel.clearChat() }
         )
+
+        if (showHelp) AgentHelpDialog(onDismiss = { showHelp = false })
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -91,7 +98,7 @@ fun AgentScreen(
 }
 
 @Composable
-private fun Header(messageCount: Int, onClear: () -> Unit) {
+private fun Header(messageCount: Int, onClear: () -> Unit, onHelp: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,12 +121,18 @@ private fun Header(messageCount: Int, onClear: () -> Unit) {
                 fontFamily = Inter
             )
         }
-        if (messageCount > 0) {
-            GlassButtonSmall(
-                text = "Clear",
-                onClick = onClear,
-                primary = false
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HelpIconButton(onClick = onHelp)
+            if (messageCount > 0) {
+                GlassButtonSmall(
+                    text = "Clear",
+                    onClick = onClear,
+                    primary = false
+                )
+            }
         }
     }
 }
@@ -381,4 +394,20 @@ private fun AgentInput(
             )
         }
     }
+}
+
+private val AGENT_HELP = listOf(
+    HelpPoint("It knows your stats", "Ask about your own progress, not general trivia.", "\"which stat am I neglecting?\""),
+    HelpPoint("Needs a free key", "Add a Google AI Studio key in Settings. Nothing is sent until you do."),
+    HelpPoint("Chats aren't saved", "The conversation clears when you leave.")
+)
+
+@Composable
+private fun AgentHelpDialog(onDismiss: () -> Unit) {
+    HelpDialog(
+        title = "AI Coach",
+        intro = "A coach that already knows your stats. Ask it what to focus on next.",
+        points = AGENT_HELP,
+        onDismiss = onDismiss
+    )
 }

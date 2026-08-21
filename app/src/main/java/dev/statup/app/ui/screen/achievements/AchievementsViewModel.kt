@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.statup.app.data.repository.AchievementRepository
 import dev.statup.app.domain.model.Achievement
-import dev.statup.app.domain.model.AchievementCategory
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -45,12 +44,10 @@ class AchievementsViewModel(
         name: String,
         description: String,
         emoji: String,
-        category: AchievementCategory,
-        target: Int,
         rewardPoints: Int
     ) {
         viewModelScope.launch {
-            achievementRepository.createCustomAchievement(name, description, emoji, category, target, rewardPoints)
+            achievementRepository.createCustomAchievement(name, description, emoji, rewardPoints)
             hideCreateDialog()
         }
     }

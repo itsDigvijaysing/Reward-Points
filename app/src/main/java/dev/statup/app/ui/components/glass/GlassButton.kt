@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -136,12 +137,17 @@ fun GlassButton(
                 it()
                 Spacer(modifier = Modifier.width(8.dp))
             }
+            // Buttons live in weighted Rows; a long label used to wrap to two lines and look
+            // broken. One line always, ellipsized if it truly cannot fit.
             Text(
                 text = text,
                 color = textColor,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = Inter
+                fontFamily = Inter,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
             )
             trailingIcon?.let {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -208,15 +214,20 @@ fun GlassButtonSmall(
                 enabled = enabled,
                 onClick = onClick
             )
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Chips sit in weighted Rows, so a wide label ("250") used to wrap to a second line and
+        // get clipped by the fixed height. Never wrap; ellipsize instead.
         Text(
             text = text,
             color = textColor,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            fontFamily = Inter
+            fontFamily = Inter,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

@@ -35,10 +35,22 @@ class AchievementRepository(
         }
     }
 
+    /**
+     * Seed missing built-in achievements, and re-point the ones the user has not unlocked yet.
+     *
+     * The re-point matters on UPDATE, not install: rows are only inserted when absent, so before
+     * this an existing player kept whatever rewardPoints shipped with the version they installed
+     * on, and a rebalance never reached them. Already-unlocked rows are deliberately left alone
+     * (see updateRewardPointsIfLocked) — no retroactive top-up, no risk of a second payout.
+     */
     suspend fun initializeAchievements() {
         Achievements.ALL.forEach { achievement ->
             val existing = titleDao.getById(achievement.id)
-            if (existing == null) {
+            if (existing != null) {
+                if (existing.rewardPoints != achievement.rewardPoints) {
+                    titleDao.updateRewardPointsIfLocked(achievement.id, achievement.rewardPoints)
+                }
+            } else {
                 titleDao.insert(
                     TitleEntity(
                         id = achievement.id,
@@ -115,25 +127,27 @@ class AchievementRepository(
         }
     }
 
+    /**
+     * Create a user-defined achievement. Manual-completion only — [AchievementTracker] can only
+     * advance the hardcoded built-in ids, so a user id (`custom_…`) would never auto-progress.
+     * target = 0 marks it as no-goal, which the UI renders without a progress bar.
+     */
     suspend fun createCustomAchievement(
         name: String,
         description: String,
         emoji: String,
-        category: AchievementCategory,
-        target: Int,
         rewardPoints: Int = 0
     ) {
-        val id = "custom_${System.currentTimeMillis()}"
         titleDao.insert(
             TitleEntity(
-                id = id,
+                id = "custom_${System.currentTimeMillis()}",
                 name = name,
                 description = description,
                 emoji = emoji,
                 isUnlocked = false,
                 unlockedAt = null,
                 progress = 0,
-                target = target,
+                target = 0,
                 rewardPoints = rewardPoints
             )
         )

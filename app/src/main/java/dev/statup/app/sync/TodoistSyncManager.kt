@@ -21,11 +21,17 @@ class TodoistSyncManager(
         }
 
         return try {
-            // Fetch recent completed tasks. First sync gets more history,
-            // subsequent syncs only need recent ones (dedup via externalId handles overlap).
-            val lastSyncTime = userPreferences.lastSyncTime.first()
-            val limit = if (lastSyncTime > 0) 30 else 200
-            val result = todoistApi.getCompletedTasks(token, limit = limit)
+            // Always request the endpoint's maximum. /tasks/completed is hard-capped at 200
+            // and exposes no cursor (measured 2026-08-21: response is {items, projects,
+            // sections} with no next_cursor), so there is nothing to gain by asking for less —
+            // and asking for only 30 meant a burst of completions between syncs could fall off
+            // the end. externalId dedupe makes the re-read free.
+            //
+            // NOTE: 200 is therefore a ceiling on total importable history via this endpoint.
+            // Reaching further back needs /tasks/completed/by_completion_date, which pages in
+            // 3-month windows but keys items by TASK id where this one keys by COMPLETION id —
+            // switching would re-award everything already imported. See docs/ for the plan.
+            val result = todoistApi.getCompletedTasks(token, limit = MAX_COMPLETED_PER_SYNC)
 
             result.fold(
                 onSuccess = { tasks ->
@@ -99,6 +105,9 @@ class TodoistSyncManager(
         return todoistApi.getTasks(token)
     }
 }
+
+/** Hard cap of the /tasks/completed endpoint; requesting more returns no more. */
+private const val MAX_COMPLETED_PER_SYNC = 200
 
 sealed class SyncResult {
     data object NotConnected : SyncResult()

@@ -49,6 +49,9 @@ import dev.statup.app.domain.model.StatType
 import dev.statup.app.sync.TodoistTask
 import dev.statup.app.ui.components.glass.*
 import dev.statup.app.ui.components.rememberHapticTick
+import dev.statup.app.ui.components.HelpDialog
+import dev.statup.app.ui.components.HelpIconButton
+import dev.statup.app.ui.components.HelpPoint
 import dev.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
 
@@ -57,6 +60,7 @@ fun TasksScreen(
     navController: NavController,
     viewModel: TasksViewModel = koinViewModel()
 ) {
+    var showHelp by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     val hapticTick = rememberHapticTick()
@@ -92,16 +96,22 @@ fun TasksScreen(
                     fontWeight = FontWeight.Bold,
                     fontFamily = Inter
                 )
-                GlassIconButton(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Task",
-                            tint = AccentPrimary
-                        )
-                    },
-                    onClick = { viewModel.showCreateDialog() }
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HelpIconButton(onClick = { showHelp = true })
+                    GlassIconButton(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Task",
+                                tint = AccentPrimary
+                            )
+                        },
+                        onClick = { viewModel.showCreateDialog() }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -126,6 +136,8 @@ fun TasksScreen(
                 )
             }
         }
+
+        if (showHelp) TasksHelpDialog(onDismiss = { showHelp = false })
 
         // Create Dialog
         if (uiState.showCreateDialog) {
@@ -816,4 +828,20 @@ private fun TodoistTaskCard(task: TodoistTask) {
             )
         }
     }
+}
+
+private val TASKS_HELP = listOf(
+    HelpPoint("Add a mission", "Tap +, give it points, pick the stat it trains.", "\"Gym 30 min\" \u2192 5 pts to STR"),
+    HelpPoint("Finish it to earn", "Points grow that stat. 10 points = +1 stat."),
+    HelpPoint("Dailies reset nightly", "Tick them off each day to keep earning.")
+)
+
+@Composable
+private fun TasksHelpDialog(onDismiss: () -> Unit) {
+    HelpDialog(
+        title = "Tasks & Missions",
+        intro = "Missions are the things you want to do. Finishing them earns points, and points grow your stats.",
+        points = TASKS_HELP,
+        onDismiss = onDismiss
+    )
 }

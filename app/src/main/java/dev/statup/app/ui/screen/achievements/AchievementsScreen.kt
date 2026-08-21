@@ -33,7 +33,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import dev.statup.app.domain.model.Achievement
-import dev.statup.app.domain.model.AchievementCategory
+import androidx.compose.ui.text.input.KeyboardType
 import dev.statup.app.ui.components.glass.*
 import dev.statup.app.ui.theme.*
 import org.koin.androidx.compose.koinViewModel
@@ -65,12 +65,27 @@ fun AchievementsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.weight(1f)
         ) {
-            items(uiState.achievements, key = { it.id }) { achievement ->
+            val (completed, inProgress) = uiState.achievements.partition { it.isUnlocked }
+
+            items(inProgress, key = { it.id }) { achievement ->
                 AchievementCard(
                     achievement = achievement,
                     onDelete = { viewModel.deleteAchievement(achievement) },
                     onComplete = { viewModel.completeAchievement(achievement) }
                 )
+            }
+
+            if (completed.isNotEmpty()) {
+                item(key = "completed_header") {
+                    SectionHeader(text = "Completed (${completed.size})")
+                }
+                items(completed, key = { it.id }) { achievement ->
+                    AchievementCard(
+                        achievement = achievement,
+                        onDelete = { viewModel.deleteAchievement(achievement) },
+                        onComplete = { viewModel.completeAchievement(achievement) }
+                    )
+                }
             }
 
             item {
@@ -83,11 +98,26 @@ fun AchievementsScreen(
     if (uiState.showCreateDialog) {
         CreateAchievementDialog(
             onDismiss = { viewModel.hideCreateDialog() },
-            onCreate = { name, desc, emoji, category, target, reward ->
-                viewModel.createAchievement(name, desc, emoji, category, target, reward)
+            onCreate = { name, desc, emoji, reward ->
+                viewModel.createAchievement(name, desc, emoji, reward)
             }
         )
     }
+}
+
+/** Ceiling for a user-set achievement reward — these complete on a tap, so keep it a goal. */
+private const val MAX_CUSTOM_REWARD = 500
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        color = TextSecondary,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontFamily = Inter,
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+    )
 }
 
 @Composable
@@ -328,15 +358,13 @@ private fun AchievementCard(
 @Composable
 private fun CreateAchievementDialog(
     onDismiss: () -> Unit,
-    onCreate: (name: String, description: String, emoji: String, category: AchievementCategory, target: Int, rewardPoints: Int) -> Unit
+    onCreate: (name: String, description: String, emoji: String, rewardPoints: Int) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("🏆") }
-    var selectedCategory by remember { mutableStateOf(AchievementCategory.SPECIAL) }
-    var target by remember { mutableStateOf("10") }
-    var rewardPoints by remember { mutableStateOf("10") }
-    var noGoal by remember { mutableStateOf(false) }
+    var rewardPoints by remember { mutableStateOf("25") }
+    var customPoints by remember { mutableStateOf("") }
 
     val emojiOptions = listOf("🏆", "⭐", "🎯", "💪", "🧠", "🔥", "💎", "👑", "🚀", "🎖️", "⚡", "🌟")
 
@@ -424,74 +452,16 @@ private fun CreateAchievementDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Category picker — was previously unbound (custom achievements always
-                    // ended up as SPECIAL despite the data class supporting all 6 categories).
+                    // Custom achievements are manual-completion only: nothing in
+                    // AchievementTracker can auto-advance a user-defined id, so a category and a
+                    // target would render a progress bar that could never move. Removed rather
+                    // than shown as dead controls.
                     Text(
-                        text = "Category:",
-                        color = TextSecondary,
-                        fontSize = 14.sp,
+                        text = "Tick it off yourself whenever you've earned it.",
+                        color = TextTertiary,
+                        fontSize = 12.sp,
                         fontFamily = Inter
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AchievementCategory.entries.forEach { cat ->
-                            GlassButtonSmall(
-                                text = "${cat.emoji} ${cat.displayName}",
-                                onClick = { selectedCategory = cat },
-                                primary = selectedCategory == cat
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // No Goal toggle
-                    GlassButtonSmall(
-                        text = if (noGoal) "✓ No Goal (manual completion)" else "No Goal (manual completion)",
-                        onClick = { noGoal = !noGoal },
-                        primary = noGoal,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // Target - 3x2 grid (hidden when no goal)
-                    if (!noGoal) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Target (goal number):",
-                            color = TextSecondary,
-                            fontSize = 14.sp,
-                            fontFamily = Inter
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val targets = listOf("1", "5", "10", "25", "50", "100")
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            for (row in 0 until 2) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    for (col in 0 until 3) {
-                                        val idx = row * 3 + col
-                                        if (idx < targets.size) {
-                                            val t = targets[idx]
-                                            GlassButtonSmall(
-                                                text = t,
-                                                onClick = { target = t },
-                                                primary = target == t,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -504,20 +474,32 @@ private fun CreateAchievementDialog(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val pointsOptions = listOf("5", "10", "15", "25", "50")
+                    val pointsOptions = listOf("10", "25", "50", "100", "250")
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         pointsOptions.forEach { p ->
                             GlassButtonSmall(
                                 text = p,
-                                onClick = { rewardPoints = p },
-                                primary = rewardPoints == p,
+                                onClick = { rewardPoints = p; customPoints = "" },
+                                primary = customPoints.isBlank() && rewardPoints == p,
                                 modifier = Modifier.weight(1f)
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Overrides the preset when non-empty. Capped at MAX_CUSTOM_REWARD so a
+                    // manual-completion achievement stays a goal rather than a points button.
+                    GlassTextField(
+                        value = customPoints,
+                        onValueChange = { v -> customPoints = v.filter { it.isDigit() }.take(3) },
+                        label = "Custom points (max $MAX_CUSTOM_REWARD)",
+                        keyboardType = KeyboardType.Number,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -536,14 +518,10 @@ private fun CreateAchievementDialog(
                             text = "Create",
                             onClick = {
                                 if (name.isNotBlank()) {
-                                    onCreate(
-                                        name,
-                                        description,
-                                        emoji,
-                                        selectedCategory,
-                                        if (noGoal) 0 else (target.toIntOrNull() ?: 10),
-                                        rewardPoints.toIntOrNull() ?: 10
-                                    )
+                                    val points = (customPoints.toIntOrNull()?.takeIf { it > 0 }
+                                        ?: rewardPoints.toIntOrNull() ?: 25)
+                                        .coerceIn(1, MAX_CUSTOM_REWARD)
+                                    onCreate(name, description, emoji, points)
                                 }
                             },
                             enabled = name.isNotBlank(),

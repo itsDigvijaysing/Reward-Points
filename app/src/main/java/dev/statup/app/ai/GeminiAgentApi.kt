@@ -13,7 +13,13 @@ import kotlinx.serialization.json.Json
  *
  * Endpoint: POST `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key=API_KEY`
  *
- * Model: `gemini-3.6-flash` (since 2026-08-21).
+ * Model: `gemini-3.5-flash-lite` (since 2026-08-21).
+ *
+ * Chosen on measurement, not on the name Google's deprecation 404 happens to suggest.
+ * Same prompt, same day: `gemini-3.6-flash` took 4.2s and spent 409 thinking tokens and
+ * rate-limited at 5 req/min; `gemini-3.5-flash-lite` took 1.1s, spent ZERO thinking tokens,
+ * and took 8 rapid requests without a 429. For a terse coaching reply the lite model is
+ * strictly better: 4x faster, no thinking tokens eating maxOutputTokens, higher free quota.
  *
  * `gemini-2.5-flash` is CLOSED TO NEW USERS — it returns
  * `404 "no longer available to new users"` for any API key whose project had not already
@@ -25,7 +31,7 @@ import kotlinx.serialization.json.Json
  * is not portable across generations. Gemini 3.x rejects the 2.x `thinkingBudget` with
  * 400 INVALID_ARGUMENT and uses `thinkingLevel` instead.
  *
- * Free tier on 3.6-flash is ~5 requests/min (2.5-flash allowed 10), so rapid-fire sends
+ * Free-tier quota is generous on lite, but rapid-fire sends
  * can legitimately 429 — that is quota, not a bad key, and is deliberately not retried.
  * A transient `503 UNAVAILABLE` is capacity; the shared client's HttpRequestRetry absorbs it.
  * Verify with scripts/verify_gemini_key.sh. See: https://ai.google.dev/gemini-api/docs/models
@@ -46,7 +52,7 @@ class GeminiAgentApi(
 ) : AgentApi {
 
     companion object {
-        private const val MODEL = "gemini-3.6-flash"
+        private const val MODEL = "gemini-3.5-flash-lite"
         private const val BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
         // STOP = normal completion; MAX_TOKENS = hit our maxOutputTokens cap but the
@@ -82,14 +88,13 @@ class GeminiAgentApi(
                     },
                 generationConfig = GeminiGenerationConfig(
                     temperature = 0.7,
-                    // Thinking tokens are drawn from the SAME maxOutputTokens cap as the visible
-                    // reply. Measured on 3.6-flash with a real coaching question: omitting this
-                    // spent 488 of 512 on thinking and truncated the answer at finishReason=
-                    // MAX_TOKENS. "low" spent 367 and finished cleanly. Gemini 3 does not accept
-                    // thinkingBudget (400 INVALID_ARGUMENT) — that is a 2.x-only field.
+                    // flash-lite reports 0 thinking tokens with or without this, but pin it
+                    // anyway so a future change to the model's default can't silently reintroduce
+                    // dynamic thinking — which draws from the SAME maxOutputTokens cap and, on
+                    // 3.6-flash, ate 488 of 512 and truncated the reply at MAX_TOKENS.
+                    // Gemini 3 rejects the 2.x thinkingBudget with 400 INVALID_ARGUMENT.
                     thinkingConfig = GeminiThinkingConfig(thinkingLevel = "low"),
-                    // 1024, not 512: "low" still costs ~370 thinking tokens, so 512 left only
-                    // ~140 for the reply — enough to truncate a bulleted answer.
+                    // 1024 leaves headroom if a model variant ever does spend thinking tokens.
                     maxOutputTokens = 1024
                 )
             )
